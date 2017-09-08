@@ -43,6 +43,23 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
 
     this.data = DTYPE_CONSTRUCTOR[dtype].from(data);
     this.shape = shape;
+    
+    // Calculates the stride for each dimension
+    // Example: 
+    //    shape = [3, 2, 5]
+    //    length = 3*2*5 = 30
+    //    stride[0] = 30/3        = 10
+    //    stride[1] = 30/(3*2)    = 5
+    //    stride[2] = 30/(3*2*5)  = 1
+    //    get([2, 0, 3], ndarray) == ndarra[10*2 + 5*0 + 1*3] == ndarra[23]
+    var stride = [];
+    var acc = 1;
+    shape.forEach(function (dim, i) {
+      acc *= dim;
+      stride[i] = length / acc;
+    });
+
+    this.stride = stride;
   }
 
   function ndarray(lData, lShape, tDtype) {
