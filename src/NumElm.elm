@@ -7,12 +7,15 @@ module NumElm exposing (..)
 
 
 # Creating NdArray
-@docs ndarray, matrix, verctor
+@docs ndarray, cube, matrix, vector
 
 
 # Getting NdArray properties
 @docs shape, size, dtype
 
+
+# Prepopulated matrixes
+@docs zeros, ones, identity, eye
 -}
 
 import Native.NumElm
@@ -27,11 +30,16 @@ type NdArray
     = NdArray
 
 
-{-| Tuple of array dimensions.
-Only two dimensions allowed
+{-| List of dimensions dimensions.
+
+  [3, 4]        == 3x4 matrix
+  [2] == [2, 1] == 2x1 column vector
+  [1, 4]        == 1x4 row vector
+  [3, 2, 5]     == 3x2x5 matrix (3D )
+
 -}
 type alias Shape =
-    ( Int, Int )
+    List Int
 
 
 {-| Data type of the ndarray.
@@ -49,7 +57,7 @@ type Dtype
 
 {-| Creates an NdArray from a list of numbers
 
-    ndarray [1, 2, 3, 4, 5, 6] (3, 2) Int8
+    ndarray [1, 2, 3, 4, 5, 6] [3, 2] Int8
 
     Creates a matrix 3x2 of 8-bit signed integers.
     [
@@ -62,6 +70,69 @@ type Dtype
 ndarray : List number -> Shape -> Dtype -> NdArray
 ndarray list shape dtype =
     NdArray
+
+
+{-| Creates an NdArray from a 3D list
+
+    matrix [ [ [1, 2]
+             , [3, 4]
+             ]
+           , [ [5, 6]
+             , [7, 8]
+             ]
+           , [ [9, 10]
+             , [11, 12]
+             ]
+           ] Float64
+
+    Creates a 3D matrix 3x2x2 of of 64-bit floating point numbers.
+
+-}
+cube : List (List (List number)) -> Dtype -> NdArray
+cube list dtype =
+    let
+        maybeYList =
+            head list
+
+        firstYList =
+            case maybeYList of
+                Just yList ->
+                    yList
+
+                Nothing ->
+                    []
+
+        maybeZList =
+            head firstYList
+
+        firstZList =
+            case maybeZList of
+                Just zList ->
+                    zList
+
+                Nothing ->
+                    []
+
+        d1 =
+            length list
+
+        d2 =
+            length firstYList
+
+        d3 =
+            length firstZList
+    in
+        ndarray
+            (List.concatMap
+                (\sublist ->
+                    List.concatMap
+                        (\a -> a)
+                        sublist
+                )
+                list
+            )
+            [ d1, d2, d3 ]
+            dtype
 
 
 {-| Creates an NdArray from a 2D list
@@ -80,21 +151,21 @@ ndarray list shape dtype =
 matrix : List (List number) -> Dtype -> NdArray
 matrix list dtype =
     let
-        maybeColumn =
+        maybeYList =
             head list
 
         d1 =
             length list
 
         d2 =
-            case maybeColumn of
-                Just firstColumn ->
-                    length firstColumn
+            case maybeYList of
+                Just firstYList ->
+                    length firstYList
 
                 Nothing ->
                     0
     in
-        ndarray (List.concatMap (\a -> a) list) ( d1, d2 ) dtype
+        ndarray (List.concatMap (\a -> a) list) [ d1, d2 ] dtype
 
 
 {-| Creates an NdArray from a 1D list
@@ -117,14 +188,14 @@ vector list dtype =
         d1 =
             length list
     in
-        ndarray list ( d1, 1 ) dtype
+        ndarray list [ d1 ] dtype
 
 
-{-| Returns the shape of the matrix.
+{-| Returns the shape of the ndarray.
 -}
 shape : NdArray -> Shape
 shape ndarray =
-    ( 0, 0 )
+    []
 
 
 {-| Alias for shape.
@@ -134,28 +205,28 @@ size ndarray =
     shape ndarray
 
 
-{-| Returns the data type of the matrix.
+{-| Returns the data type of the ndarray.
 -}
 dtype : NdArray -> Dtype
 dtype ndarray =
-    Dtype
+    Float64
 
 
-{-| Return a new matrix of given shape and type, filled with zeros.
+{-| Return a new ndarray of given shape and type, filled with zeros.
 -}
 zeros : Shape -> Dtype -> NdArray
 zeros shape dtype =
     NdArray
 
 
-{-| Return a new matrix of given shape and type, filled with ones.
+{-| Return a new ndarray of given shape and type, filled with ones.
 -}
 ones : Shape -> Dtype -> NdArray
 ones shape dtype =
     NdArray
 
 
-{-| Return an identity matrix of given (size, size) shape and type.
+{-| Return an identity matrix of given [size, size] shape and type.
 -}
 identity : Int -> Dtype -> NdArray
 identity size dtype =
