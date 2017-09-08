@@ -3,11 +3,11 @@ module NumElm exposing (..)
 {-| The NumPy for Elm
 
 # Types
-@docs NdArray, Shape, Dtype
+@docs NdArray, Shape, Location, Dtype
 
 
 # Creating NdArray
-@docs ndarray, cube, matrix, vector
+@docs ndarray, vector, matrix, cube
 
 
 # Getting NdArray properties
@@ -16,6 +16,9 @@ module NumElm exposing (..)
 
 # Prepopulated matrixes
 @docs zeros, ones, identity, eye
+
+# Getter an Setter
+@docs get
 -}
 
 import Native.NumElm
@@ -40,6 +43,13 @@ type NdArray
 -}
 type alias Shape =
     List Int
+
+
+{-| Location within the matrix.
+Used to get or set the matrix
+-}
+type alias Location =
+    List (Maybe Int)
 
 
 {-| Data type of the ndarray.
@@ -68,8 +78,64 @@ type Dtype
 
 -}
 ndarray : List number -> Shape -> Dtype -> NdArray
-ndarray list shape dtype =
-    NdArray
+ndarray data shape dtype =
+    Native.NumElm.ndarray data shape dtype
+
+
+{-| Creates an NdArray from a 1D list
+
+    vector [ 1, 2, 3, 4, 5, 6 ] Int16
+
+    Creates a column vector 6x1 of 16-bit signed integers.
+    [ 1
+    , 2
+    , 3
+    , 4
+    , 5
+    , 6
+    ]
+
+-}
+vector : List number -> Dtype -> NdArray
+vector data dtype =
+    let
+        d1 =
+            length data
+    in
+        ndarray data [ d1 ] dtype
+
+
+{-| Creates an NdArray from a 2D list
+
+    matrix [ [1, 2, 3]
+           , [4, 5, 6]
+           ] Float32
+
+    Creates a matrix 2x3 of of 32-bit floating point numbers.
+    [
+      [1, 2, 3],
+      [4, 5, 6]
+    ]
+
+-}
+matrix : List (List number) -> Dtype -> NdArray
+matrix data dtype =
+    let
+        maybeYList =
+            head data
+
+        d1 =
+            length data
+
+        d2 =
+            case maybeYList of
+                Just firstYList ->
+                    length firstYList
+
+                Nothing ->
+                    0
+    in
+        ndarray (List.concatMap (\a -> a) data) [ d1, d2 ] dtype
 
 
 {-| Creates an NdArray from a 3D list
@@ -89,10 +155,10 @@ ndarray list shape dtype =
 
 -}
 cube : List (List (List number)) -> Dtype -> NdArray
-cube list dtype =
+cube data dtype =
     let
         maybeYList =
-            head list
+            head data
 
         firstYList =
             case maybeYList of
@@ -114,7 +180,7 @@ cube list dtype =
                     []
 
         d1 =
-            length list
+            length data
 
         d2 =
             length firstYList
@@ -129,69 +195,17 @@ cube list dtype =
                         (\a -> a)
                         sublist
                 )
-                list
+                data
             )
             [ d1, d2, d3 ]
             dtype
 
 
-{-| Creates an NdArray from a 2D list
-
-    matrix [ [1, 2, 3]
-           , [4, 5, 6]
-           ] Float32
-
-    Creates a matrix 2x3 of of 32-bit floating point numbers.
-    [
-      [1, 2, 3],
-      [4, 5, 6]
-    ]
-
--}
-matrix : List (List number) -> Dtype -> NdArray
-matrix list dtype =
-    let
-        maybeYList =
-            head list
-
-        d1 =
-            length list
-
-        d2 =
-            case maybeYList of
-                Just firstYList ->
-                    length firstYList
-
-                Nothing ->
-                    0
-    in
-        ndarray (List.concatMap (\a -> a) list) [ d1, d2 ] dtype
-
-
-{-| Creates an NdArray from a 1D list
-
-    vector [ 1, 2, 3, 4, 5, 6 ] Int16
-
-    Creates a column vector 6x1 of 16-bit signed integers.
-    [ 1
-    , 2
-    , 3
-    , 4
-    , 5
-    , 6
-    ]
-
--}
-vector : List number -> Dtype -> NdArray
-vector list dtype =
-    let
-        d1 =
-            length list
-    in
-        ndarray list [ d1 ] dtype
-
-
 {-| Returns the shape of the ndarray.
+
+    shape ndarray1 == [2, 4] -- 2x4 matrix
+    shape ndarray2 == [3, 2, 2] -- 3x2x2 3D matrix
+
 -}
 shape : NdArray -> Shape
 shape ndarray =
@@ -206,6 +220,10 @@ size ndarray =
 
 
 {-| Returns the data type of the ndarray.
+
+    dtype ndarray1 == Int32
+    dtype ndarray2 == Float64
+
 -}
 dtype : NdArray -> Dtype
 dtype ndarray =
@@ -238,3 +256,10 @@ identity size dtype =
 eye : Int -> Dtype -> NdArray
 eye size dtype =
     identity size dtype
+
+
+{-| Getter function.
+-}
+get : Location -> NdArray
+get location =
+    NdArray
