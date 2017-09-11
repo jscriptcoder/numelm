@@ -6,18 +6,18 @@ module NumElm exposing (..)
 @docs NdArray, Shape, Location, Dtype
 
 
-# Creating NdArray
-@docs ndarray, vector, matrix, cube
+# Creating a NdArray
+@docs ndarray, vector, matrix, matrix3d
 
 
-# Getting NdArray properties
-@docs shape, size, dtype
+# Getting info of a NdArray
+@docs toString, shape, size, dtype
 
 
-# Prepopulated matrixes
+# Pre-defined matrixes
 @docs zeros, ones, identity, eye
 
-# Getter an Setter
+# Getters an Setters
 @docs get
 -}
 
@@ -63,6 +63,7 @@ type Dtype
     | Uint8
     | Uint16
     | Uint32
+    | Array
 
 
 {-| Creates an NdArray from a list of numbers
@@ -140,22 +141,22 @@ matrix data dtype =
 
 {-| Creates an NdArray from a 3D list
 
-    matrix [ [ [1, 2]
-             , [3, 4]
-             ]
-           , [ [5, 6]
-             , [7, 8]
-             ]
-           , [ [9, 10]
-             , [11, 12]
-             ]
-           ] Float64
+    matrix3d [ [ [1, 2]
+               , [3, 4]
+               ]
+             , [ [5, 6]
+               , [7, 8]
+               ]
+             , [ [9, 10]
+               , [11, 12]
+               ]
+             ] Float64
 
     Creates a 3D matrix 3x2x2 of of 64-bit floating point numbers.
 
 -}
-cube : List (List (List number)) -> Dtype -> NdArray
-cube data dtype =
+matrix3d : List (List (List number)) -> Dtype -> NdArray
+matrix3d data dtype =
     let
         maybeYList =
             head data
@@ -201,6 +202,18 @@ cube data dtype =
             dtype
 
 
+{-| Returns the string representation of the ndarray.
+This is quite handy for testing.
+
+    let nda = ndarray [1, 2, 3, 4, 5, 6] [3, 2] Int8
+    toString nda == NdArray[length=6,shape=3×2,dtype=Int8]
+
+-}
+toString : NdArray -> String
+toString ndarray =
+    Native.NumElm.toString ndarray
+
+
 {-| Returns the shape of the ndarray.
 
     shape ndarray1 == [2, 4] -- 2x4 matrix
@@ -209,7 +222,7 @@ cube data dtype =
 -}
 shape : NdArray -> Shape
 shape ndarray =
-    []
+    Native.NumElm.shape ndarray
 
 
 {-| Alias for shape.
@@ -227,7 +240,7 @@ size ndarray =
 -}
 dtype : NdArray -> Dtype
 dtype ndarray =
-    Float64
+    Native.NumElm.dtype ndarray
 
 
 {-| Return a new ndarray of given shape and type, filled with zeros.

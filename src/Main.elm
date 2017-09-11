@@ -6,19 +6,20 @@ import NumElm exposing (..)
 
 main =
     text <|
-        toString <|
-            cube
-                [ [ [ 1, 2 ]
-                  , [ 3, 4 ]
-                  ]
-                , [ [ 5, 6 ]
-                  , [ 7, 8 ]
-                  ]
-                , [ [ 9, 10 ]
-                  , [ 11, 12 ]
-                  ]
-                ]
-                Int8
+        Basics.toString <|
+            NumElm.dtype <|
+                matrix3d
+                    [ [ [ 1, 2 ]
+                      , [ 3, 4 ]
+                      ]
+                    , [ [ 5, 6 ]
+                      , [ 7, 8 ]
+                      ]
+                    , [ [ 9, 10, 13 ]
+                      , [ 11, 12 ]
+                      ]
+                    ]
+                    Float32
 
 
 
