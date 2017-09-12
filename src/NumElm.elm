@@ -1,4 +1,23 @@
-module NumElm exposing (..)
+module NumElm
+    exposing
+        ( NdArray
+        , Shape
+        , Location
+        , Dtype
+        , ndarray
+        , vector
+        , matrix
+        , matrix3d
+        , toString
+        , shape
+        , size
+        , dtype
+        , zeros
+        , ones
+        , identity
+        , eye
+        , diag
+        )
 
 {-| The NumPy for Elm
 
@@ -10,12 +29,12 @@ module NumElm exposing (..)
 @docs ndarray, vector, matrix, matrix3d
 
 
-# Getting info of a NdArray
+# Getting info from a NdArray
 @docs toString, shape, size, dtype
 
 
 # Pre-defined matrixes
-@docs zeros, ones, identity, eye
+@docs zeros, ones, identity, eye, diag
 
 # Getters an Setters
 @docs get
@@ -247,21 +266,21 @@ dtype ndarray =
 -}
 zeros : Shape -> Dtype -> NdArray
 zeros shape dtype =
-    NdArray
+    Native.NumElm.zeros shape dtype
 
 
 {-| Return a new ndarray of given shape and type, filled with ones.
 -}
 ones : Shape -> Dtype -> NdArray
 ones shape dtype =
-    NdArray
+    Native.NumElm.ones shape dtype
 
 
 {-| Return an identity matrix of given [size, size] shape and type.
 -}
 identity : Int -> Dtype -> NdArray
 identity size dtype =
-    NdArray
+    Native.NumElm.identity size dtype
 
 
 {-| Alias for identity.
@@ -269,6 +288,13 @@ identity size dtype =
 eye : Int -> Dtype -> NdArray
 eye size dtype =
     identity size dtype
+
+
+{-| Vector of diagonal elements of list
+-}
+diag : List number -> Dtype -> NdArray
+diag list dtype =
+    Native.NumElm.diag list dtype
 
 
 {-| Getter function.
