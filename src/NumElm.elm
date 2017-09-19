@@ -35,9 +35,6 @@ module NumElm
 
 # Pre-defined matrixes
 @docs zeros, ones, identity, eye, diag
-
-# Getters an Setters
-@docs get
 -}
 
 import Native.NumElm
@@ -52,12 +49,12 @@ type NdArray
     = NdArray
 
 
-{-| List of dimensions dimensions.
+{-| List of dimensions.
 
-  [3, 4]        == 3x4 matrix
-  [2] == [2, 1] == 2x1 column vector
-  [1, 4]        == 1x4 row vector
-  [3, 2, 5]     == 3x2x5 matrix (3D )
+    [3, 4]        == 3x4 matrix
+    [2] == [2, 1] == 2x1 column vector
+    [1, 4]        == 1x4 row vector
+    [3, 2, 5]     == 3x2x5 matrix (3D )
 
 -}
 type alias Shape =
@@ -65,10 +62,12 @@ type alias Shape =
 
 
 {-| Location within the matrix.
-Used to get or set the matrix
+
+    get [2, 1] [[1, 2], [3, 4], [5, 6]] == 6
+
 -}
 type alias Location =
-    List (Maybe Int)
+    List Int
 
 
 {-| Data type of the ndarray.
@@ -85,11 +84,11 @@ type Dtype
     | Array
 
 
-{-| Creates an NdArray from a list of numbers
+{-| Creates an NdArray from a list of numbers.
 
-    ndarray [1, 2, 3, 4, 5, 6] [3, 2] Int8
+    ndarray Int8 [3, 2] [1, 2, 3, 4, 5, 6]
 
-    Creates a matrix 3x2 of 8-bit signed integers.
+    Creates a matrix 3x2 of 8-bit signed integers
     [
       [1, 2],
       [3, 4],
@@ -97,49 +96,37 @@ type Dtype
     ]
 
 -}
-ndarray : List number -> Shape -> Dtype -> NdArray
-ndarray data shape dtype =
-    Native.NumElm.ndarray data shape dtype
+ndarray : Dtype -> Shape -> List number -> NdArray
+ndarray dtype shape data =
+    Native.NumElm.ndarray dtype shape data
 
 
-{-| Creates an NdArray from a 1D list
+{-| Creates an NdArray from a 1D list.
 
-    vector [ 1, 2, 3, 4, 5, 6 ] Int16
+    vector Int16 [ 1, 2, 3, 4, 5, 6 ]
 
     Creates a column vector 6x1 of 16-bit signed integers.
-    [ 1
-    , 2
-    , 3
-    , 4
-    , 5
-    , 6
-    ]
-
 -}
-vector : List number -> Dtype -> NdArray
-vector data dtype =
+vector : Dtype -> List number -> NdArray
+vector dtype data =
     let
         d1 =
             length data
     in
-        ndarray data [ d1 ] dtype
+        ndarray dtype [ d1 ] data
 
 
-{-| Creates an NdArray from a 2D list
+{-| Creates an NdArray from a 2D list.
 
-    matrix [ [1, 2, 3]
+    matrix Float32
+           [ [1, 2, 3]
            , [4, 5, 6]
-           ] Float32
+           ]
 
     Creates a matrix 2x3 of of 32-bit floating point numbers.
-    [
-      [1, 2, 3],
-      [4, 5, 6]
-    ]
-
 -}
-matrix : List (List number) -> Dtype -> NdArray
-matrix data dtype =
+matrix : Dtype -> List (List number) -> NdArray
+matrix dtype data =
     let
         maybeYList =
             head data
@@ -155,12 +142,13 @@ matrix data dtype =
                 Nothing ->
                     0
     in
-        ndarray (List.concatMap (\a -> a) data) [ d1, d2 ] dtype
+        ndarray dtype [ d1, d2 ] <| List.concatMap Basics.identity data
 
 
-{-| Creates an NdArray from a 3D list
+{-| Creates an NdArray from a 3D list.
 
-    matrix3d [ [ [1, 2]
+    matrix3d Float64
+             [ [ [1, 2]
                , [3, 4]
                ]
              , [ [5, 6]
@@ -169,13 +157,12 @@ matrix data dtype =
              , [ [9, 10]
                , [11, 12]
                ]
-             ] Float64
+             ]
 
     Creates a 3D matrix 3x2x2 of of 64-bit floating point numbers.
-
 -}
-matrix3d : List (List (List number)) -> Dtype -> NdArray
-matrix3d data dtype =
+matrix3d : Dtype -> List (List (List number)) -> NdArray
+matrix3d dtype data =
     let
         maybeYList =
             head data
@@ -208,25 +195,21 @@ matrix3d data dtype =
         d3 =
             length firstZList
     in
-        ndarray
-            (List.concatMap
+        ndarray dtype [ d1, d2, d3 ] <|
+            List.concatMap
                 (\sublist ->
                     List.concatMap
                         (\a -> a)
                         sublist
                 )
                 data
-            )
-            [ d1, d2, d3 ]
-            dtype
 
 
 {-| Returns the string representation of the ndarray.
 This is quite handy for testing.
 
-    let nda = ndarray [1, 2, 3, 4, 5, 6] [3, 2] Int8
-    toString nda == NdArray[length=6,shape=3×2,dtype=Int8]
-
+    let a = ndarray [1, 2, 3, 4, 5, 6] [3, 2] Int8
+    toString a == NdArray[length=6,shape=3×2,dtype=Int8]
 -}
 toString : NdArray -> String
 toString ndarray =
@@ -255,7 +238,6 @@ size ndarray =
 
     dtype ndarray1 == Int32
     dtype ndarray2 == Float64
-
 -}
 dtype : NdArray -> Dtype
 dtype ndarray =
@@ -263,42 +245,56 @@ dtype ndarray =
 
 
 {-| Return a new ndarray of given shape and type, filled with zeros.
+
+    zeros Int8 [3, 2] == [[0, 0], [0, 0], [0, 0]]
 -}
-zeros : Shape -> Dtype -> NdArray
-zeros shape dtype =
-    Native.NumElm.zeros shape dtype
+zeros : Dtype -> Shape -> NdArray
+zeros dtype shape =
+    let
+        length =
+            lengthFromShape shape
+    in
+        Native.NumElm.ndarray dtype shape <| List.repeat length 0
 
 
 {-| Return a new ndarray of given shape and type, filled with ones.
+
+    ones Int8 [2, 4] == [[1, 1, 1, 1], [1, 1, 1, 1]]
 -}
-ones : Shape -> Dtype -> NdArray
+ones : Dtype -> Shape -> NdArray
 ones shape dtype =
-    Native.NumElm.ones shape dtype
+    let
+        length =
+            lengthFromShape shape
+    in
+        Native.NumElm.ndarray dtype shape <| List.repeat length 1
 
 
 {-| Return an identity matrix of given [size, size] shape and type.
+
+    identity Int16 3 == [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
 -}
-identity : Int -> Dtype -> NdArray
-identity size dtype =
-    Native.NumElm.identity size dtype
+identity : Dtype -> Int -> NdArray
+identity dtype size =
+    Native.NumElm.identity dtype size
 
 
 {-| Alias for identity.
 -}
-eye : Int -> Dtype -> NdArray
+eye : Dtype -> Int -> NdArray
 eye size dtype =
     identity size dtype
 
 
-{-| Vector of diagonal elements of list
+{-| Vector of diagonal elements of list.
+
+    diag Int16 [1, 2, 3] == [[1, 0, 0], [0, 2, 0], [0, 0, 3]]
 -}
-diag : List number -> Dtype -> NdArray
-diag list dtype =
-    Native.NumElm.diag list dtype
+diag : Dtype -> List number -> NdArray
+diag dtype list =
+    Native.NumElm.diag dtype list
 
 
-{-| Getter function.
--}
-get : Location -> NdArray
-get location =
-    NdArray
+lengthFromShape : Shape -> Int
+lengthFromShape shape =
+    List.foldl (*) 1 shape

@@ -6,7 +6,7 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
 
 
   /**
-   * Maps Dtype to TypedArray constructor.
+   * Maps dtype to TypedArray constructor.
    * @const {[key: string]: TypedArray}
    */
   var DTYPE_CONSTRUCTOR = {
@@ -92,7 +92,7 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
     //    stride[0] = 30/3        = 10
     //    stride[1] = 30/(3*2)    = 5
     //    stride[2] = 30/(3*2*5)  = 1
-    //    get([2, 0, 3], ndarray) == ndarra[10*2 + 5*0 + 1*3] == ndarra[23]
+    //    get([2, 0, 3], ndarray) == data[10*2 + 5*0 + 1*3] == data[23]
     var stride = [];
     var acc = 1;
     shape.forEach(function (dim, i) {
@@ -134,45 +134,44 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
   };
 
   /**
-   * Gets the value in a specific location.
-   * @param {number[]} location
+   * Gets the value from a specific location.
+   * @param {number[]} location - list of indexes for each dimension
    * @returns {number}
    * @public
    */
   NdArray.prototype.get = function (location) {
-    var idx = this.findIndex(location);
+    var idx = this.toIndex(location);
     if (idx >= 0 && idx < this.data.length) {
       return this.data[idx];
     }
   };
 
   /**
-   * Sets a value in a specific location.
+   * Sets the value in a specific location.
    * @param {number[]} location
    * @param {number} value
    * @public
    */
   NdArray.prototype.set = function (location, value) {
-    var idx = this.findIndex(location);
+    var idx = this.toIndex(location);
     if (idx >= 0 && idx < this.data.length) {
       return this.data[idx] = value;
     }
   };
 
   /**
-   * Finds the index within the 1D array
+   * Converts a list of indexes (>1D) into a 1D index
    * @param {number[]} location
    * @return {number}
    * @private
    */
-  NdArray.prototype.findIndex = function (location) {
+  NdArray.prototype.toIndex = function (location) {
     var idx = -1;
-    var length = location.length;
-    if (length > 0 && length === this.stride.length) {
-      idx = 0;
-      for(var i = 0; i < length; i++) {
-        idx += this.stride[i] * location[i];
-      }
+    var length = location ? location.length : 0;
+    if (location.length === this.stride.length) {
+      idx = location.reduce(function (acc, val, i) {
+        return acc + (this.stride[i] * val);
+      }, 0);
     }
     return idx;
   };
@@ -182,119 +181,95 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
 
   /**
    * Instantiates a NdArray
-   * @param {List number | number[]} lData
-   * @param {List number} lShape
    * @param {Dtype} tDtype
+   * @param {List number} lShape   
+   * @param {List number} lData
    * @returns {NdArray}
    * @memberof Native.NumElm
    */
-  function ndarray(lData, lShape, tDtype) {
+  function ndarray(tDtype, lShape, lData) {
     // Let's do some conversion, Elm to Js types
-    var data = toArray(lData);
-    var shape = toArray(lShape);
     var dtype = DTYPE_CONSTRUCTOR[tDtype.ctor] ? tDtype.ctor : 'Array';
+    var shape = toArray(lShape);
+    var data = toArray(lData);
 
     return new NdArray(data, shape, dtype);
   }
 
   /**
    * Returns the string representation of the ndarray
-   * @param {NdArray} ndarray
+   * @param {NdArray} nda
    * @returns {string}
    * @memberof Native.NumElm
    */
-  function toString(ndarray) {
-    return ndarray + '';
+  function toString(nda) {
+    return nda + '';
   } 
 
   /**
    * Gets the shape of the ndarray
-   * @param {NdArray} ndarray
+   * @param {NdArray} nda
    * @returns {List number} shape of the ndarray
    * @memberof Native.NumElm
    */
-  function shape(ndarray) {
-    return fromArray(ndarray.shape);
+  function shape(nda) {
+    return fromArray(nda.shape);
   }
 
   /**
    * Gets the dtype of the ndarray
-   * @param {NdArray} ndarray
+   * @param {NdArray} nda
    * @returns {Dtype}
    * @memberof Native.NumElm
    */
-  function dtype(ndarray) {
-    return { ctor: ndarray.dtype }
+  function dtype(nda) {
+    return { ctor: nda.dtype }
   }
 
   /**
-   * Returns a NdArray pre-filled
-   * @param {List number} lShape
+   * Creates an identity matrix
    * @param {Dtype} tDtype
+   * @param {number} size
    * @returns {NdArray}
-   * @private
+   * @memberof Native.NumElm
    */
-  function fillNdArray(lShape, tDtype, fillWith) {
-    var shape = toArray(lShape);
-    var lengthToFill = NdArray.lengthFromShape(shape);
-    var data = Array(lengthToFill).fill(fillWith);
+  function identity(tDtype, size) {
+    var length = size * size;
     var dtype = DTYPE_CONSTRUCTOR[tDtype.ctor] ? tDtype.ctor : 'Array';
+    var shape = [size, size];
+    var data = Array(length).fill(0);
+    var nda = new NdArray(data, shape, dtype);
 
-    return new NdArray(data, shape, dtype);
-  }
-
-  /**
-   * Instantiates a NdArray filled with ceros
-   * @param {List number} lShape
-   * @param {Dtype} tDtype
-   * @returns {NdArray}
-   * @memberof Native.NumElm
-   */
-  function zeros(lShape, tDtype) {
-    fillNdArray(lShape, tDtype, 0);
-  }
-
-  /**
-   * Instantiates a NdArray filled with ones
-   * @param {List number} lShape
-   * @param {Dtype} tDtype
-   * @returns {NdArray}
-   * @memberof Native.NumElm
-   */
-  function ones(lShape, tDtype) {
-    fillNdArray(lShape, tDtype, 1);
-  }
-
-  /**
-   * Creates an identity matrix
-   * @param {List number} lShape
-   * @param {Dtype} tDtype
-   * @returns {NdArray}
-   * @memberof Native.NumElm
-   */
-  function identity(size, tDtype) {
-    var length = size * size;
-    var lShape = fromArray([size, size]);
-    var ndarray = zeros(lShape, tDtype);
+    // Sets to 1 the diagonal
     for (var i = 0; i < length; i++) {
-      ndarray.set([i, i], 1);
+      nda.set([i, i], 1);
     }
+
+    return nda
   }
 
   /**
-   * Creates an identity matrix
-   * @param {List number} lShape
+   * Creates a matrix with a specific diagonal
    * @param {Dtype} tDtype
+   * @param {List number} lDiag
    * @returns {NdArray}
    * @memberof Native.NumElm
    */
-  function identity(size, tDtype) {
+  function diag(tDtype, lDiag) {
+    var diagonal = toArray(lDiag);
+    var size = diagonal.length;
     var length = size * size;
-    var lShape = fromArray([size, size]);
-    var ndarray = zeros(lShape, tDtype);
+    var dtype = DTYPE_CONSTRUCTOR[tDtype.ctor] ? tDtype.ctor : 'Array';
+    var shape = [size, size];
+    var data = Array(length).fill(0);
+    var nda = new NdArray(data, shape, dtype);
+
+    // Sets the diagonal
     for (var i = 0; i < length; i++) {
-      ndarray.set([i, i], 1);
+      nda.set([i, i], diagonal[i]);
     }
+
+    return nda
   }
 
   return {
@@ -305,9 +280,8 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
     toString: toString,
     shape:    shape,
     dtype:    dtype,
-    zeros:    F2(zeros),
-    ones:     F2(ones),
-    identity: F2(identity)
+    identity: F2(identity),
+    diag:     F2(diag)
   };
 
 }();
