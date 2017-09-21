@@ -86,28 +86,22 @@ type Dtype
 
 {-| Creates an NdArray from a list of numbers.
 
+    -- 3x2 matrix of 8-bit signed integers
     ndarray Int8 [3, 2] [1, 2, 3, 4, 5, 6]
 
-    Creates a matrix 3x2 of 8-bit signed integers
-    [
-      [1, 2],
-      [3, 4],
-      [5, 6]
-    ]
-
 -}
-ndarray : Dtype -> Shape -> List number -> NdArray
+ndarray : Dtype -> Shape -> List number -> Result String NdArray
 ndarray dtype shape data =
     Native.NumElm.ndarray dtype shape data
 
 
 {-| Creates an NdArray from a 1D list.
 
+    -- 6x1 column vector of 16-bit signed integers.
     vector Int16 [ 1, 2, 3, 4, 5, 6 ]
 
-    Creates a column vector 6x1 of 16-bit signed integers.
 -}
-vector : Dtype -> List number -> NdArray
+vector : Dtype -> List number -> Result String NdArray
 vector dtype data =
     let
         d1 =
@@ -118,14 +112,14 @@ vector dtype data =
 
 {-| Creates an NdArray from a 2D list.
 
+    -- 2x3 matrix of 32-bit floating point numbers.
     matrix Float32
            [ [1, 2, 3]
            , [4, 5, 6]
            ]
 
-    Creates a matrix 2x3 of of 32-bit floating point numbers.
 -}
-matrix : Dtype -> List (List number) -> NdArray
+matrix : Dtype -> List (List number) -> Result String NdArray
 matrix dtype data =
     let
         maybeYList =
@@ -147,6 +141,7 @@ matrix dtype data =
 
 {-| Creates an NdArray from a 3D list.
 
+    -- 3x2x2 3D matrix of 64-bit floating point numbers.
     matrix3d Float64
              [ [ [1, 2]
                , [3, 4]
@@ -159,9 +154,8 @@ matrix dtype data =
                ]
              ]
 
-    Creates a 3D matrix 3x2x2 of of 64-bit floating point numbers.
 -}
-matrix3d : Dtype -> List (List (List number)) -> NdArray
+matrix3d : Dtype -> List (List (List number)) -> Result String NdArray
 matrix3d dtype data =
     let
         maybeYList =
@@ -208,18 +202,29 @@ matrix3d dtype data =
 {-| Returns the string representation of the ndarray.
 This is quite handy for testing.
 
-    let a = ndarray [1, 2, 3, 4, 5, 6] [3, 2] Int8
-    toString a == NdArray[length=6,shape=3×2,dtype=Int8]
+    let nda = ndarray Int8 [3, 2] [1, 2, 3, 4, 5, 6]
+    toString nda == NdArray[length=6,shape=3×2,dtype=Int8]
 -}
 toString : NdArray -> String
 toString ndarray =
     Native.NumElm.toString ndarray
 
 
-{-| Returns the shape of the ndarray.
+{-| Returns the string representation of the internal array.
+This is quite handy for testing.
 
-    shape ndarray1 == [2, 4] -- 2x4 matrix
-    shape ndarray2 == [3, 2, 2] -- 3x2x2 3D matrix
+    let nda = ndarray Int8 [3, 2] [1, 2, 3, 4, 5, 6]
+    toDataString nda == "[1,2,3,4,5,6]"
+-}
+toDataString : NdArray -> String
+toDataString ndarray =
+    Native.NumElm.toString ndarray
+
+
+{-| Gets the shape of the ndarray.
+
+    shape ndarray1 == [2, 4] -- 2×4 matrix
+    shape ndarray2 == [3, 2, 2] -- 3×2×2 3D matrix
 
 -}
 shape : NdArray -> Shape
@@ -234,7 +239,7 @@ size ndarray =
     shape ndarray
 
 
-{-| Returns the data type of the ndarray.
+{-| Gets the dtype of the ndarray.
 
     dtype ndarray1 == Int32
     dtype ndarray2 == Float64
@@ -244,15 +249,15 @@ dtype ndarray =
     Native.NumElm.dtype ndarray
 
 
-{-| Return a new ndarray of given shape and type, filled with zeros.
+{-| Returns a new ndarray of given shape and type, filled with zeros.
 
     zeros Int8 [3, 2] == [[0, 0], [0, 0], [0, 0]]
 -}
-zeros : Dtype -> Shape -> NdArray
+zeros : Dtype -> Shape -> Result String NdArray
 zeros dtype shape =
     let
         length =
-            lengthFromShape shape
+            shapeToLength shape
     in
         Native.NumElm.ndarray dtype shape <| List.repeat length 0
 
@@ -261,40 +266,48 @@ zeros dtype shape =
 
     ones Int8 [2, 4] == [[1, 1, 1, 1], [1, 1, 1, 1]]
 -}
-ones : Dtype -> Shape -> NdArray
+ones : Dtype -> Shape -> Result String NdArray
 ones shape dtype =
     let
         length =
-            lengthFromShape shape
+            shapeToLength shape
     in
         Native.NumElm.ndarray dtype shape <| List.repeat length 1
 
 
-{-| Return an identity matrix of given [size, size] shape and type.
-
-    identity Int16 3 == [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
--}
-identity : Dtype -> Int -> NdArray
-identity dtype size =
-    Native.NumElm.identity dtype size
-
-
-{-| Alias for identity.
--}
-eye : Dtype -> Int -> NdArray
-eye size dtype =
-    identity size dtype
-
-
 {-| Vector of diagonal elements of list.
 
-    diag Int16 [1, 2, 3] == [[1, 0, 0], [0, 2, 0], [0, 0, 3]]
+    diag Int16 [1, 2, 3] == [
+                              [1, 0, 0],
+                              [0, 2, 0],
+                              [0, 0, 3]
+                            ]
 -}
-diag : Dtype -> List number -> NdArray
+diag : Dtype -> List number -> Result String NdArray
 diag dtype list =
     Native.NumElm.diag dtype list
 
 
-lengthFromShape : Shape -> Int
-lengthFromShape shape =
+{-| Return an identity matrix given [size, size].
+
+    identity Int16 3 == [
+                          [1, 0, 0],
+                          [0, 1, 0],
+                          [0, 0, 1]
+                        ]
+-}
+identity : Dtype -> Int -> Result String NdArray
+identity dtype size =
+    Native.NumElm.diag dtype <| List.repeat size 1
+
+
+{-| Alias for identity.
+-}
+eye : Dtype -> Int -> Result String NdArray
+eye size dtype =
+    identity size dtype
+
+
+shapeToLength : Shape -> Int
+shapeToLength shape =
     List.foldl (*) 1 shape

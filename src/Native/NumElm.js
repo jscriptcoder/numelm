@@ -3,6 +3,8 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
   // Imports
   var toArray = _elm_lang$core$Native_List.toArray;
   var fromArray = _elm_lang$core$Native_List.fromArray;
+  var resultOk = _elm_lang$core$Result$Ok;
+  var resultErr = _elm_lang$core$Result$Err;
 
 
   /**
@@ -38,20 +40,7 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
       shape[1] = 1; // Column vector n×1
     }
 
-    var length = NdArray.lengthFromShape(shape);
-
-    /*
-    if (data.length > length) {
-      // We need to slice the array since
-      // it's longer than what the shape says
-      data = data.slice(0, length);
-    } else if (data.length < length) {
-      // We need to fill the array 
-      // with ceros to fullfil the shape
-      var lengthToFill = length - data.length;
-      data = data.concat(Array(lengthToFill).fill(0));
-    }
-    */
+    var length = NdArray.shapeToLength(shape);
 
     if (data.length !== length) {
       throw [
@@ -115,7 +104,7 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
    * @returns {number}
    * @static
    */
-  NdArray.lengthFromShape = function (shape) {
+  NdArray.shapeToLength = function (shape) {
     return shape.reduce(function (dim1, dim2) {
       return dim1 * dim2;
     }, 1);
@@ -131,6 +120,17 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
     var shape = this.shape.join('×');
     var dtype = this.dtype;
     return 'NdArray[length=' + length + ';shape=' + shape + ';dtype=' + dtype + ']'
+  };
+
+  /**
+   * String representation of the data.
+   * @returns {string}
+   * @public
+   */
+  NdArray.prototype.dataToString = function (from, to) {
+    from = from || 0;
+    to = to || this.data.length - 1;
+    return '[' + this.data.slice(from, to) + ']';
   };
 
   /**
@@ -176,6 +176,7 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
     return idx;
   };
 
+
   // =============== Native.NumElm =============== //
 
 
@@ -193,7 +194,12 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
     var shape = toArray(lShape);
     var data = toArray(lData);
 
-    return new NdArray(data, shape, dtype);
+    try {
+      return resultOk(new NdArray(data, shape, dtype));  
+    } catch(e) {
+      return resultErr(e);
+    }
+    
   }
 
   /**
@@ -204,7 +210,21 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
    */
   function toString(nda) {
     return nda + '';
-  } 
+  }
+
+  /**
+   * Returns the string representation of the internal array
+   * @param {NdArray} nda
+   * @returns {string}
+   * @memberof Native.NumElm
+   */
+  function toDataString(nda) {
+    return nda.toDataString();
+  }
+
+  function toList(nda) {
+
+  }
 
   /**
    * Gets the shape of the ndarray
@@ -227,28 +247,6 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
   }
 
   /**
-   * Creates an identity matrix
-   * @param {Dtype} tDtype
-   * @param {number} size
-   * @returns {NdArray}
-   * @memberof Native.NumElm
-   */
-  function identity(tDtype, size) {
-    var length = size * size;
-    var dtype = DTYPE_CONSTRUCTOR[tDtype.ctor] ? tDtype.ctor : 'Array';
-    var shape = [size, size];
-    var data = Array(length).fill(0);
-    var nda = new NdArray(data, shape, dtype);
-
-    // Sets to 1 the diagonal
-    for (var i = 0; i < length; i++) {
-      nda.set([i, i], 1);
-    }
-
-    return nda
-  }
-
-  /**
    * Creates a matrix with a specific diagonal
    * @param {Dtype} tDtype
    * @param {List number} lDiag
@@ -262,26 +260,32 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
     var dtype = DTYPE_CONSTRUCTOR[tDtype.ctor] ? tDtype.ctor : 'Array';
     var shape = [size, size];
     var data = Array(length).fill(0);
-    var nda = new NdArray(data, shape, dtype);
+    var nda;
 
-    // Sets the diagonal
-    for (var i = 0; i < length; i++) {
-      nda.set([i, i], diagonal[i]);
+    try {
+      nda = new NdArray(data, shape, dtype);
+
+      // Sets the diagonal
+      for (var i = 0; i < length; i++) {
+        nda.set([i, i], diagonal[i]);
+      }
+      
+      return resultOk(nda);
+    } catch (e) {
+      return resultErr(e);
     }
-
-    return nda
   }
 
   return {
-    ndarray:  F3(ndarray),
-    vector:   F2(vector),
-    matrix:   F2(matrix),
-    matrix3d: F2(matrix3d),
-    toString: toString,
-    shape:    shape,
-    dtype:    dtype,
-    identity: F2(identity),
-    diag:     F2(diag)
+    ndarray:      F3(ndarray),
+    vector:       F2(vector),
+    matrix:       F2(matrix),
+    matrix3d:     F2(matrix3d),
+    toString:     toString,
+    toDataString: toDataString
+    shape:        shape,
+    dtype:        dtype,
+    diag:         F2(diag)
   };
 
 }();
