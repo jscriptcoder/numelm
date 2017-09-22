@@ -18,6 +18,8 @@ module NumElm
         , diag
         , identity
         , eye
+        , get
+        , set
         )
 
 {-| The NumPy for Elm
@@ -36,6 +38,9 @@ module NumElm
 
 # Pre-filled matrixes
 @docs zeros, ones, diag, identity, eye
+
+# Getters and Setters
+@doc get, set
 -}
 
 import Native.NumElm
@@ -207,8 +212,8 @@ matrix3d dtype data =
         toString nda --> NdArray[length=6,shape=3×2,dtype=Int8]
 -}
 toString : NdArray -> String
-toString ndarray =
-    Native.NumElm.toString ndarray
+toString nda =
+    Native.NumElm.toString nda
 
 
 {-| Returns the string representation of the internal array.
@@ -219,8 +224,8 @@ toString ndarray =
         dataToString nda --> "[1,2,3,4,5,6]"
 -}
 dataToString : NdArray -> String
-dataToString ndarray =
-    Native.NumElm.dataToString ndarray
+dataToString nda =
+    Native.NumElm.dataToString nda
 
 
 {-| Gets the shape of the ndarray.
@@ -233,15 +238,15 @@ dataToString ndarray =
 
 -}
 shape : NdArray -> Shape
-shape ndarray =
-    Native.NumElm.shape ndarray
+shape nda =
+    Native.NumElm.shape nda
 
 
 {-| Alias for shape.
 -}
 size : NdArray -> Shape
-size ndarray =
-    shape ndarray
+size nda =
+    shape nda
 
 
 {-| Gets the dtype of the ndarray.
@@ -250,8 +255,8 @@ size ndarray =
     dtype ndarray2 --> Float64
 -}
 dtype : NdArray -> Dtype
-dtype ndarray =
-    Native.NumElm.dtype ndarray
+dtype nda =
+    Native.NumElm.dtype nda
 
 
 {-| Returns a new ndarray of given shape and type, filled with zeros.
@@ -314,6 +319,35 @@ identity dtype size =
 eye : Dtype -> Int -> Result String NdArray
 eye size dtype =
     identity size dtype
+
+
+{-| Gets the value from a specific location.
+
+    let
+        nda = ndarray Int8 [3, 2] [1, 2, 3, 4, 5, 6]
+    in
+        get [1, 0] nda --> 3
+
+-}
+get : Location -> NdArray -> Maybe number
+get location nda =
+    Native.NumElm.get location nda
+
+
+{-| Sets the value in a specific location
+
+    let
+        nda = ndarray Int8 [3, 2] [1, 2, 3, 4, 5, 6]
+    in
+        set 8 [1, 0] nda --> [ [1, 2]
+                             , [8, 4]
+                             , [5, 6]
+                             ]
+
+-}
+set : number -> Location -> NdArray -> Result String NdArray
+set value location nda =
+    Native.NumElm.set value location nda
 
 
 shapeToLength : Shape -> Int

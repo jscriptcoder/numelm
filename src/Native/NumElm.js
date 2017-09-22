@@ -1,10 +1,12 @@
 var _jscriptcoder$numelm$Native_NumElm = function() {
 
   // Imports
-  var toArray = _elm_lang$core$Native_List.toArray;
-  var fromArray = _elm_lang$core$Native_List.fromArray;
-  var resultOk = _elm_lang$core$Result$Ok;
-  var resultErr = _elm_lang$core$Result$Err;
+  var toArray       = _elm_lang$core$Native_List.toArray;
+  var fromArray     = _elm_lang$core$Native_List.fromArray;
+  var resultOk      = _elm_lang$core$Result$Ok;
+  var resultErr     = _elm_lang$core$Result$Err;
+  var maybeJust     = _elm_lang$core$Maybe$Just;
+  var maybeNothing  = _elm_lang$core$Maybe$Nothing;
 
 
   /**
@@ -12,15 +14,15 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
    * @const {[key: string]: TypedArray}
    */
   var DTYPE_CONSTRUCTOR = {
-    'Int8': Int8Array,
-    'Int16': Int16Array,
-    'Int32': Int32Array,
-    'Float32': Float32Array,
-    'Float64': Float64Array,
-    'Uint8': Uint8Array,
-    'Uint16': Uint16Array,
-    'Uint32': Uint32Array,
-    'Array': Array
+    'Int8'    : Int8Array,
+    'Int16'   : Int16Array,
+    'Int32'   : Int32Array,
+    'Float32' : Float32Array,
+    'Float64' : Float64Array,
+    'Uint8'   : Uint8Array,
+    'Uint16'  : Uint16Array,
+    'Uint32'  : Uint32Array,
+    'Array'   : Array
   }
 
   /**
@@ -29,6 +31,7 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
    * @param {number[]} data
    * @param {number[]} shape
    * @param {string} dtype
+   * @throws {Error} Wrong shape or length
    */
   var NdArray = function (data, shape, dtype) {
 
@@ -36,23 +39,23 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
     shape = shape || [1, 1];
     dtype = dtype || 'Array';
 
-    if (shape.length == 1) {
+    if (shape.length == 1 && shape[0] > 0) {
       shape[1] = 1; // Column vector n×1
-    } else if (shape.length == 0) {
-      throw "NdArray has no shape"
+    } else if (shape.length == 0 || shape[0] === 0) {
+      throw Error('NdArray has no shape: [' + shape + ']')
     }
 
     var length = NdArray.shapeToLength(shape);
 
     if (data.length !== length) {
-      throw [
+      throw Error([
         'The length of the storage data is ',
         data.length,
         ', but the shape says ',
         shape.join('×'), 
         '=',
         length
-      ].join('');
+      ].join(''));
     }
 
     /**
@@ -113,7 +116,7 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
   };
 
   /**
-   * String representation.
+   * String representation
    * @returns {string}
    * @public
    */
@@ -125,7 +128,7 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
   };
 
   /**
-   * String representation of the data storage.
+   * String representation of the data storage
    * @param {number} [from = 0]
    * @param {number} [length = this.data.length]
    * @returns {string}
@@ -138,7 +141,21 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
   };
 
   /**
-   * Gets the value from a specific location.
+   * Clones the instance
+   * @return {NdArray}
+   * @public
+   */
+  NdArray.prototype.clone = function () {
+    var clone = Object.create(NdArray.prototype);
+    clone.data = this.data.slice(0);
+    clone.shape = this.shape.slice(0);
+    clone.dtype = this.dtype;
+    clone.stride = this.stride.slice(0);
+    return clone;
+  };
+
+  /**
+   * Gets the value from a specific location
    * @param {number[]} location - list of indexes for each dimension
    * @returns {number}
    * @public
@@ -151,7 +168,7 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
   };
 
   /**
-   * Sets the value in a specific location.
+   * Sets the value in a specific location
    * @param {number[]} location
    * @param {number} value
    * @public
@@ -191,7 +208,7 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
    * @param {Dtype} tDtype
    * @param {List number} lShape   
    * @param {List number} lData
-   * @returns {NdArray}
+   * @returns {Result String NdArray}
    * @memberof Native.NumElm
    */
   function ndarray(tDtype, lShape, lData) {
@@ -252,7 +269,7 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
    * Creates a matrix with a specific diagonal
    * @param {Dtype} tDtype
    * @param {List number} lDiag
-   * @returns {NdArray}
+   * @returns {Result String NdArray}
    * @memberof Native.NumElm
    */
   function diag(tDtype, lDiag) {
@@ -278,13 +295,59 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
     }
   }
 
+  /**
+   * Gets the value from a specific location
+   * @param {Location} tLocation
+   * @param {NdArray} nda
+   * @returns {Maybe Number}
+   * @memberof Native.NumElm
+   */
+  function get(tLocation, nda) {
+    var location = toArray(tLocation);
+    var value;
+
+    try {
+      value = nda.get(location);
+      if (typeof value === 'number') {
+        return maybeJust(value);
+      } else {
+        throw "Something went really wrong";
+      }
+    } catch (e) {
+      return maybeNothing;
+    }
+  }
+
+  /**
+   * Sets the value in a specific location
+   * @param {number} value
+   * @param {Location} tLocation
+   * @param {NdArray} nda
+   * @returns {Result String NdArray} new NdArray (no mutation)
+   * @memberof Native.NumElm
+   */
+  function set(value, tLocation, nda) {
+    var location = toArray(tLocation);
+    var clonedNda = nda.clone();
+
+    try {
+      clonedNda.set(location, value);
+      return resultOk(clonedNda);
+    } catch (e) {
+      return resultErr(e + '');
+    }
+    
+  }
+
   return {
-    ndarray:      F3(ndarray),
-    toString:     toString,
+    ndarray     : F3(ndarray),
+    toString    : toString,
     dataToString: dataToString,
-    shape:        shape,
-    dtype:        dtype,
-    diag:         F2(diag)
+    shape       : shape,
+    dtype       : dtype,
+    diag        : F2(diag),
+    get         : F2(get),
+    set         : F3(set)
   };
 
 }();

@@ -55,7 +55,7 @@ creatingNdArray =
                             Err msg ->
                                 msg
                 in
-                    Expect.equal strnda "The length of the storage data is 6, but the shape says 2×2=4"
+                    Expect.equal strnda "Error: The length of the storage data is 6, but the shape says 2×2=4"
             )
         , test "vector Int32 [ 1, 2, 3, 4, 5 ]"
             (\_ ->
@@ -103,7 +103,7 @@ creatingNdArray =
                             Err msg ->
                                 msg
                 in
-                    Expect.equal strnda "The length of the storage data is 5, but the shape says 2×2=4"
+                    Expect.equal strnda "Error: The length of the storage data is 5, but the shape says 2×2=4"
             )
         , test "matrix3d Int8 [ [ [ 1, 2 ], [ 3, 4 ], [ 5, 6 ] ], [ [ 7, 8 ], [ 9, 10 ], [ 11, 12 ] ] ]"
             (\_ ->
@@ -135,7 +135,7 @@ creatingNdArray =
                             Err msg ->
                                 msg
                 in
-                    Expect.equal strnda "The length of the storage data is 9, but the shape says 2×2×2=8"
+                    Expect.equal strnda "Error: The length of the storage data is 9, but the shape says 2×2×2=8"
             )
         ]
 
@@ -205,7 +205,7 @@ gettingNdArrayInfo =
                             Err msg ->
                                 msg
                 in
-                    Expect.equal ndashapeErr "NdArray has no shape"
+                    Expect.equal ndashapeErr "Error: NdArray has no shape: []"
             )
         , test "dtype <| matrix3d Float32 [ [ [ 1, 2 ] ], [ [ 7, 8 ] ] ]"
             (\_ ->
@@ -234,87 +234,106 @@ preFilledMatrixes =
                 let
                     ndaResult =
                         zeros Int8 [ 3, 2 ]
-
-                    maybeNdaWithZeros =
-                        case ndaResult of
-                            Ok nda ->
-                                Just nda
-
-                            Err msg ->
-                                Nothing
                 in
-                    case maybeNdaWithZeros of
-                        Just ndaWithZeros ->
+                    case ndaResult of
+                        Ok ndaWithZeros ->
                             Expect.equal "[0,0,0,0,0,0]" <|
                                 NumElm.dataToString ndaWithZeros
 
-                        Nothing ->
-                            Expect.fail "WFT??"
+                        Err msg ->
+                            Expect.fail msg
             )
         , test "ones Int8 [2, 4]"
             (\_ ->
                 let
                     ndaResult =
                         ones Int8 [ 2, 4 ]
-
-                    maybeNdaWithOnes =
-                        case ndaResult of
-                            Ok nda ->
-                                Just nda
-
-                            Err msg ->
-                                Nothing
                 in
-                    case maybeNdaWithOnes of
-                        Just ndaWithOnes ->
+                    case ndaResult of
+                        Ok ndaWithOnes ->
                             Expect.equal "[1,1,1,1,1,1,1,1]" <|
                                 NumElm.dataToString ndaWithOnes
 
-                        Nothing ->
-                            Expect.fail "WFT??"
+                        Err msg ->
+                            Expect.fail msg
             )
         , test "diag Int16 [2, 4, 3, 1]"
             (\_ ->
                 let
                     ndaResult =
                         diag Int16 [ 2, 4, 3, 1 ]
-
-                    maybeNdaWithDiag =
-                        case ndaResult of
-                            Ok nda ->
-                                Just nda
-
-                            Err msg ->
-                                Nothing
                 in
-                    case maybeNdaWithDiag of
-                        Just ndaWithDiag ->
+                    case ndaResult of
+                        Ok ndaWithDiag ->
                             Expect.equal "[2,0,0,0,0,4,0,0,0,0,3,0,0,0,0,1]" <|
                                 NumElm.dataToString ndaWithDiag
 
-                        Nothing ->
-                            Expect.fail "WFT??"
+                        Err msg ->
+                            Expect.fail msg
             )
         , test "identity Int16 3"
             (\_ ->
                 let
                     ndaResult =
                         NumElm.identity Int16 3
-
-                    maybeIdentity =
-                        case ndaResult of
-                            Ok nda ->
-                                Just nda
-
-                            Err msg ->
-                                Nothing
                 in
-                    case maybeIdentity of
-                        Just ndaIdentity ->
+                    case ndaResult of
+                        Ok ndaIdentity ->
                             Expect.equal "[1,0,0,0,1,0,0,0,1]" <|
                                 NumElm.dataToString ndaIdentity
 
-                        Nothing ->
-                            Expect.fail "WFT??"
+                        Err msg ->
+                            Expect.fail msg
+            )
+        ]
+
+
+gettersSetters : Test
+gettersSetters =
+    describe "Getters and Setters"
+        [ test "get [1, 0] <| diag Int16 [2, 4, 3, 1]"
+            (\_ ->
+                let
+                    ndaResult =
+                        diag Int16 [ 2, 4, 3, 1 ]
+                in
+                    case ndaResult of
+                        Ok nda ->
+                            let
+                                maybeValue =
+                                    get [ 2, 2 ] nda
+                            in
+                                case maybeValue of
+                                    Just value ->
+                                        Expect.equal value 3
+
+                                    Nothing ->
+                                        Expect.fail "Wrong location"
+
+                        Err msg ->
+                            Expect.fail msg
+            )
+        , test "set 8 [2, 1] <| identity Int16 3"
+            (\_ ->
+                let
+                    ndaResult =
+                        NumElm.identity Int16 3
+                in
+                    case ndaResult of
+                        Ok nda ->
+                            let
+                                newNdaResult =
+                                    set 8 [ 2, 1 ] nda
+                            in
+                                case newNdaResult of
+                                    Ok newNda ->
+                                        Expect.equal "[1,0,0,0,1,0,0,8,1]" <|
+                                            NumElm.dataToString newNda
+
+                                    Err msg ->
+                                        Expect.fail msg
+
+                        Err msg ->
+                            Expect.fail msg
             )
         ]
