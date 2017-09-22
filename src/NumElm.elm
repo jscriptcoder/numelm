@@ -3,20 +3,21 @@ module NumElm
         ( NdArray
         , Shape
         , Location
-        , Dtype
+        , Dtype(..)
         , ndarray
         , vector
         , matrix
         , matrix3d
         , toString
+        , dataToString
         , shape
         , size
         , dtype
         , zeros
         , ones
+        , diag
         , identity
         , eye
-        , diag
         )
 
 {-| The NumPy for Elm
@@ -30,11 +31,11 @@ module NumElm
 
 
 # Getting info from a NdArray
-@docs toString, shape, size, dtype
+@docs toString, toDataString, shape, size, dtype
 
 
-# Pre-defined matrixes
-@docs zeros, ones, identity, eye, diag
+# Pre-filled matrixes
+@docs zeros, ones, diag, identity, eye
 -}
 
 import Native.NumElm
@@ -42,8 +43,7 @@ import List exposing (..)
 import Maybe exposing (..)
 
 
-{-| Represents a multidimensional,
-homogeneous array of fixed-size items
+{-| Represents a multidimensional, homogeneous array of fixed-size items
 -}
 type NdArray
     = NdArray
@@ -51,10 +51,10 @@ type NdArray
 
 {-| List of dimensions.
 
-    [3, 4]        == 3x4 matrix
-    [2] == [2, 1] == 2x1 column vector
-    [1, 4]        == 1x4 row vector
-    [3, 2, 5]     == 3x2x5 matrix (3D )
+    [3, 4]        -- 3x4 matrix
+    [2] == [2, 1] -- 2x1 column vector
+    [1, 4]        -- 1x4 row vector
+    [3, 2, 5]     -- 3x2x5 matrix (3D )
 
 -}
 type alias Shape =
@@ -63,7 +63,7 @@ type alias Shape =
 
 {-| Location within the matrix.
 
-    get [2, 1] [[1, 2], [3, 4], [5, 6]] == 6
+    get [2, 1] [[1, 2], [3, 4], [5, 6]] --> 6
 
 -}
 type alias Location =
@@ -74,7 +74,7 @@ type alias Location =
 -}
 type Dtype
     = Int8
-    | In16
+    | Int16
     | Int32
     | Float32
     | Float64
@@ -200,10 +200,11 @@ matrix3d dtype data =
 
 
 {-| Returns the string representation of the ndarray.
-This is quite handy for testing.
 
-    let nda = ndarray Int8 [3, 2] [1, 2, 3, 4, 5, 6]
-    toString nda == NdArray[length=6,shape=3×2,dtype=Int8]
+    let
+        nda = ndarray Int8 [3, 2] [1, 2, 3, 4, 5, 6]
+    in
+        toString nda --> NdArray[length=6,shape=3×2,dtype=Int8]
 -}
 toString : NdArray -> String
 toString ndarray =
@@ -211,20 +212,24 @@ toString ndarray =
 
 
 {-| Returns the string representation of the internal array.
-This is quite handy for testing.
 
-    let nda = ndarray Int8 [3, 2] [1, 2, 3, 4, 5, 6]
-    toDataString nda == "[1,2,3,4,5,6]"
+    let
+        nda = ndarray Int8 [3, 2] [1, 2, 3, 4, 5, 6]
+    in
+        dataToString nda --> "[1,2,3,4,5,6]"
 -}
-toDataString : NdArray -> String
-toDataString ndarray =
-    Native.NumElm.toString ndarray
+dataToString : NdArray -> String
+dataToString ndarray =
+    Native.NumElm.dataToString ndarray
 
 
 {-| Gets the shape of the ndarray.
 
-    shape ndarray1 == [2, 4] -- 2×4 matrix
-    shape ndarray2 == [3, 2, 2] -- 3×2×2 3D matrix
+     -- 2×4 matrix
+    shape ndarray1 --> [2, 4]
+
+    -- 3×2×2 3D matrix
+    shape ndarray2 --> [3, 2, 2]
 
 -}
 shape : NdArray -> Shape
@@ -241,8 +246,8 @@ size ndarray =
 
 {-| Gets the dtype of the ndarray.
 
-    dtype ndarray1 == Int32
-    dtype ndarray2 == Float64
+    dtype ndarray1 --> Int32
+    dtype ndarray2 --> Float64
 -}
 dtype : NdArray -> Dtype
 dtype ndarray =
@@ -251,7 +256,10 @@ dtype ndarray =
 
 {-| Returns a new ndarray of given shape and type, filled with zeros.
 
-    zeros Int8 [3, 2] == [[0, 0], [0, 0], [0, 0]]
+    zeros Int8 [3, 2] --> [ [0, 0]
+                          , [0, 0]
+                          , [0, 0]
+                          ]
 -}
 zeros : Dtype -> Shape -> Result String NdArray
 zeros dtype shape =
@@ -264,10 +272,12 @@ zeros dtype shape =
 
 {-| Return a new ndarray of given shape and type, filled with ones.
 
-    ones Int8 [2, 4] == [[1, 1, 1, 1], [1, 1, 1, 1]]
+    ones Int8 [2, 4] --> [ [1, 1, 1, 1]
+                         , [1, 1, 1, 1]
+                         ]
 -}
 ones : Dtype -> Shape -> Result String NdArray
-ones shape dtype =
+ones dtype shape =
     let
         length =
             shapeToLength shape
@@ -277,11 +287,10 @@ ones shape dtype =
 
 {-| Vector of diagonal elements of list.
 
-    diag Int16 [1, 2, 3] == [
-                              [1, 0, 0],
-                              [0, 2, 0],
-                              [0, 0, 3]
-                            ]
+    diag Int16 [1, 2, 3] --> [ [1, 0, 0]
+                             , [0, 2, 0]
+                             , [0, 0, 3]
+                             ]
 -}
 diag : Dtype -> List number -> Result String NdArray
 diag dtype list =
@@ -290,15 +299,14 @@ diag dtype list =
 
 {-| Return an identity matrix given [size, size].
 
-    identity Int16 3 == [
-                          [1, 0, 0],
-                          [0, 1, 0],
-                          [0, 0, 1]
-                        ]
+    identity Int16 3 --> [ [1, 0, 0]
+                         , [0, 1, 0]
+                         , [0, 0, 1]
+                         ]
 -}
 identity : Dtype -> Int -> Result String NdArray
 identity dtype size =
-    Native.NumElm.diag dtype <| List.repeat size 1
+    diag dtype <| List.repeat size 1
 
 
 {-| Alias for identity.

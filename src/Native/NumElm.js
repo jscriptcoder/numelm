@@ -13,7 +13,7 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
    */
   var DTYPE_CONSTRUCTOR = {
     'Int8': Int8Array,
-    'In16': Int16Array,
+    'Int16': Int16Array,
     'Int32': Int32Array,
     'Float32': Float32Array,
     'Float64': Float64Array,
@@ -38,6 +38,8 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
 
     if (shape.length == 1) {
       shape[1] = 1; // Column vector n×1
+    } else if (shape.length == 0) {
+      throw "NdArray has no shape"
     }
 
     var length = NdArray.shapeToLength(shape);
@@ -50,7 +52,7 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
         shape.join('×'), 
         '=',
         length
-      ].join();
+      ].join('');
     }
 
     /**
@@ -119,18 +121,20 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
     var length = this.data.length;
     var shape = this.shape.join('×');
     var dtype = this.dtype;
-    return 'NdArray[length=' + length + ';shape=' + shape + ';dtype=' + dtype + ']'
+    return 'NdArray[length=' + length + ',shape=' + shape + ',dtype=' + dtype + ']'
   };
 
   /**
-   * String representation of the data.
+   * String representation of the data storage.
+   * @param {number} [from = 0]
+   * @param {number} [length = this.data.length]
    * @returns {string}
    * @public
    */
-  NdArray.prototype.dataToString = function (from, to) {
+  NdArray.prototype.dataToString = function (from, length) {
     from = from || 0;
-    to = to || this.data.length - 1;
-    return '[' + this.data.slice(from, to) + ']';
+    length = length || this.data.length;
+    return '[' + this.data.slice(from, length) + ']';
   };
 
   /**
@@ -168,9 +172,11 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
   NdArray.prototype.toIndex = function (location) {
     var idx = -1;
     var length = location ? location.length : 0;
-    if (location.length === this.stride.length) {
+    var stride = this.stride;
+
+    if (location.length === stride.length) {
       idx = location.reduce(function (acc, val, i) {
-        return acc + (this.stride[i] * val);
+        return acc + (stride[i] * val);
       }, 0);
     }
     return idx;
@@ -197,7 +203,7 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
     try {
       return resultOk(new NdArray(data, shape, dtype));  
     } catch(e) {
-      return resultErr(e);
+      return resultErr(e + '');
     }
     
   }
@@ -218,12 +224,8 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
    * @returns {string}
    * @memberof Native.NumElm
    */
-  function toDataString(nda) {
-    return nda.toDataString();
-  }
-
-  function toList(nda) {
-
+  function dataToString(nda) {
+    return nda.dataToString();
   }
 
   /**
@@ -258,7 +260,7 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
     var size = diagonal.length;
     var length = size * size;
     var dtype = DTYPE_CONSTRUCTOR[tDtype.ctor] ? tDtype.ctor : 'Array';
-    var shape = [size, size];
+    var shape = length ? [size, size] : [];
     var data = Array(length).fill(0);
     var nda;
 
@@ -272,17 +274,14 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
       
       return resultOk(nda);
     } catch (e) {
-      return resultErr(e);
+      return resultErr(e + '');
     }
   }
 
   return {
     ndarray:      F3(ndarray),
-    vector:       F2(vector),
-    matrix:       F2(matrix),
-    matrix3d:     F2(matrix3d),
     toString:     toString,
-    toDataString: toDataString
+    dataToString: dataToString,
     shape:        shape,
     dtype:        dtype,
     diag:         F2(diag)
