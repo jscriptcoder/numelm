@@ -39,13 +39,13 @@ module NumElm
 # Pre-filled matrixes
 @docs zeros, ones, diag, identity, eye
 
+
 # Getters and Setters
 @doc get, set
 -}
 
 import Native.NumElm
 import List exposing (..)
-import Maybe exposing (..)
 
 
 {-| Represents a multidimensional, homogeneous array of fixed-size items
