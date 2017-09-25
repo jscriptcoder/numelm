@@ -285,6 +285,20 @@ preFilledMatrixes =
                         Err msg ->
                             Expect.fail msg
             )
+        , test "rand Float32 [3, 3] 123"
+            (\_ ->
+                let
+                    ndaResult =
+                        NumElm.rand Float32 [ 3, 3 ] 123
+                in
+                    case ndaResult of
+                        Ok ndaIdentity ->
+                            Expect.equal "[0.24073243141174316,0.04531741142272949,0.9876625537872314,0.35852646827697754,0.07100510597229004,0.12969064712524414,0.36553406715393066,0.9482383728027344,0.7428145408630371]" <|
+                                NumElm.dataToString ndaIdentity
+
+                        Err msg ->
+                            Expect.fail msg
+            )
         ]
 
 

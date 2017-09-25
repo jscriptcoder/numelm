@@ -18,6 +18,7 @@ module NumElm
         , diag
         , identity
         , eye
+        , rand
         , get
         , set
         )
@@ -25,7 +26,7 @@ module NumElm
 {-| The NumPy for Elm
 
 # Types
-@docs NdArray, Shape, Location, Dtype
+@docs NdArray, Shape, size, Location, Dtype
 
 
 # Creating a NdArray
@@ -37,7 +38,7 @@ module NumElm
 
 
 # Pre-filled matrixes
-@docs zeros, ones, diag, identity, eye
+@docs zeros, ones, diag, identity, eye, rand
 
 
 # Getters and Setters
@@ -45,7 +46,12 @@ module NumElm
 -}
 
 import Native.NumElm
-import List exposing (..)
+import List
+import Random exposing (Seed)
+import Tuple
+
+
+-- Types --
 
 
 {-| Represents a multidimensional, homogeneous array of fixed-size items
@@ -89,6 +95,10 @@ type Dtype
     | Array
 
 
+
+-- Creating a NdArray --
+
+
 {-| Creates an NdArray from a list of numbers.
 
     -- 3x2 matrix of 8-bit signed integers
@@ -110,7 +120,7 @@ vector : Dtype -> List number -> Result String NdArray
 vector dtype data =
     let
         d1 =
-            length data
+            List.length data
     in
         ndarray dtype [ d1 ] data
 
@@ -128,15 +138,15 @@ matrix : Dtype -> List (List number) -> Result String NdArray
 matrix dtype data =
     let
         maybeYList =
-            head data
+            List.head data
 
         d1 =
-            length data
+            List.length data
 
         d2 =
             case maybeYList of
                 Just firstYList ->
-                    length firstYList
+                    List.length firstYList
 
                 Nothing ->
                     0
@@ -164,7 +174,7 @@ matrix3d : Dtype -> List (List (List number)) -> Result String NdArray
 matrix3d dtype data =
     let
         maybeYList =
-            head data
+            List.head data
 
         firstYList =
             case maybeYList of
@@ -175,7 +185,7 @@ matrix3d dtype data =
                     []
 
         maybeZList =
-            head firstYList
+            List.head firstYList
 
         firstZList =
             case maybeZList of
@@ -186,13 +196,13 @@ matrix3d dtype data =
                     []
 
         d1 =
-            length data
+            List.length data
 
         d2 =
-            length firstYList
+            List.length firstYList
 
         d3 =
-            length firstZList
+            List.length firstZList
     in
         ndarray dtype [ d1, d2, d3 ] <|
             List.concatMap
@@ -202,6 +212,10 @@ matrix3d dtype data =
                         sublist
                 )
                 data
+
+
+
+-- Getting info from a NdArray --
 
 
 {-| Returns the string representation of the ndarray.
@@ -259,6 +273,10 @@ dtype nda =
     Native.NumElm.dtype nda
 
 
+
+-- Pre-filled matrixes --
+
+
 {-| Returns a new ndarray of given shape and type, filled with zeros.
 
     zeros Int8 [3, 2] --> [ [0, 0]
@@ -270,7 +288,7 @@ zeros : Dtype -> Shape -> Result String NdArray
 zeros dtype shape =
     let
         length =
-            shapeToLength shape
+            toLength shape
     in
         Native.NumElm.ndarray dtype shape <| List.repeat length 0
 
@@ -285,7 +303,7 @@ ones : Dtype -> Shape -> Result String NdArray
 ones dtype shape =
     let
         length =
-            shapeToLength shape
+            toLength shape
     in
         Native.NumElm.ndarray dtype shape <| List.repeat length 1
 
@@ -321,6 +339,28 @@ eye size dtype =
     identity size dtype
 
 
+{-| Generates a random ndarray from an uniform distribution over [0, 1).
+
+    rand Float32 [3, 3] 123 --> [ [1, 0, 0]
+                                , [0, 1, 0]
+                                , [0, 0, 1]
+                                ]
+
+-}
+rand : Dtype -> Shape -> Int -> Result String NdArray
+rand dtype shape intSeed =
+    let
+        size =
+            toLength shape
+    in
+        Native.NumElm.ndarray dtype shape <|
+            randomUniformList size intSeed
+
+
+
+-- Getters and Setters --
+
+
 {-| Gets the value from a specific location.
 
     let
@@ -350,6 +390,17 @@ set value location nda =
     Native.NumElm.set value location nda
 
 
-shapeToLength : Shape -> Int
-shapeToLength shape =
-    List.foldl (*) 1 shape
+
+-- Helper functions --
+
+
+toLength : Shape -> Int
+toLength shape =
+    List.foldr (*) 1 shape
+
+
+randomUniformList : Int -> Int -> List Float
+randomUniformList size intSeed =
+    Tuple.first <|
+        Random.step (Random.list size <| Random.float 0 1) <|
+            Random.initialSeed intSeed

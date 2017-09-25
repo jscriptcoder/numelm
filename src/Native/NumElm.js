@@ -45,7 +45,7 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
       throw Error('NdArray has no shape: [' + shape + ']')
     }
 
-    var length = NdArray.shapeToLength(shape);
+    var length = NdArray.toLength(shape);
 
     if (data.length !== length) {
       throw Error([
@@ -87,11 +87,14 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
     //    stride[1] = 30/(3*2)    = 5
     //    stride[2] = 30/(3*2*5)  = 1
     //    get([2, 0, 3], ndarray) == data[10*2 + 5*0 + 1*3] == data[23]
-    var stride = [];
-    var acc = 1;
-    shape.forEach(function (dim, i) {
-      acc *= dim;
-      stride[i] = length / acc;
+    var temp = shape.reduce(function (temp, dim) {
+      temp.acc *= dim;
+      temp.stride.push(temp.length / temp.acc);
+      return temp;
+    }, {
+      acc: 1,
+      stride: [],
+      length: length
     });
 
     /**
@@ -99,7 +102,7 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
      * @type number[]
      * @private
      */
-    this.stride = stride;
+    this.stride = temp.stride;
   }
 
   /**
@@ -109,7 +112,7 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
    * @returns {number}
    * @static
    */
-  NdArray.shapeToLength = function (shape) {
+  NdArray.toLength = function (shape) {
     return shape.reduce(function (dim1, dim2) {
       return dim1 * dim2;
     }, 1);
@@ -181,6 +184,19 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
   };
 
   /**
+   * Implements map method
+   * @param {Function} fn
+   * @returns {NdArray}
+   * @public
+   */
+  NdArray.prototype.map = function (fn) {
+    var clonedNda = this.clone();
+    clonedNda.data = clonedNda.data.map(function (value, index) {
+      return fn(value, 0);
+    });
+  };
+
+  /**
    * Converts a list of indexes (>1D) into a 1D index
    * @param {number[]} location
    * @return {number}
@@ -197,6 +213,31 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
       }, 0);
     }
     return idx;
+  };
+
+  /**
+   * Finds the location (list of coordinates) from a 1D index
+   * @param {number} location
+   * @return {number[]}
+   * @private
+   */
+  NdArray.prototype.toLocation = function (index) {
+    var location = [];
+    var stride = this.stride;
+
+    if (index >= 0 && index < this.data.length) {
+      var temp = this.stride.reduce(function (temp, stride) {
+        temp.location.push(Math.floor(temp.position / stride));
+        temp.position = temp.position % stride;
+      }, {
+        location: [],
+        position: index
+      });
+
+      location = temp.location;
+    }
+
+    return location;
   };
 
 
