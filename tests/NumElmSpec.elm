@@ -8,7 +8,7 @@ import NumElm exposing (..)
 
 creatingNdArray : Test
 creatingNdArray =
-    describe "Creating a NdArray"
+    describe "Creating NdArray"
         [ test "ndarray Int8 [ 3, 2 ] [ 1, 2, 3, 4, 5, 6 ]" <|
             (\_ ->
                 let
@@ -24,6 +24,22 @@ creatingNdArray =
                                 msg
                 in
                     Expect.equal strnda "NdArray[length=6,shape=3×2,dtype=Int8]"
+            )
+        , test "ndarray Int8 [ 3, 2 ] [ ] --> Error" <|
+            (\_ ->
+                let
+                    ndaResult =
+                        ndarray Int8 [ 3, 2 ] []
+
+                    strnda =
+                        case ndaResult of
+                            Ok nda ->
+                                NumElm.toString nda
+
+                            Err msg ->
+                                msg
+                in
+                    Expect.equal strnda "NdArray cannot be empty"
             )
         , test "ndarray Float32 [ 2, 2 ] [ 1, 2, 3, 4 ]"
             (\_ ->
@@ -55,7 +71,7 @@ creatingNdArray =
                             Err msg ->
                                 msg
                 in
-                    Expect.equal strnda "Error: The length of the storage data is 6, but the shape says 2×2=4"
+                    Expect.equal strnda "The length of the storage data is 6, but the shape says 2×2=4"
             )
         , test "vector Int32 [ 1, 2, 3, 4, 5 ]"
             (\_ ->
@@ -103,7 +119,7 @@ creatingNdArray =
                             Err msg ->
                                 msg
                 in
-                    Expect.equal strnda "Error: The length of the storage data is 5, but the shape says 2×2=4"
+                    Expect.equal strnda "The length of the storage data is 5, but the shape says 2×2=4"
             )
         , test "matrix3d Int8 [ [ [ 1, 2 ], [ 3, 4 ], [ 5, 6 ] ], [ [ 7, 8 ], [ 9, 10 ], [ 11, 12 ] ] ]"
             (\_ ->
@@ -135,14 +151,14 @@ creatingNdArray =
                             Err msg ->
                                 msg
                 in
-                    Expect.equal strnda "Error: The length of the storage data is 9, but the shape says 2×2×2=8"
+                    Expect.equal strnda "The length of the storage data is 9, but the shape says 2×2×2=8"
             )
         ]
 
 
 gettingNdArrayInfo : Test
 gettingNdArrayInfo =
-    describe "Getting info from a NdArray"
+    describe "Getting info from NdArray"
         [ test "toString <| vector Int32 [ 1, 2 ]"
             (\_ ->
                 let
@@ -205,7 +221,7 @@ gettingNdArrayInfo =
                             Err msg ->
                                 msg
                 in
-                    Expect.equal ndashapeErr "Error: NdArray has no shape: []"
+                    Expect.equal ndashapeErr "NdArray has no shape: []"
             )
         , test "dtype <| matrix3d Float32 [ [ [ 1, 2 ] ], [ [ 7, 8 ] ] ]"
             (\_ ->
@@ -228,7 +244,7 @@ gettingNdArrayInfo =
 
 preFilledMatrixes : Test
 preFilledMatrixes =
-    describe "Pre-filled matrixes"
+    describe "Pre-filled NgArray"
         [ test "zeros Int8 [3, 2]"
             (\_ ->
                 let
@@ -346,6 +362,102 @@ gettersSetters =
 
                                     Err msg ->
                                         Expect.fail msg
+
+                        Err msg ->
+                            Expect.fail msg
+            )
+        ]
+
+
+transformingNdArray : Test
+transformingNdArray =
+    describe "Transforming NdArray"
+        [ test "map (a -> a^2) <| vector Int8 [1, 2, 3]"
+            (\_ ->
+                let
+                    vecResult =
+                        NumElm.vector Int8 [ 1, 2, 3 ]
+                in
+                    case vecResult of
+                        Ok vec ->
+                            let
+                                vecPow2 =
+                                    NumElm.map (\a loc nda -> a ^ 2) vec
+                            in
+                                Expect.equal "[1,4,9]" <| NumElm.dataToString vecPow2
+
+                        Err msg ->
+                            Expect.fail msg
+            )
+        , test "transpose <| matrix Float32 [[1, 2, 3], [4, 5, 6]]"
+            (\_ ->
+                let
+                    matrixResult =
+                        NumElm.matrix Float32 [ [ 1, 2, 3 ], [ 4, 5, 6 ] ]
+                in
+                    case matrixResult of
+                        Ok matrix ->
+                            let
+                                matrixT =
+                                    NumElm.transpose matrix
+                            in
+                                Expect.equalLists (NumElm.shape matrixT) [ 3, 2 ]
+
+                        Err msg ->
+                            Expect.fail msg
+            )
+        , test "transpose <| matrix3d Int8 [ [ [ 1 ], [ 2 ], [ 3 ] ], [ [ 4 ], [ 5 ], [ 6 ] ] ]"
+            (\_ ->
+                let
+                    matrixResult =
+                        NumElm.matrix3d Int8 [ [ [ 1 ], [ 2 ], [ 3 ] ], [ [ 4 ], [ 5 ], [ 6 ] ] ]
+                in
+                    case matrixResult of
+                        Ok matrix ->
+                            let
+                                matrixT =
+                                    NumElm.transpose matrix
+                            in
+                                {-
+                                   shape matrix
+                                       --> [2, 3, 1]
+
+                                   shape <| transpose matrix
+                                       --> [3, 2, 1]
+                                -}
+                                Expect.equalLists (NumElm.shape matrixT) [ 3, 2, 1 ]
+
+                        Err msg ->
+                            Expect.fail msg
+            )
+        , test "matrix Int8 [ [ 1, 2, 3 ], [ 4, 5, 6 ] ]"
+            (\_ ->
+                let
+                    matrixResult =
+                        matrix Int8 [ [ 1, 2, 3 ], [ 4, 5, 6 ] ]
+                in
+                    case matrixResult of
+                        Ok matrix ->
+                            let
+                                matrixT =
+                                    NumElm.transpose matrix
+
+                                strmatrix =
+                                    NumElm.dataToString matrixT
+                            in
+                                {-
+                                   matrix
+                                       --> [ [ 1, 2, 3 ]
+                                           , [ 4, 5, 6 ]
+                                           ]
+
+                                   transpose matrix
+                                       --> [ [ 1, 4 ]
+                                           , [ 2, 5 ]
+                                           , [ 3, 6 ]
+                                           ]
+                                -}
+                                Expect.equal strmatrix "[1,4,2,5,3,6]"
 
                         Err msg ->
                             Expect.fail msg

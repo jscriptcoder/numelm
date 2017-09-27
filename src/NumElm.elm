@@ -21,6 +21,9 @@ module NumElm
         , rand
         , get
         , set
+        , map
+        , transpose
+        , trans
         )
 
 {-| The NumPy for Elm
@@ -29,20 +32,23 @@ module NumElm
 @docs NdArray, Shape, size, Location, Dtype
 
 
-# Creating a NdArray
+# Creating NdArray
 @docs ndarray, vector, matrix, matrix3d
 
 
-# Getting info from a NdArray
+# Getting info from NdArray
 @docs toString, toDataString, shape, size, dtype
 
 
-# Pre-filled matrixes
+# Pre-filled NdArray
 @docs zeros, ones, diag, identity, eye, rand
 
 
 # Getters and Setters
 @doc get, set
+
+# Transforming NdArray
+@docs map, transpose, trans
 -}
 
 import Native.NumElm
@@ -96,7 +102,7 @@ type Dtype
 
 
 
--- Creating a NdArray --
+-- Creating NdArray --
 
 
 {-| Creates an NdArray from a list of numbers.
@@ -215,7 +221,7 @@ matrix3d dtype data =
 
 
 
--- Getting info from a NdArray --
+-- Getting info from NdArray --
 
 
 {-| Returns the string representation of the ndarray.
@@ -274,7 +280,7 @@ dtype nda =
 
 
 
--- Pre-filled matrixes --
+-- Pre-filled NgArray --
 
 
 {-| Returns a new ndarray of given shape and type, filled with zeros.
@@ -388,6 +394,49 @@ get location nda =
 set : number -> Location -> NdArray -> Result String NdArray
 set value location nda =
     Native.NumElm.set value location nda
+
+
+
+-- Transforming NdArray --
+
+
+{-| Transforms the values of the NdArray with mapping.
+
+    let
+        vec = vector Int8 [1, 2, 3]
+    in
+        map (\a loc -> a^2) vec --> [1, 4, 9]
+
+-}
+map : (a -> Location -> NdArray -> b) -> NdArray -> NdArray
+map callback nda =
+    Native.NumElm.map callback nda
+
+
+{-| Transposes the NdArray (Only two dimensions --> [1, 0]).
+
+    let
+        A = matrix Float32
+                   [ [1, 2, 3]
+                   , [4, 5, 6]
+                   ]
+    in
+        transpose A --> [ [1, 4]
+                        , [2, 5]
+                        , [3, 6]
+                        ]
+
+-}
+transpose : NdArray -> NdArray
+transpose nda =
+    Native.NumElm.transpose nda
+
+
+{-| Alias for transpose.
+-}
+trans : NdArray -> NdArray
+trans nda =
+    transpose nda
 
 
 
