@@ -24,6 +24,28 @@ module NumElm
         , map
         , transpose
         , trans
+        , inv
+        , pinv
+        , add
+        , (.+)
+        , subtract
+        , sub
+        , (.-)
+        , multiply
+        , mul
+        , (.*)
+        , divide
+        , div
+        , (./)
+        , power
+        , pow
+        , (.^)
+          {-
+             , sqrt
+             , log
+             , log10
+             , exp
+          -}
         )
 
 {-| The NumPy for Elm
@@ -47,8 +69,18 @@ module NumElm
 # Getters and Setters
 @doc get, set
 
+
 # Transforming NdArray
-@docs map, transpose, trans
+@docs map, transpose, trans, inv, pinv
+
+
+# Arithmetic operations
+@docs add, (+), subtract, sub, (-), multiply, mul, (*)
+@docs divide, div, (/), power, pow, (**)
+
+
+# Root and Logarithm
+@docs sqrt, log, log10, exp
 -}
 
 import Native.NumElm
@@ -408,7 +440,7 @@ set value location nda =
         map (\a loc -> a^2) vec --> [1, 4, 9]
 
 -}
-map : (a -> Location -> NdArray -> b) -> NdArray -> NdArray
+map : (number1 -> Location -> NdArray -> number2) -> NdArray -> NdArray
 map callback nda =
     Native.NumElm.map callback nda
 
@@ -437,6 +469,108 @@ transpose nda =
 trans : NdArray -> NdArray
 trans nda =
     transpose nda
+
+
+{-| TODO
+-}
+inv : NdArray -> NdArray
+inv nda =
+    NdArray
+
+
+{-| TODO
+-}
+pinv : NdArray -> NdArray
+pinv nda =
+    NdArray
+
+
+
+-- Arithmetic operations --
+
+
+{-| TODO
+-}
+add : NdArray -> NdArray -> Result String NdArray
+add nda1 nda2 =
+    Ok NdArray
+
+
+(.+) : NdArray -> number -> NdArray
+(.+) nda num =
+    map (\val loc nda -> val + num) nda
+
+
+{-| TODO
+-}
+subtract : NdArray -> NdArray -> Result String NdArray
+subtract nda1 nda2 =
+    Ok NdArray
+
+
+{-| TODO
+-}
+sub : NdArray -> NdArray -> Result String NdArray
+sub nda1 nda2 =
+    subtract nda1 nda2
+
+
+(.-) : NdArray -> number -> NdArray
+(.-) nda num =
+    map (\val loc nda -> val - num) nda
+
+
+{-| TODO
+-}
+multiply : NdArray -> NdArray -> Result String NdArray
+multiply nda1 nda2 =
+    Ok NdArray
+
+
+{-| TODO
+-}
+mul : NdArray -> NdArray -> Result String NdArray
+mul nda1 nda2 =
+    multiply nda1 nda2
+
+
+(.*) : NdArray -> number -> NdArray
+(.*) nda num =
+    map (\val loc nda -> val * num) nda
+
+
+{-| TODO
+-}
+divide : NdArray -> NdArray -> Result String NdArray
+divide nda1 nda2 =
+    Ok NdArray
+
+
+{-| TODO
+-}
+div : NdArray -> NdArray -> Result String NdArray
+div nda1 nda2 =
+    divide nda1 nda2
+
+
+(./) : NdArray -> Float -> NdArray
+(./) nda num =
+    map (\val loc nda -> val / num) nda
+
+
+power : NdArray -> number -> NdArray
+power nda num =
+    map (\val loc nda -> val ^ num) nda
+
+
+pow : NdArray -> number -> NdArray
+pow nda num =
+    power nda num
+
+
+(.^) : NdArray -> number -> NdArray
+(.^) nda num =
+    power nda num
 
 
 

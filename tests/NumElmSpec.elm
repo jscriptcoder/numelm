@@ -9,7 +9,7 @@ import NumElm exposing (..)
 creatingNdArray : Test
 creatingNdArray =
     describe "Creating NdArray"
-        [ test "ndarray Int8 [ 3, 2 ] [ 1, 2, 3, 4, 5, 6 ]" <|
+        [ test "ndarray Int8 [ 3, 2 ] [ 1, 2, 3, 4, 5, 6 ]"
             (\_ ->
                 let
                     ndaResult =
@@ -25,7 +25,7 @@ creatingNdArray =
                 in
                     Expect.equal strnda "NdArray[length=6,shape=3×2,dtype=Int8]"
             )
-        , test "ndarray Int8 [ 3, 2 ] [ ] --> Error" <|
+        , test "ndarray Int8 [ 3, 2 ] [ ] --> Error"
             (\_ ->
                 let
                     ndaResult =
@@ -461,5 +461,91 @@ transformingNdArray =
 
                         Err msg ->
                             Expect.fail msg
+            )
+        ]
+
+
+arithmeticOperations : Test
+arithmeticOperations =
+    describe "Arithmetic operations"
+        [ test "nda .+ 5"
+            (\_ ->
+                let
+                    ndaResult =
+                        ndarray Int8 [ 3, 2 ] [ 1, 2, 3, 4, 5, 6 ]
+
+                    strdata =
+                        case ndaResult of
+                            Ok nda ->
+                                NumElm.dataToString <| nda .+ 5
+
+                            Err msg ->
+                                msg
+                in
+                    Expect.equal strdata "[6,7,8,9,10,11]"
+            )
+        , test "nda .- 3"
+            (\_ ->
+                let
+                    ndaResult =
+                        ndarray Int8 [ 3, 2 ] [ 1, 2, 3, 4, 5, 6 ]
+
+                    strdata =
+                        case ndaResult of
+                            Ok nda ->
+                                NumElm.dataToString <| nda .- 3
+
+                            Err msg ->
+                                msg
+                in
+                    Expect.equal strdata "[-2,-1,0,1,2,3]"
+            )
+        , test "nda .* 2"
+            (\_ ->
+                let
+                    ndaResult =
+                        ndarray Int8 [ 3, 2 ] [ 1, 2, 3, 4, 5, 6 ]
+
+                    strdata =
+                        case ndaResult of
+                            Ok nda ->
+                                NumElm.dataToString <| nda .* 2
+
+                            Err msg ->
+                                msg
+                in
+                    Expect.equal strdata "[2,4,6,8,10,12]"
+            )
+        , test "nda ./ 3"
+            (\_ ->
+                let
+                    ndaResult =
+                        ndarray Float32 [ 3, 2 ] [ 1, 2, 3, 4, 5, 6 ]
+
+                    strdata =
+                        case ndaResult of
+                            Ok nda ->
+                                NumElm.dataToString <| nda ./ 3
+
+                            Err msg ->
+                                msg
+                in
+                    Expect.equal strdata "[0.3333333432674408,0.6666666865348816,1,1.3333333730697632,1.6666666269302368,2]"
+            )
+        , test "nda .^ 2"
+            (\_ ->
+                let
+                    ndaResult =
+                        ndarray Float32 [ 3, 2 ] [ 1, 2, 3, 4, 5, 6 ]
+
+                    strdata =
+                        case ndaResult of
+                            Ok nda ->
+                                NumElm.dataToString <| nda .^ 2
+
+                            Err msg ->
+                                msg
+                in
+                    Expect.equal strdata "[1,4,9,16,25,36]"
             )
         ]

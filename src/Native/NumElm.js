@@ -159,20 +159,6 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
   };
 
   /**
-   * String representation of the nd matrix
-   * showing a clearer image of the dimensions
-   *
-   * @example
-   *    nda.matrixToString() --> [[1, 2], [3, 4]]
-   *
-   * @returns {string}
-   * @public
-   */
-  NdArray.prototype.matrixToString = function () {
-
-  };
-
-  /**
    * Clones the instance
    * @return {NdArray}
    * @public
@@ -200,7 +186,7 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
   };
 
   /**
-   * Sets the value in a specific location
+   * Sets the value in a specific location (mutates NdArray)
    * @param {number[]} location
    * @param {number} value
    * @returns {NdArray}
@@ -235,17 +221,17 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
   }
 
   /**
-   * Implements map method (mutates instance)
+   * Implements map method
    * @param {(any, number[], number, NdArray) => void} fn
    * @returns {NdArray}
    * @public
    */
   NdArray.prototype.map = function (fn) {
-    var self = this;
-    this.data = this.data.map(function (value, idx) {
-      return fn(value, self.toLocation(idx), idx, self);
+    var clonedNda = this.clone();
+    clonedNda.data = clonedNda.data.map(function (value, idx) {
+      return fn(value, clonedNda.toLocation(idx), idx, clonedNda);
     });
-    return this;
+    return clonedNda;
   };
 
   /**
@@ -257,7 +243,7 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
   NdArray.prototype.transpose = function () {
     var dimsIdx = NdArray.argsToArray(arguments);
     var shapeLength = this.shape.length;
-    var self = this;
+    var clonedNda = this.clone();
 
     if (dimsIdx.length && dimsIdx.length <= shapeLength) {
       dimsIdx.forEach(function (oldIdx, newIdx) {
@@ -268,17 +254,17 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
           newIdx < shapeLength
         ) {
           // Permutates dimensions
-          var tmp1 = self.shape[newIdx];
-          var tmp2 = self.stride[newIdx];
-          self.shape[newIdx] = self.shape[oldIdx];
-          self.stride[newIdx] = self.stride[oldIdx];
-          self.shape[oldIdx] = tmp1;
-          self.stride[oldIdx] = tmp2;
+          var tmp1 = clonedNda.shape[newIdx];
+          var tmp2 = clonedNda.stride[newIdx];
+          clonedNda.shape[newIdx] = clonedNda.shape[oldIdx];
+          clonedNda.stride[newIdx] = clonedNda.stride[oldIdx];
+          clonedNda.shape[oldIdx] = tmp1;
+          clonedNda.stride[oldIdx] = tmp2;
         }
       });
     }
 
-    return this;
+    return clonedNda;
   };
 
   /**
@@ -499,6 +485,8 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
    */
   function set(value, tLocation, nda) {
     var location = toArray(tLocation);
+
+    // We need to clone since NdArray#set mutates the data
     var clonedNda = nda.clone();
 
     try {
@@ -517,9 +505,7 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
    * @memberof Native.NumElm
    */
   function map(fCallback, nda) {
-    var clonedNda = nda.clone();
-
-    return clonedNda.map(function (value, location, nda) {
+    return nda.map(function (value, location, nda) {
       var tLocation = fromArray(location);
       return A3(fCallback, value, tLocation, nda);
     });
@@ -533,8 +519,7 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
    * @memberof Native.NumElm
    */
   function transpose(nda) {
-    var clonedNda = nda.clone();
-    return clonedNda.transpose(1);
+    return nda.transpose(1);
   }
 
   return {
