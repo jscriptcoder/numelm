@@ -12,9 +12,13 @@ module NumElm
         , dataToString
         , shape
         , size
+        , ndim
+        , length
+        , numel
         , dtype
         , zeros
         , ones
+        , diagonal
         , diag
         , identity
         , eye
@@ -24,8 +28,10 @@ module NumElm
         , map
         , transpose
         , trans
+        , inverse
         , inv
         , pinv
+        , svd
         , add
         , (.+)
         , subtract
@@ -59,11 +65,12 @@ module NumElm
 
 
 # Getting info from NdArray
-@docs toString, toDataString, shape, size, dtype
+@docs toString, toDataString, shape, size
+@docs ndim, length, numel, dtype
 
 
 # Pre-filled NdArray
-@docs zeros, ones, diag, identity, eye, rand
+@docs zeros, ones, diagonal, diag, identity, eye, rand
 
 
 # Getters and Setters
@@ -301,6 +308,35 @@ size nda =
     shape nda
 
 
+{-| Gets the number of dimensions of the ndarray
+
+     -- 2×4×1 matrix
+    ndim ndarray --> 3
+
+-}
+ndim : NdArray -> Int
+ndim nda =
+    List.length <| shape nda
+
+
+{-| Gets the number of elements in the ndarray
+
+     -- 2×4×1 matrix
+    numel ndarray --> 3
+
+-}
+length : NdArray -> Int
+length nda =
+    toLength <| shape nda
+
+
+{-| Alias for length.
+-}
+numel : NdArray -> Int
+numel nda =
+    length nda
+
+
 {-| Gets the dtype of the ndarray.
 
     dtype ndarray1 --> Int32
@@ -353,9 +389,16 @@ ones dtype shape =
                              , [0, 0, 3]
                              ]
 -}
+diagonal : Dtype -> List number -> Result String NdArray
+diagonal dtype list =
+    Native.NumElm.diagonal dtype list
+
+
+{-| Alias for diagonal.
+-}
 diag : Dtype -> List number -> Result String NdArray
 diag dtype list =
-    Native.NumElm.diag dtype list
+    diagonal dtype list
 
 
 {-| Return an identity matrix given [size, size].
@@ -471,17 +514,42 @@ trans nda =
     transpose nda
 
 
-{-| TODO
+{-| Compute the (multiplicative) inverse of a matrix.
+
+    let
+        A = matrix Float32
+                   [ [1, 2]
+                   , [3, 4]
+                   ]
+    in
+        inv A --> [ [-2.0,  1.0]
+                  , [ 1.5, -0.5]
+                  ]
+
 -}
-inv : NdArray -> NdArray
+inverse : NdArray -> Result String NdArray
+inverse nda =
+    Native.NumElm.inverse nda
+
+
+{-| Alias for inverse.
+-}
+inv : NdArray -> Result String NdArray
 inv nda =
-    NdArray
+    inverse nda
 
 
 {-| TODO
 -}
 pinv : NdArray -> NdArray
 pinv nda =
+    NdArray
+
+
+{-| TODO
+-}
+svd : NdArray -> NdArray
+svd nda =
     NdArray
 
 
@@ -493,7 +561,7 @@ pinv nda =
 -}
 add : NdArray -> NdArray -> Result String NdArray
 add nda1 nda2 =
-    Ok NdArray
+    Native.NumElm.add nda1 nda2
 
 
 (.+) : NdArray -> number -> NdArray

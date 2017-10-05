@@ -197,7 +197,7 @@ gettingNdArrayInfo =
                     ndaResult =
                         matrix3d Int8 [ [ [ 1, 2 ] ], [ [ 7, 8 ] ] ]
 
-                    ndashape =
+                    ndaShape =
                         case ndaResult of
                             Ok nda ->
                                 NumElm.shape nda
@@ -205,7 +205,7 @@ gettingNdArrayInfo =
                             Err msg ->
                                 []
                 in
-                    Expect.equalLists ndashape [ 2, 1, 2 ]
+                    Expect.equalLists ndaShape [ 2, 1, 2 ]
             )
         , test "shape <| ndarray Int8 [ ] [ 1, 2, 3, 4, 5 ] --> Error"
             (\_ ->
@@ -213,7 +213,7 @@ gettingNdArrayInfo =
                     ndaResult =
                         ndarray Int8 [] [ 1, 2, 3, 4, 5 ]
 
-                    ndashapeErr =
+                    ndaShapeErr =
                         case ndaResult of
                             Ok nda ->
                                 "Ok"
@@ -221,7 +221,39 @@ gettingNdArrayInfo =
                             Err msg ->
                                 msg
                 in
-                    Expect.equal ndashapeErr "NdArray has no shape: []"
+                    Expect.equal ndaShapeErr "NdArray has no shape: []"
+            )
+        , test "ndim <| ones Float32 [ 3, 2, 1 ]"
+            (\_ ->
+                let
+                    ndaResult =
+                        ones Float32 [ 3, 2, 1 ]
+
+                    ndaDim =
+                        case ndaResult of
+                            Ok nda ->
+                                ndim nda
+
+                            Err _ ->
+                                0
+                in
+                    Expect.equal ndaDim 3
+            )
+        , test "numel <| ones Float32 [ 3, 2, 1 ]"
+            (\_ ->
+                let
+                    ndaResult =
+                        ones Float32 [ 3, 2, 2 ]
+
+                    ndaLen =
+                        case ndaResult of
+                            Ok nda ->
+                                numel nda
+
+                            Err _ ->
+                                0
+                in
+                    Expect.equal ndaLen 12
             )
         , test "dtype <| matrix3d Float32 [ [ [ 1, 2 ] ], [ [ 7, 8 ] ] ]"
             (\_ ->
@@ -308,9 +340,9 @@ preFilledMatrixes =
                         NumElm.rand Float32 [ 3, 3 ] 123
                 in
                     case ndaResult of
-                        Ok ndaIdentity ->
+                        Ok ndaRand ->
                             Expect.equal "[0.24073243141174316,0.04531741142272949,0.9876625537872314,0.35852646827697754,0.07100510597229004,0.12969064712524414,0.36553406715393066,0.9482383728027344,0.7428145408630371]" <|
-                                NumElm.dataToString ndaIdentity
+                                NumElm.dataToString ndaRand
 
                         Err msg ->
                             Expect.fail msg
@@ -430,7 +462,7 @@ transformingNdArray =
                         Err msg ->
                             Expect.fail msg
             )
-        , test "matrix Int8 [ [ 1, 2, 3 ], [ 4, 5, 6 ] ]"
+        , test "transpose <| matrix Int8 [ [ 1, 2, 3 ], [ 4, 5, 6 ] ]"
             (\_ ->
                 let
                     matrixResult =
@@ -461,6 +493,53 @@ transformingNdArray =
 
                         Err msg ->
                             Expect.fail msg
+            )
+        , test "inv <| matrix Float32 [ [ 8, 1, 6 ], [ 3, 5, 7 ], [ 4, 9, 2 ] ]"
+            (\_ ->
+                let
+                    matrixResult =
+                        NumElm.matrix Float32 [ [ 8, 1, 6 ], [ 3, 5, 7 ], [ 4, 9, 2 ] ]
+                in
+                    case matrixResult of
+                        Ok matrix ->
+                            let
+                                matrixInvResult =
+                                    NumElm.inv matrix
+                            in
+                                case matrixInvResult of
+                                    Ok matrixInv ->
+                                        Expect.equal "[0.14722222089767456,-0.14444445073604584,0.06388888508081436,-0.06111111119389534,0.022222211584448814,0.10555555671453476,-0.01944444142282009,0.18888890743255615,-0.10277777910232544]" <| NumElm.dataToString matrixInv
+
+                                    Err msg ->
+                                        Expect.fail msg
+
+                        Err msg ->
+                            Expect.fail msg
+            )
+        , test "inv <| matrix Float32 [ [ 2, 3 ], [ 0, 0 ] ]"
+            (\_ ->
+                let
+                    matrixResult =
+                        NumElm.matrix Float32 [ [ 2, 3 ], [ 0, 0 ] ]
+
+                    errMsg =
+                        case matrixResult of
+                            Ok matrix ->
+                                let
+                                    matrixInvResult =
+                                        NumElm.inv matrix
+                                in
+                                    case matrixInvResult of
+                                        Ok matrixInv ->
+                                            "Ok"
+
+                                        Err msg ->
+                                            msg
+
+                            Err msg ->
+                                msg
+                in
+                    Expect.equal errMsg "NdArray not inversable"
             )
         ]
 

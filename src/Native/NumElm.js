@@ -107,31 +107,10 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
      * @private
      */
     this.stride = res.stride;
+
+    // Memoization to improve calculation of inverse
+    this.toIndex.cache = {};
   }
-
-  /**
-   * Returns the length of a shape
-   * @memberOf NdArray
-   * @param {number[]} shape
-   * @returns {number}
-   * @static
-   */
-  NdArray.toLength = function (shape) {
-    return shape.reduce(function (dim1, dim2) {
-      return dim1 * dim2;
-    }, 1);
-  };
-
-  /**
-   * Converts an array-like into a real array
-   * @memberOf NdArray
-   * @param {Object} args
-   * @returns {any[]}
-   * @static
-   */
-  NdArray.argsToArray = function (args) {
-    return [].slice.call(args);
-  };
 
   /**
    * String representation
@@ -186,13 +165,25 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
   };
 
   /**
-   * Sets the value in a specific location (mutates NdArray)
+   * Sets the value in a specific location (does not mutate)
    * @param {number[]} location
    * @param {number} value
    * @returns {NdArray}
    * @public
    */
   NdArray.prototype.set = function (location, value) {
+    var clonedNda = this.clone();
+    return clonedNda._set(location, value);
+  };
+
+  /**
+   * Sets the value in a specific location (mutates NdArray)
+   * @param {number[]} location
+   * @param {number} value
+   * @returns {NdArray}
+   * @public
+   */
+  NdArray.prototype._set = function (location, value) {
     var idx = this.toIndex(location);
     if (idx >= 0 && idx < this.data.length) {
       this.data[idx] = value;
@@ -268,12 +259,119 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
   };
 
   /**
+   * Compute the (multiplicative) inverse of a matrix
+   * @see http://blog.acipo.com/matrix-inversion-in-javascript/
+   * @returns {NdArray}
+   * @throws {Error} Wrong shape or length
+   */
+  NdArray.prototype.inverse = function () {
+
+    if(this.shape.length > 2) {
+      throw 'Inverse only supported in a 2D NdArray';
+    }
+
+    if(this.shape[0] !== this.shape[1]) {
+      throw 'NdArray must be square';
+    }
+
+    // Guassian Elimination to calculate the inverse:
+    // (1) 'augment' the matrix (left) by the identity (on the right)
+    // (2) Turn the matrix on the left into the identity by elementary row ops
+    // (3) The matrix on the right is the inverse (was the identity matrix)
+
+    // There are 3 elemtary row ops: (b and c are here combined)
+    // (a) Swap 2 rows
+    // (b) Multiply a row by a scalar
+    // (c) Add 2 rows
+    
+    var size = this.shape[0];
+
+    //create the identity matrix (I), and a copy (C) of the original
+    var C = this.clone();
+    var I = NdArray.identity(size, this.dtype);
+
+    var i, ii, j, e;
+
+    // Perform elementary row operations
+    for (i = 0; i < size; i++) {
+      // get the element e on the diagonal
+      e = C.get([i, i]);
+
+      // if we have a 0 on the diagonal (we'll need to swap with a lower row)
+      if (e === 0) {
+          //look through every row below the i'th row
+        for (ii= i + 1; ii < size; ii++) {
+          //if the ii'th row has a non-0 in the i'th col
+          if (C.get([ii, i]) !== 0) {
+            //it would make the diagonal have a non-0 so swap it
+            for(j = 0; j < size; j++) {
+              e = C.get([i, j]);              //temp store i'th row
+              C._set([i, j], C.get([ii, j])); //replace i'th row by ii'th
+              C._set([ii, j], e);             //repace ii'th by temp
+
+              e = I.get([i, j]);              //temp store i'th row
+              I._set([i, j], I.get([ii, j])); //replace i'th row by ii'th
+              I._set([ii, j], e);             //repace ii'th by temp
+            }
+
+            //don't bother checking other rows since we've swapped
+            break;
+          }
+        }
+
+        //get the new diagonal
+        e = C.get([i, i]);
+
+        //if it's still 0, not invertable (error)
+        if(e === 0){
+          throw "NdArray not inversable"
+        }
+      }
+      
+      // Scale this row down by e (so we have a 1 on the diagonal)
+      for (j = 0; j < size; j++) {
+        C._set([i, j], C.get([i, j]) / e); //apply to original matrix
+        I._set([i, j], I.get([i, j]) / e); //apply to identity
+      }
+      
+      // Subtract this row (scaled appropriately for each row) from ALL of
+      // the other rows so that there will be 0's in this column in the
+      // rows above and below this one
+      for (ii = 0; ii < size; ii++) {
+        // Only apply to other rows (we want a 1 on the diagonal)
+        if (ii === i) continue;
+        
+        // We want to change this element to 0
+        e = C.get([ii, i]);
+        
+        // Subtract (the row above(or below) scaled by e) from (the
+        // current row) but start at the i'th column and assume all the
+        // stuff left of diagonal is 0 (which it should be if we made this
+        // algorithm correctly)
+        for (j = 0; j < size; j++) {
+          C._set([ii, j], C.get([ii, j]) - e * C.get([i, j])); //apply to original matrix
+          I._set([ii, j], I.get([ii, j]) - e * I.get([i, j])); //apply to identity
+        }
+      }
+    }
+    
+    //we've done all operations, C should be the identity
+    //matrix I should be the inverse:
+    return I;
+  };
+
+  /**
    * Converts a list of indexes (>1D) into a 1D index
    * @param {number[]} location
    * @return {number}
    * @private
    */
   NdArray.prototype.toIndex = function (location) {
+    // Memoization
+    if (this.toIndex.cache[location]) {
+      return this.toIndex.cache[location];
+    }
+
     var idx = -1;
     var length = location ? location.length : 0;
     var stride = this.stride;
@@ -283,7 +381,7 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
         return acc + (stride[i] * val);
       }, 0);
     }
-    return idx;
+    return this.toIndex.cache[location] = idx;
   };
 
   /**
@@ -357,6 +455,71 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
     return location;
   }
 
+  // =============== NdArray static methods =============== //
+
+  /**
+   * Returns the length of a shape
+   * @memberOf NdArray
+   * @param {number[]} shape
+   * @returns {number}
+   * @static
+   */
+  NdArray.toLength = function (shape) {
+    return shape.reduce(function (dim1, dim2) {
+      return dim1 * dim2;
+    }, 1);
+  };
+
+  /**
+   * Converts an array-like into a real array
+   * @memberOf NdArray
+   * @param {Object} args
+   * @returns {any[]}
+   * @static
+   */
+  NdArray.argsToArray = function (args) {
+    return [].slice.call(args);
+  };
+
+  /**
+   * Creates a matrix with a specific diagonal
+   * @memberOf NdArray
+   * @param {diag} number[]
+   * @param {dtype} string
+   * @returns {NdArray}
+   * @throws {Error} Wrong shape or length
+   * @static
+   */
+  NdArray.diagonal = function (diag, dtype) {
+    var size = diag.length;
+    var length = size * size;
+    var dtype = DTYPE_CONSTRUCTOR[dtype] ? dtype : 'Array';
+    var shape = length ? [size, size] : [];
+    var data = Array(length).fill(0);
+    var nda = new NdArray(data, shape, dtype);
+
+    // Sets the diagonal
+    diag.forEach(function (value, i) {
+      nda._set([i, i], value);
+    });
+
+    return nda;
+  };
+
+  /**
+   * Creates an identity matrix with a specific size
+   * @memberOf NdArray
+   * @param {size} number
+   * @param {dtype} string
+   * @returns {NdArray}
+   * @throws {Error} Wrong shape or length
+   * @static
+   */
+  NdArray.identity = function (size, dtype) {
+    var diag = Array(size).fill(1);
+    return NdArray.diagonal(diag, dtype);
+  };
+
   // =============== Native.NumElm =============== //
 
 
@@ -429,24 +592,11 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
    * @returns {Result String NdArray}
    * @memberof Native.NumElm
    */
-  function diag(tDtype, lDiag) {
-    var diagonal = toArray(lDiag);
-    var size = diagonal.length;
-    var length = size * size;
-    var dtype = DTYPE_CONSTRUCTOR[tDtype.ctor] ? tDtype.ctor : 'Array';
-    var shape = length ? [size, size] : [];
-    var data = Array(length).fill(0);
-    var nda;
+  function diagonal(tDtype, lDiag) {
+    var diag = toArray(lDiag);
 
     try {
-      nda = new NdArray(data, shape, dtype);
-
-      // Sets the diagonal
-      diagonal.forEach(function (value, i) {
-        nda.set([i, i], value);
-      });
-      
-      return resultOk(nda);
+      return resultOk(NdArray.diagonal(diag, tDtype.ctor));
     } catch (e) {
       return resultErr(e + '');
     }
@@ -486,11 +636,8 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
   function set(value, tLocation, nda) {
     var location = toArray(tLocation);
 
-    // We need to clone since NdArray#set mutates the data
-    var clonedNda = nda.clone();
-
     try {
-      return resultOk(clonedNda.set(location, value));
+      return resultOk(nda.set(location, value));
     } catch (e) {
       return resultErr(e + '');
     }
@@ -522,17 +669,32 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
     return nda.transpose(1);
   }
 
+  /**
+   * Inverses the NdArray (Only two dimensions)
+   * @param {NdArray} nda
+   * @returns {Result String NdArray} inversed NdArray
+   * @memberof Native.NumElm
+   */
+  function inverse(nda) {
+    try {
+      return resultOk(nda.inverse());
+    } catch (e) {
+      return resultErr(e + '');
+    }
+  }
+
   return {
     ndarray     : F3(ndarray),
     toString    : toString,
     dataToString: dataToString,
     shape       : shape,
     dtype       : dtype,
-    diag        : F2(diag),
+    diagonal    : F2(diagonal),
     get         : F2(get),
     set         : F3(set),
     map         : F2(map),
-    transpose   : transpose
+    transpose   : transpose,
+    inverse     : inverse
   };
 
 }();
