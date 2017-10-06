@@ -46,12 +46,12 @@ module NumElm
         , power
         , pow
         , (.^)
-          {-
-             , sqrt
-             , log
-             , log10
-             , exp
-          -}
+        , sqrt
+        , logBase
+        , log
+        , log2
+        , log10
+        , exp
         )
 
 {-| The NumPy for Elm
@@ -87,7 +87,7 @@ module NumElm
 
 
 # Root and Logarithm
-@docs sqrt, log, log10, exp
+@docs sqrt, logBase, log, log2, log10, exp
 -}
 
 import Native.NumElm
@@ -557,88 +557,276 @@ svd nda =
 -- Arithmetic operations --
 
 
-{-| TODO
+{-| Add arguments, element-wise.
+
+    let
+        A = matrix Int8
+                   [ [1, 2]
+                   , [3, 4]
+                   ]
+
+        B = matrix Int8
+                   [ [4, 1]
+                   , [5, 3]
+                   ]
+    in
+        add A B --> [ [5, 3]
+                    , [8, 7]
+                    ]
+
 -}
 add : NdArray -> NdArray -> Result String NdArray
 add nda1 nda2 =
     Native.NumElm.elementWise (+) nda1 nda2
 
 
+{-| Add escalar, element-wise.
+
+    let
+        A = matrix Int8
+                   [ [1, 2]
+                   , [3, 4]
+                   ]
+
+    in
+        A .+ 5 --> [ [6, 7]
+                   , [8, 9]
+                   ]
+
+-}
 (.+) : NdArray -> number -> NdArray
 (.+) nda num =
-    map (\val loc nda -> val + num) nda
+    map (\val _ _ -> val + num) nda
 
 
-{-| TODO
+{-| Substract arguments, element-wise.
+
+    let
+        A = matrix Int8
+                   [ [1, 2]
+                   , [3, 4]
+                   ]
+
+        B = matrix Int8
+                   [ [4, 1]
+                   , [5, 3]
+                   ]
+    in
+        subtract A B --> [ [-3, 1]
+                         , [-2, 1]
+                         ]
+
 -}
 subtract : NdArray -> NdArray -> Result String NdArray
 subtract nda1 nda2 =
     Native.NumElm.elementWise (-) nda1 nda2
 
 
-{-| TODO
+{-| Alias for subtract.
 -}
 sub : NdArray -> NdArray -> Result String NdArray
 sub nda1 nda2 =
     subtract nda1 nda2
 
 
+{-| Substract escalar, element-wise.
+
+    let
+        A = matrix Int8
+                   [ [1, 2]
+                   , [3, 4]
+                   ]
+
+    in
+        A .- 5 --> [ [-4, -3]
+                   , [-2, -1]
+                   ]
+
+-}
 (.-) : NdArray -> number -> NdArray
 (.-) nda num =
-    map (\val loc nda -> val - num) nda
+    map (\val _ _ -> val - num) nda
 
 
-{-| TODO
+{-| Multiply arguments, element-wise.
+
+    let
+        A = matrix Int8
+                   [ [1, 2]
+                   , [3, 4]
+                   ]
+
+        B = matrix Int8
+                   [ [4, 1]
+                   , [5, 3]
+                   ]
+    in
+        multiply A B --> [ [ 4,  2]
+                         , [15, 12]
+                         ]
+
 -}
 multiply : NdArray -> NdArray -> Result String NdArray
 multiply nda1 nda2 =
     Native.NumElm.elementWise (*) nda1 nda2
 
 
-{-| TODO
+{-| Alias for multiply.
 -}
 mul : NdArray -> NdArray -> Result String NdArray
 mul nda1 nda2 =
     multiply nda1 nda2
 
 
+{-| Multiply escalar, element-wise.
+
+    let
+        A = matrix Int8
+                   [ [1, 2]
+                   , [3, 4]
+                   ]
+
+    in
+        A .* 5 --> [ [ 5, 10]
+                   , [15, 20]
+                   ]
+
+-}
 (.*) : NdArray -> number -> NdArray
 (.*) nda num =
-    map (\val loc nda -> val * num) nda
+    map (\val _ _ -> val * num) nda
 
 
-{-| TODO
+{-| Devide arguments, element-wise.
+
+    let
+        A = matrix Int8
+                   [ [1, 2]
+                   , [3, 4]
+                   ]
+
+        B = matrix Int8
+                   [ [4, 1]
+                   , [5, 3]
+                   ]
+    in
+        divide A B --> [ [1/4,   2]
+                       , [3/5, 4/3]
+                       ]
+
 -}
 divide : NdArray -> NdArray -> Result String NdArray
 divide nda1 nda2 =
     Native.NumElm.elementWise (/) nda1 nda2
 
 
-{-| TODO
+{-| Alias for divide.
 -}
 div : NdArray -> NdArray -> Result String NdArray
 div nda1 nda2 =
     divide nda1 nda2
 
 
+{-| Devide escalar, element-wise.
+
+    let
+        A = matrix Int8
+                   [ [1, 2]
+                   , [3, 4]
+                   ]
+
+    in
+        A ./ 5 --> [ [1/5, 2/5]
+                   , [3/5, 4/5]
+                   ]
+
+-}
 (./) : NdArray -> Float -> NdArray
 (./) nda num =
-    map (\val loc nda -> val / num) nda
+    map (\val _ _ -> val / num) nda
 
 
-power : NdArray -> number -> NdArray
-power nda num =
-    map (\val loc nda -> val ^ num) nda
+{-| NdArray elements raised to powers from second NdArray, element-wise.
+
+    let
+        A = matrix Int8
+                   [ [1, 2]
+                   , [3, 4]
+                   ]
+
+        B = matrix Int8
+                   [ [2, 2]
+                   , [3, 4]
+                   ]
+    in
+        divide A B --> [ [ 1,   4]
+                       , [27, 256]
+                       ]
+
+-}
+power : NdArray -> NdArray -> Result String NdArray
+power nda1 nda2 =
+    Native.NumElm.elementWise (^) nda1 nda2
 
 
-pow : NdArray -> number -> NdArray
-pow nda num =
-    power nda num
+{-| Alias for power.
+-}
+pow : NdArray -> NdArray -> Result String NdArray
+pow nda1 nda2 =
+    power nda1 nda2
 
 
+{-| NdArray elements raised to power of an escalar, element-wise.
+
+    let
+        A = matrix Int8
+                   [ [1, 2]
+                   , [3, 4]
+                   ]
+
+    in
+        A ./ 5 --> [ [1/5, 2/5]
+                   , [3/5, 4/5]
+                   ]
+
+-}
 (.^) : NdArray -> number -> NdArray
 (.^) nda num =
-    power nda num
+    map (\val _ _ -> val ^ num) nda
+
+
+
+-- Root and Logarithm --
+
+
+sqrt : NdArray -> NdArray
+sqrt nda =
+    map (\val _ _ -> Basics.sqrt val) nda
+
+
+logBase : Float -> NdArray -> NdArray
+logBase base nda =
+    map (\val _ _ -> Basics.logBase base val) nda
+
+
+log : NdArray -> NdArray
+log nda =
+    logBase Basics.e nda
+
+
+log2 : NdArray -> NdArray
+log2 nda =
+    logBase 2 nda
+
+
+log10 : NdArray -> NdArray
+log10 nda =
+    logBase 10 nda
+
+
+exp : NdArray -> NdArray
+exp nda =
+    map (\val _ _ -> Basics.e ^ val) nda
 
 
 

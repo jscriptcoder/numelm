@@ -393,27 +393,26 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
   };
 
   NdArray.prototype.elementWise = function (nda2, op) {
-    var nda1 = this;
-    var shape1 = nda1.shapeToString();
+    var shape1 = this.shapeToString();
     var shape2 = nda2.shapeToString();
 
     // TODO: broadcast the smallest shape??
     if (shape1 === shape2) {
-      return nda1.map(function (value1, location, idx, clonedNda1) {
+      return this.map(function (value1, location, idx, nda1) {
         var value2 = nda2.data[idx];
         return op(
           value1, 
           value2, 
           location, 
           idx, 
-          clonedNda1, 
+          nda1, 
           nda2
         );
       });
     } else {
         throw [
           'NdArray#elementWise: The shape of nda1 is ',
-          nda1.shape.join('×'),
+          this.shape.join('×'),
           ', but the shape of nda2 is ',
           nda2.shape.join('×')
         ].join('');
