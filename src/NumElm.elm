@@ -561,7 +561,7 @@ svd nda =
 -}
 add : NdArray -> NdArray -> Result String NdArray
 add nda1 nda2 =
-    Native.NumElm.add nda1 nda2
+    Native.NumElm.elementWise (+) nda1 nda2
 
 
 (.+) : NdArray -> number -> NdArray
@@ -573,7 +573,7 @@ add nda1 nda2 =
 -}
 subtract : NdArray -> NdArray -> Result String NdArray
 subtract nda1 nda2 =
-    Ok NdArray
+    Native.NumElm.elementWise (-) nda1 nda2
 
 
 {-| TODO
@@ -592,7 +592,7 @@ sub nda1 nda2 =
 -}
 multiply : NdArray -> NdArray -> Result String NdArray
 multiply nda1 nda2 =
-    Ok NdArray
+    Native.NumElm.elementWise (*) nda1 nda2
 
 
 {-| TODO
@@ -611,7 +611,7 @@ mul nda1 nda2 =
 -}
 divide : NdArray -> NdArray -> Result String NdArray
 divide nda1 nda2 =
-    Ok NdArray
+    Native.NumElm.elementWise (/) nda1 nda2
 
 
 {-| TODO
