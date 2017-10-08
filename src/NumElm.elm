@@ -54,40 +54,32 @@ module NumElm
         , exp
         )
 
-{-| The NumPy for Elm
+{-| The NumPy for Elm.
 
 # Types
-@docs NdArray, Shape, size, Location, Dtype
-
+@docs NdArray, Shape, Location, Dtype
 
 # Creating NdArray
 @docs ndarray, vector, matrix, matrix3d
 
-
 # Getting info from NdArray
-@docs toString, toDataString, shape, size
-@docs ndim, length, numel, dtype
-
+@docs toString, dataToString, shape, size, ndim, length, numel, dtype
 
 # Pre-filled NdArray
 @docs zeros, ones, diagonal, diag, identity, eye, rand
 
-
 # Getters and Setters
-@doc get, set
-
+@docs get, set
 
 # Transforming NdArray
-@docs map, transpose, trans, inv, pinv
-
+@docs map, transpose, trans, inverse, inv, pinv, svd
 
 # Arithmetic operations
-@docs add, (+), subtract, sub, (-), multiply, mul, (*)
-@docs divide, div, (/), power, pow, (**)
-
+@docs add, (.+), subtract, sub, (.-), multiply, mul, (.*), divide, div, (./), power, pow, (.^)
 
 # Root and Logarithm
 @docs sqrt, logBase, log, log2, log10, exp
+
 -}
 
 import Native.NumElm
@@ -107,10 +99,10 @@ type NdArray
 
 {-| List of dimensions.
 
-    [3, 4]        -- 3x4 matrix
-    [2] == [2, 1] -- 2x1 column vector
-    [1, 4]        -- 1x4 row vector
-    [3, 2, 5]     -- 3x2x5 matrix (3D )
+    [3, 4]        -- 3×4 matrix
+    [2] == [2, 1] -- 2×1 column vector
+    [1, 4]        -- 1×4 row vector
+    [3, 2, 5]     -- 3×2×5 matrix (3D)
 
 -}
 type alias Shape =
@@ -119,7 +111,8 @@ type alias Shape =
 
 {-| Location within the matrix.
 
-    get [2, 1] [[1, 2], [3, 4], [5, 6]] --> 6
+    -- nda == [ [1, 2], [3, 4], [5, 6] ]
+    get [1, 0] nda == 3
 
 -}
 type alias Location =
@@ -146,8 +139,11 @@ type Dtype
 
 {-| Creates an NdArray from a list of numbers.
 
-    -- 3x2 matrix of 8-bit signed integers
-    ndarray Int8 [3, 2] [1, 2, 3, 4, 5, 6]
+    -- 3×2 matrix of 8-bit signed integers
+    ndarray
+      Int8
+      [3, 2]
+      [1, 2, 3, 4, 5, 6]
 
 -}
 ndarray : Dtype -> Shape -> List number -> Result String NdArray
@@ -157,8 +153,10 @@ ndarray dtype shape data =
 
 {-| Creates an NdArray from a 1D list.
 
-    -- 6x1 column vector of 16-bit signed integers.
-    vector Int16 [ 1, 2, 3, 4, 5, 6 ]
+    -- 6×1 column vector of 16-bit signed integers.
+    vector
+      Int16
+      [ 1, 2, 3, 4, 5, 6 ]
 
 -}
 vector : Dtype -> List number -> Result String NdArray
@@ -172,7 +170,7 @@ vector dtype data =
 
 {-| Creates an NdArray from a 2D list.
 
-    -- 2x3 matrix of 32-bit floating point numbers.
+    -- 2×3 matrix of 32-bit floating point numbers.
     matrix Float32
            [ [1, 2, 3]
            , [4, 5, 6]
@@ -201,7 +199,7 @@ matrix dtype data =
 
 {-| Creates an NdArray from a 3D list.
 
-    -- 3x2x2 3D matrix of 64-bit floating point numbers.
+    -- 3×2×2 3D matrix of 64-bit floating point numbers.
     matrix3d Float64
              [ [ [1, 2]
                , [3, 4]
@@ -209,7 +207,7 @@ matrix dtype data =
              , [ [5, 6]
                , [7, 8]
                ]
-             , [ [9, 10]
+             , [ [ 9, 10]
                , [11, 12]
                ]
              ]
@@ -266,9 +264,13 @@ matrix3d dtype data =
 {-| Returns the string representation of the ndarray.
 
     let
-        nda = ndarray Int8 [3, 2] [1, 2, 3, 4, 5, 6]
+        nda = ndarray
+                Int8
+                [3, 2]
+                [1, 2, 3, 4, 5, 6]
     in
-        toString nda --> NdArray[length=6,shape=3×2,dtype=Int8]
+        toString nda
+        --> NdArray[length=6,shape=3×2,dtype=Int8]
 -}
 toString : NdArray -> String
 toString nda =
@@ -278,9 +280,13 @@ toString nda =
 {-| Returns the string representation of the internal array.
 
     let
-        nda = ndarray Int8 [3, 2] [1, 2, 3, 4, 5, 6]
+        nda = ndarray
+                Int8
+                [3, 2]
+                [1, 2, 3, 4, 5, 6]
     in
-        dataToString nda --> "[1,2,3,4,5,6]"
+        dataToString nda
+        --> "[1,2,3,4,5,6]"
 -}
 dataToString : NdArray -> String
 dataToString nda =
@@ -290,10 +296,10 @@ dataToString nda =
 {-| Gets the shape of the ndarray.
 
      -- 2×4 matrix
-    shape ndarray1 --> [2, 4]
+    shape ndarray1 == [2, 4]
 
     -- 3×2×2 3D matrix
-    shape ndarray2 --> [3, 2, 2]
+    shape ndarray2 == [3, 2, 2]
 
 -}
 shape : NdArray -> Shape
@@ -311,7 +317,7 @@ size nda =
 {-| Gets the number of dimensions of the ndarray
 
      -- 2×4×1 matrix
-    ndim ndarray --> 3
+    ndim ndarray == 3
 
 -}
 ndim : NdArray -> Int
@@ -322,7 +328,7 @@ ndim nda =
 {-| Gets the number of elements in the ndarray
 
      -- 2×4×1 matrix
-    numel ndarray --> 3
+    numel ndarray == 3
 
 -}
 length : NdArray -> Int
@@ -339,8 +345,8 @@ numel nda =
 
 {-| Gets the dtype of the ndarray.
 
-    dtype ndarray1 --> Int32
-    dtype ndarray2 --> Float64
+    dtype ndarray1 == Int32
+    dtype ndarray2 == Float64
 -}
 dtype : NdArray -> Dtype
 dtype nda =
@@ -353,10 +359,12 @@ dtype nda =
 
 {-| Returns a new ndarray of given shape and type, filled with zeros.
 
-    zeros Int8 [3, 2] --> [ [0, 0]
-                          , [0, 0]
-                          , [0, 0]
-                          ]
+    zeros Int8 [3, 2]
+    -- [ [0, 0]
+    -- , [0, 0]
+    -- , [0, 0]
+    -- ]
+
 -}
 zeros : Dtype -> Shape -> Result String NdArray
 zeros dtype shape =
@@ -369,9 +377,10 @@ zeros dtype shape =
 
 {-| Return a new ndarray of given shape and type, filled with ones.
 
-    ones Int8 [2, 4] --> [ [1, 1, 1, 1]
-                         , [1, 1, 1, 1]
-                         ]
+    ones Int8 [2, 4]
+    -- [ [1, 1, 1, 1]
+    -- , [1, 1, 1, 1]
+    -- ]
 -}
 ones : Dtype -> Shape -> Result String NdArray
 ones dtype shape =
@@ -384,10 +393,11 @@ ones dtype shape =
 
 {-| Vector of diagonal elements of list.
 
-    diag Int16 [1, 2, 3] --> [ [1, 0, 0]
-                             , [0, 2, 0]
-                             , [0, 0, 3]
-                             ]
+    diag Int16 [1, 2, 3]
+    -- [ [1, 0, 0]
+    -- , [0, 2, 0]
+    -- , [0, 0, 3]
+    -- ]
 -}
 diagonal : Dtype -> List number -> Result String NdArray
 diagonal dtype list =
@@ -403,10 +413,12 @@ diag dtype list =
 
 {-| Return an identity matrix given [size, size].
 
-    identity Int16 3 --> [ [1, 0, 0]
-                         , [0, 1, 0]
-                         , [0, 0, 1]
-                         ]
+    identity Int16 3
+    -- [ [1, 0, 0]
+    -- , [0, 1, 0]
+    -- , [0, 0, 1]
+    -- ]
+
 -}
 identity : Dtype -> Int -> Result String NdArray
 identity dtype size =
@@ -422,10 +434,11 @@ eye size dtype =
 
 {-| Generates a random ndarray from an uniform distribution over [0, 1).
 
-    rand Float32 [3, 3] 123 --> [ [1, 0, 0]
-                                , [0, 1, 0]
-                                , [0, 0, 1]
-                                ]
+    rand Float32 [3, 3] 123
+    -- [ [0.24, 0.04, 0.98]
+    -- , [0.35, 0.07, 0.12]
+    -- , [0.36, 0.94, 0.74]
+    -- ]
 
 -}
 rand : Dtype -> Shape -> Int -> Result String NdArray
@@ -447,7 +460,7 @@ rand dtype shape intSeed =
     let
         nda = ndarray Int8 [3, 2] [1, 2, 3, 4, 5, 6]
     in
-        get [1, 0] nda --> 3
+        get [1, 0] nda == 3
 
 -}
 get : Location -> NdArray -> Maybe number
@@ -459,11 +472,16 @@ get location nda =
 
     let
         nda = ndarray Int8 [3, 2] [1, 2, 3, 4, 5, 6]
+        -- [ [1, 2]
+        -- , [3, 4]
+        -- , [5, 6]
+        -- ]
     in
-        set 8 [1, 0] nda --> [ [1, 2]
-                             , [8, 4]
-                             , [5, 6]
-                             ]
+        set 8 [1, 0] nda
+        -- [ [1, 2]
+        -- , [8, 4]
+        -- , [5, 6]
+        -- ]
 
 -}
 set : number -> Location -> NdArray -> Result String NdArray
@@ -480,7 +498,8 @@ set value location nda =
     let
         vec = vector Int8 [1, 2, 3]
     in
-        map (\a loc -> a^2) vec --> [1, 4, 9]
+        map (\a loc -> a^2) vec
+        --> [1, 4, 9]
 
 -}
 map : (number1 -> Location -> NdArray -> number2) -> NdArray -> NdArray
@@ -488,7 +507,7 @@ map callback nda =
     Native.NumElm.map callback nda
 
 
-{-| Transposes the NdArray (Only two dimensions --> [1, 0]).
+{-| Transposes the NdArray. Permute the dimensions, and only the first two.
 
     let
         A = matrix Float32
@@ -496,10 +515,11 @@ map callback nda =
                    , [4, 5, 6]
                    ]
     in
-        transpose A --> [ [1, 4]
-                        , [2, 5]
-                        , [3, 6]
-                        ]
+        transpose A
+        -- [ [1, 4]
+        -- , [2, 5]
+        -- , [3, 6]
+        -- ]
 
 -}
 transpose : NdArray -> NdArray
@@ -522,9 +542,10 @@ trans nda =
                    , [3, 4]
                    ]
     in
-        inv A --> [ [-2.0,  1.0]
-                  , [ 1.5, -0.5]
-                  ]
+        inverse A
+        -- [ [-2.0,  1.0]
+        -- , [ 1.5, -0.5]
+        -- ]
 
 -}
 inverse : NdArray -> Result String NdArray
@@ -539,14 +560,20 @@ inv nda =
     inverse nda
 
 
-{-| TODO
+{-| Compute the (Moore-Penrose) pseudo-inverse of a matrix.
+
+    -- TODO
+
 -}
 pinv : NdArray -> NdArray
 pinv nda =
     NdArray
 
 
-{-| TODO
+{-| Singular Value Decomposition.
+
+    -- TODO
+
 -}
 svd : NdArray -> NdArray
 svd nda =
@@ -570,9 +597,10 @@ svd nda =
                    , [5, 3]
                    ]
     in
-        add A B --> [ [5, 3]
-                    , [8, 7]
-                    ]
+        add A B
+        -- [ [5, 3]
+        -- , [8, 7]
+        -- ]
 
 -}
 add : NdArray -> NdArray -> Result String NdArray
@@ -589,9 +617,10 @@ add nda1 nda2 =
                    ]
 
     in
-        A .+ 5 --> [ [6, 7]
-                   , [8, 9]
-                   ]
+        A .+ 5
+        -- [ [6, 7]
+        -- , [8, 9]
+        -- ]
 
 -}
 (.+) : NdArray -> number -> NdArray
@@ -612,9 +641,10 @@ add nda1 nda2 =
                    , [5, 3]
                    ]
     in
-        subtract A B --> [ [-3, 1]
-                         , [-2, 1]
-                         ]
+        subtract A B
+        -- [ [-3, 1]
+        -- , [-2, 1]
+        -- ]
 
 -}
 subtract : NdArray -> NdArray -> Result String NdArray
@@ -638,9 +668,10 @@ sub nda1 nda2 =
                    ]
 
     in
-        A .- 5 --> [ [-4, -3]
-                   , [-2, -1]
-                   ]
+        A .- 5
+        -- [ [-4, -3]
+        -- , [-2, -1]
+        -- ]
 
 -}
 (.-) : NdArray -> number -> NdArray
@@ -661,9 +692,10 @@ sub nda1 nda2 =
                    , [5, 3]
                    ]
     in
-        multiply A B --> [ [ 4,  2]
-                         , [15, 12]
-                         ]
+        multiply A B
+        -- [ [ 4,  2]
+        -- , [15, 12]
+        -- ]
 
 -}
 multiply : NdArray -> NdArray -> Result String NdArray
@@ -687,9 +719,10 @@ mul nda1 nda2 =
                    ]
 
     in
-        A .* 5 --> [ [ 5, 10]
-                   , [15, 20]
-                   ]
+        A .* 5
+        -- [ [ 5, 10]
+        -- , [15, 20]
+        -- ]
 
 -}
 (.*) : NdArray -> number -> NdArray
@@ -710,9 +743,10 @@ mul nda1 nda2 =
                    , [5, 3]
                    ]
     in
-        divide A B --> [ [1/4,   2]
-                       , [3/5, 4/3]
-                       ]
+        divide A B
+        -- [ [1/4,   2]
+        -- , [3/5, 4/3]
+        -- ]
 
 -}
 divide : NdArray -> NdArray -> Result String NdArray
@@ -736,9 +770,10 @@ div nda1 nda2 =
                    ]
 
     in
-        A ./ 5 --> [ [1/5, 2/5]
-                   , [3/5, 4/5]
-                   ]
+        A ./ 5
+        -- [ [1/5, 2/5]
+        -- , [3/5, 4/5]
+        -- ]
 
 -}
 (./) : NdArray -> Float -> NdArray
@@ -759,9 +794,10 @@ div nda1 nda2 =
                    , [3, 4]
                    ]
     in
-        divide A B --> [ [ 1,   4]
-                       , [27, 256]
-                       ]
+        divide A B
+        -- [ [ 1,   4]
+        -- , [27, 256]
+        -- ]
 
 -}
 power : NdArray -> NdArray -> Result String NdArray
@@ -785,9 +821,10 @@ pow nda1 nda2 =
                    ]
 
     in
-        A ./ 5 --> [ [1/5, 2/5]
-                   , [3/5, 4/5]
-                   ]
+        A .^ 2
+        -- [ [1,  4]
+        -- , [9, 16]
+        -- ]
 
 -}
 (.^) : NdArray -> number -> NdArray
@@ -799,31 +836,121 @@ pow nda1 nda2 =
 -- Root and Logarithm --
 
 
+{-| Return the positive square-root of an array, element-wise.
+
+    let
+        A = matrix Float32
+                   [ [1, 2]
+                   , [3, 4]
+                   ]
+
+    in
+        sqrt A
+        -- [ [   1, 1.41]
+        -- , [1.73,    2]
+        -- ]
+
+-}
 sqrt : NdArray -> NdArray
 sqrt nda =
     map (\val _ _ -> Basics.sqrt val) nda
 
 
+{-| Base "base" logarithm, element-wise.
+
+    let
+        A = matrix Float32
+                   [ [1, 2]
+                   , [3, 4]
+                   ]
+
+    in
+        logBase 3 A
+        -- [ [0, 0.63]
+        -- , [1, 1.26]
+        -- ]
+
+-}
 logBase : Float -> NdArray -> NdArray
 logBase base nda =
     map (\val _ _ -> Basics.logBase base val) nda
 
 
+{-| Natural logarithm (in base e), element-wise.
+
+    let
+        A = matrix Float32
+                   [ [1, 2]
+                   , [3, 4]
+                   ]
+
+    in
+        log A
+        -- [ [   0, 0.69]
+        -- , [1.09, 1.38]
+        -- ]
+
+-}
 log : NdArray -> NdArray
 log nda =
     logBase Basics.e nda
 
 
+{-| Base 2 logarithm, element-wise.
+
+    let
+        A = matrix Float32
+                   [ [1, 2]
+                   , [3, 4]
+                   ]
+
+    in
+        log2 A
+        -- [ [   0, 1]
+        -- , [1.58, 2]
+        -- ]
+
+-}
 log2 : NdArray -> NdArray
 log2 nda =
     logBase 2 nda
 
 
+{-| Base 10 logarithm, element-wise.
+
+    let
+        A = matrix Float32
+                   [ [1, 2]
+                   , [3, 4]
+                   ]
+
+    in
+        log10 A
+        -- [ [   0, 0.3]
+        -- , [0.47, 0.6]
+        -- ]
+
+-}
 log10 : NdArray -> NdArray
 log10 nda =
     logBase 10 nda
 
 
+{-| Calculate the exponential of all elements in the NdArray.
+
+    let
+        A = matrix Int8
+                   [ [1, 2]
+                   , [3, 4]
+                   ]
+
+    in
+        exp A
+        -- [ [ 2.71,  7.38]
+        -- , [20.08, 54.59]
+        -- ]
+
+-}
 exp : NdArray -> NdArray
 exp nda =
     map (\val _ _ -> Basics.e ^ val) nda
