@@ -172,6 +172,26 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
   };
 
   /**
+   * @public
+   */
+  NdArray.prototype.slice = function (start, end) {
+    start = this._processSliceLocation(start, this._initialLocation());
+    end = this._processSliceLocation(end, this.shape);
+
+    var data = [];
+    var shape = end.map(function (valEnd, i) { return valEnd - start[i] });
+    var dtype = this.dtype;
+
+    this.forEach(function (value) {
+      data.push(value);
+    }, start, end);
+
+    if (data.length) {
+      return new NdArray(data, shape, dtype);
+    }
+  };
+
+  /**
    * Sets the value in a specific location (does not mutate)
    * @param {number[]} location
    * @param {number} value
@@ -230,15 +250,20 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
 
   /**
    * Implements forEach method
-   * @param {(any, number[], number, NdArray) => void} fn
+   * @param {(number, number[], number, NdArray) => void} fn
+   * @param {number[]} [start = [0, 0, ..., 0]]
+   * @param {number[]} [end = this.shape]
    * @returns {NdArray}
    * @public
    */
-  NdArray.prototype.forEach = function (fn) {
+  NdArray.prototype.forEach = function (fn, start, end) {
+    if (!start || !this.isLocationWithinLimit(start)) start = this._initialLocation();
+    if (!end || !this.isLocationWithinLimit(end)) end = this.shape;
+
     for (
-      var location = this.initialLocation();
-      this.isLocationWithinLimit(location);
-      location = this.nextLocation(location)
+      var location = start.slice(0);
+      this._isLocationWithinLimit(location, end);
+      location = this._nextLocation(location, start, end)
     ) {
       var idx = this.toIndex(location);
       var value = this.data[idx];
@@ -250,7 +275,7 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
 
   /**
    * Implements map method
-   * @param {(any, number[], number, NdArray) => void} fn
+   * @param {(number, number[], number, NdArray) => void} fn
    * @returns {NdArray}
    * @public
    */
@@ -263,7 +288,7 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
   };
 
   /**
-   * Permute the dimensions of an array
+   * Permute the dimensions of the NdArray
    * @param {...number[]} dimsIdx
    * @returns {NdArray}
    * @public
@@ -392,6 +417,15 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
     return I;
   };
 
+  /**
+   * Performs element wise operations between NdArray with same shape
+   * TODO: How about implementing broadcasting?
+   * @param {NdArray} nda2
+   * @param {(number, number, number[], number, NdArray, NdArray) => void} op
+   * @return {number}
+   * @throws {Error} Wrong shape
+   * @public
+   */
   NdArray.prototype.elementWise = function (nda2, op) {
     var shape1 = this.shapeToString();
     var shape2 = nda2.shapeToString();
@@ -401,19 +435,62 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
       return this.map(function (value1, location, idx, nda1) {
         var value2 = nda2.data[idx];
         return op(
-          value1, 
-          value2, 
-          location, 
-          idx, 
-          nda1, 
-          nda2
+          value1, value2, 
+          location, idx, 
+          nda1, nda2
         );
       });
     } else {
         throw [
           'NdArray#elementWise: The shape of nda1 is ',
           this.shape.join('×'),
-          ', but the shape of nda2 is ',
+          ', but nda2 says ',
+          nda2.shape.join('×')
+        ].join('');
+    }
+  };
+
+  /**
+   * Dot product of NdArray
+   * @param {NdArray} nda2
+   * @return {NdArray}
+   * @throws {Error} Wrong shape
+   * @public
+   */
+  NdArray.prototype.dot = function (nda2) {
+    var r1 = this.shape[0];
+    var c1 = this.shape[1];
+    var r2 = nda2.shape[0];
+    var c2 = nda2.shape[1];
+
+    if (c1 === r2) {
+      var resData = Array(r1 * c2);
+      var resShape = [r1, c2];
+      var resDtype = this.dtype;
+
+      var resNda = new NdArray(resData, resShape, resDtype);
+
+      var d1 = this.data;
+      var d2 = nda2.data;
+      var i, j, k, sum;
+
+      for (i = 0; i < r1; i++) {
+        for (j = 0; j < c2; j++) {
+          sum = 0;
+          for (k = 0; k < c1; k++) {
+            sum += d1[i * c1 + k] * d2[j + k * c2];
+          }
+          resNda.data[i * c2 + j] = sum;
+        }
+      }
+
+      return resNda;
+
+    } else {
+        throw [
+          'NdArray#dot: The shape of nda1 is ',
+          this.shape.join('×'),
+          ', but nda2 says ',
           nda2.shape.join('×')
         ].join('');
     }
@@ -484,17 +561,27 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
   }
 
   /**
-   * Checks whether a location is within the limits
+   * Checks whether a location is within the limits of the shape
    * based on the shape
    * @param {number[]} location
    * @return {boolean}
    * @public
    */
   NdArray.prototype.isLocationWithinLimit = function (location) {
-    var self = this;
-    return location.reduce(function (is, dimIdx, idx) {
-      return is && dimIdx >= 0 && dimIdx < self.shape[idx];
-    }, true);
+    return this._isLocationWithinLimit(location, this.shape);
+  }
+
+  /**
+   * Calculates the next location
+   * @param {number[]} location
+   * @return {boolean}
+   * @public
+   */
+  NdArray.prototype.nextLocation = function (location) {
+    var start = this._initialLocation();
+    var end = this.shape;
+
+    return this._nextLocation(location, start, end);
   }
 
   /**
@@ -502,30 +589,69 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
    * @return {number[]}
    * @private
    */
-  NdArray.prototype.initialLocation = function () {
+  NdArray.prototype._initialLocation = function () {
     return Array(this.shape.length).fill(0);
   }
 
   /**
-   * Calculates the next location
+   * Checks whether a location is within a specific limit
    * @param {number[]} location
-   * @param {number} idx - current index in being looked at
+   * @param {number[]} limit
    * @return {boolean}
    * @private
    */
-  NdArray.prototype.nextLocation = function (location, idx) {
-    location = typeof location === 'undefined' ? this.initialLocation() : location;
+  NdArray.prototype._isLocationWithinLimit = function (location, limit) {
+    return location.reduce(function (is, dimIdx, idx) {
+      return is && dimIdx >= 0 && dimIdx < limit[idx];
+    }, true);
+  }
+
+  /**
+   * Calculates the next location base on a starting and end location
+   * @see NdArray.prototype.forEach
+   * @param {number[]} location
+   * @param {number[]} start
+   * @param {number[]} end
+   * @param {number} [idx] - current index being looked at
+   * @return {boolean}
+   * @private
+   */
+  NdArray.prototype._nextLocation = function (location, start, end, idx) {
     idx = typeof idx === 'undefined' ? location.length -1 : idx;
 
     if (idx >= 0) {
       location[idx]++;
-      if (idx > 0 && location[idx] >= this.shape[idx]) {
-        location[idx] = 0;
-        location = this.nextLocation(location, --idx);
+      if (idx > 0 && location[idx] >= end[idx]) {
+        location[idx] = start[idx];
+        location = this._nextLocation(location, start, end, --idx);
       }
     }
 
     return location;
+  }
+
+  /**
+   * @private
+   */
+  NdArray.prototype._processSliceLocation = function (location, elseLoc) {
+    location = location || [];
+
+    location = this.shape.map(function (shapeVal, i) {
+      var locVal = location[i] ;
+
+      if (locVal < 0) { // offset from the end
+        locVal = shapeVal - newVal;
+      }
+
+      if (typeof locVal === 'number') {
+        if (locVal < 0) newVal = 0;
+        if (locVal > shapeVal) locVal = shapeVal;
+      } else {
+        locVal = elseLoc[i];
+      }
+
+      return locVal;
+    });
   }
 
   // =============== NdArray static methods =============== //
@@ -698,6 +824,22 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
     }
   }
 
+  function slice(tLocationStart, tLocationEnd, nda) {
+    var start = toArray(tLocationStart);
+    var end = toArray(tLocationEnd);
+
+    try {
+      slicedNda = nda.slice(start, end);
+      if (slicedNda) {
+        return maybeJust(slicedNda);
+      } else {
+        throw 'The location [' + start + '] does not exist';
+      }
+    } catch (e) {
+      return maybeNothing;
+    }
+  }
+
   /**
    * Sets the value in a specific location
    * @param {number} value
@@ -719,6 +861,23 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
       return resultErr(e + '');
     }
     
+  }
+
+  function replace(slicedNda, tLocation, nda) {
+    var location = toArray(tLocation);
+
+    /*
+    try {
+      if (nda.isLocationWithinLimit(location)) {
+        return resultOk(nda.replace(location, slicedNda));
+      } else {
+        throw 'The location [' + location + '] does not exist';
+      }
+    } catch (e) {
+      return resultErr(e + '');
+    }
+    */
+
   }
 
   /**
@@ -778,6 +937,21 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
     }
   }
 
+  /**
+   * Matrix multiplication
+   * @param {NdArray} nda1
+   * @param {NdArray} nda2
+   * @returns {Result String NdArray}
+   * @memberof Native.NumElm
+   */
+  function dot (nda1, nda2) {
+    try {
+      return resultOk(nda1.dot(nda2));
+    } catch (e) {
+      return resultErr(e + '');
+    }
+  }
+
   return {
     ndarray     : F3(ndarray),
     toString    : toString,
@@ -786,11 +960,14 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
     dtype       : dtype,
     diagonal    : F2(diagonal),
     get         : F2(get),
+    slice       : F3(slice),
     set         : F3(set),
+    replace     : F3(replace),
     map         : F2(map),
     transpose   : transpose,
     inverse     : inverse,
-    elementWise : F3(elementWise)
+    elementWise : F3(elementWise),
+    dot         : F2(dot)
   };
 
 }();

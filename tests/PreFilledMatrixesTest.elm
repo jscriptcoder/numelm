@@ -80,4 +80,20 @@ suit =
                         Err msg ->
                             Expect.fail msg
             )
+        , test "randn Float32 [3, 3] 123"
+            (\_ ->
+                let
+                    ndaResult =
+                        NumElm.randn Float32 [ 3, 3 ] 123
+                in
+                    case ndaResult of
+                        Ok ndaRand ->
+                            Expect.equal
+                                "[0.7122775912284851,-1.8686243295669556,0.2632739543914795,0.903903603553772,0.8288260698318481,-0.10995164513587952,1.022497534751892,-0.4667685925960541,0.2659539580345154]"
+                            <|
+                                NumElm.dataToString ndaRand
+
+                        Err msg ->
+                            Expect.fail msg
+            )
         ]

@@ -23,8 +23,13 @@ module NumElm
         , identity
         , eye
         , rand
+        , randn
         , get
+        , slice
+        , getn
         , set
+        , replace
+        , setn
         , map
         , transpose
         , trans
@@ -52,6 +57,7 @@ module NumElm
         , log2
         , log10
         , exp
+        , dot
         )
 
 {-| The NumPy for Elm.
@@ -69,7 +75,7 @@ module NumElm
 @docs zeros, ones, diagonal, diag, identity, eye, rand
 
 # Getters and Setters
-@docs get, set
+@docs get, slice, getn, set, replace, setn
 
 # Transforming NdArray
 @docs map, transpose, trans, inverse, inv, pinv, svd
@@ -80,11 +86,17 @@ module NumElm
 # Root and Logarithm
 @docs sqrt, logBase, log, log2, log10, exp
 
+# Matrix mutiplication
+@docs dot
+
+# Round off
+@docs around, round, ceil, floor, fix
+
 -}
 
 import Native.NumElm
 import List
-import Random exposing (Seed)
+import Random exposing (Seed, Generator)
 import Tuple
 
 
@@ -451,6 +463,25 @@ rand dtype shape intSeed =
             randomUniformList size intSeed
 
 
+{-| Generates a random ndarray from a "standard normal" distribution.
+
+    randn Float32 [3, 3] 123
+    -- [ [0.71, -1.86, 0.26]
+    -- , [ 0.9,  0.82, -0.1]
+    -- , [1.02, -0.46, 0.26]
+    -- ]
+
+-}
+randn : Dtype -> Shape -> Int -> Result String NdArray
+randn dtype shape intSeed =
+    let
+        size =
+            toLength shape
+    in
+        Native.NumElm.ndarray dtype shape <|
+            randomStandardNormalList size intSeed
+
+
 
 -- Getters and Setters --
 
@@ -466,6 +497,18 @@ rand dtype shape intSeed =
 get : Location -> NdArray -> Maybe number
 get location nda =
     Native.NumElm.get location nda
+
+
+slice : Location -> Location -> NdArray -> Maybe NdArray
+slice start end nda =
+    Native.NumElm.slice start end nda
+
+
+{-| Alias for slice.
+-}
+getn : Location -> Location -> NdArray -> Maybe NdArray
+getn start end nda =
+    slice start end nda
 
 
 {-| Sets the value in a specific location
@@ -487,6 +530,18 @@ get location nda =
 set : number -> Location -> NdArray -> Result String NdArray
 set value location nda =
     Native.NumElm.set value location nda
+
+
+replace : NdArray -> Location -> NdArray -> Result String NdArray
+replace slicedNda location nda =
+    Native.NumElm.replace slicedNda location nda
+
+
+{-| Alias for replace.
+-}
+setn : NdArray -> Location -> NdArray -> Result String NdArray
+setn slicedNda location nda =
+    replace slicedNda location nda
 
 
 
@@ -957,6 +1012,43 @@ exp nda =
 
 
 
+-- Matrix mutiplication --
+
+
+{-| Dot product of two arrays.
+
+    let
+        -- 4×3 matrix
+        A = matrix Int16
+                   [ [1, 2, 3]
+                   , [4, 5, 6]
+                   , [7, 8, 9]
+                   , [3, 1, 1]
+                   ]
+
+        -- 3×2 matrix
+        B = matrix Int16
+                   [ [4, 1]
+                   , [5, 3]
+                   , [2, 6]
+                   ]
+
+    in
+        -- 4×3 3×2 == 4×2
+        dot A B
+        -- [ [1×4 + 2×5 + 3×2, 1×1 + 2×3 + 3×6]
+        -- , [4×4 + 5×5 + 6×2, 4×1 + 5×3 + 6×6]
+        -- , [7×4 + 8×5 + 9×2, 7×1 + 8×3 + 9×6]
+        -- , [3×4 + 1×5 + 1×2, 3×1 + 1×3 + 1×6]
+        -- ]
+
+-}
+dot : NdArray -> NdArray -> Result String NdArray
+dot nda1 nda2 =
+    Native.NumElm.dot nda1 nda2
+
+
+
 -- Helper functions --
 
 
@@ -967,6 +1059,36 @@ toLength shape =
 
 randomUniformList : Int -> Int -> List Float
 randomUniformList size intSeed =
-    Tuple.first <|
-        Random.step (Random.list size <| Random.float 0 1) <|
-            Random.initialSeed intSeed
+    let
+        generator =
+            Random.float 0 1
+    in
+        randomList size intSeed generator
+
+
+randomStandardNormalList : Int -> Int -> List Float
+randomStandardNormalList size intSeed =
+    let
+        -- Standard Normal variate using Box-Muller transform
+        generator =
+            Random.map2
+                (\u v ->
+                    Basics.sqrt
+                        (-2 * Basics.logBase Basics.e (1 - Basics.max 0 u))
+                        * Basics.cos v
+                )
+                (Random.float 0 1)
+                (Random.float 0 (2 * Basics.pi))
+    in
+        randomList size intSeed generator
+
+
+randomList : Int -> Int -> Generator Float -> List Float
+randomList size intSeed generator =
+    let
+        rndList =
+            Random.list size generator
+    in
+        Tuple.first <|
+            Random.step rndList <|
+                Random.initialSeed intSeed
