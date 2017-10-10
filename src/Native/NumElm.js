@@ -108,6 +108,14 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
      */
     this.stride = res.stride;
 
+    /**
+     * Caches the origin for this NdArray
+     * Will be used in several places
+     * @type number[]
+     * @private
+     */
+    this.start = NdArray.prefill(this.shape.length, 0);
+
     // Memoization to improve calculation of inverse
     this.toIndex.cache = {};
   }
@@ -157,6 +165,7 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
     clone.shape = this.shape.slice(0);
     clone.dtype = this.dtype;
     clone.stride = this.stride.slice(0);
+    clone.start = this.start.slice(0);
     return clone;
   };
 
@@ -172,22 +181,26 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
   };
 
   /**
+   * Slices the NdArray into a new NdArray
+   * selected from start to end (end not included)
+   * @param {number[]} start
+   * @param {number[]} end
+   * @returns {NdArray}
    * @public
    */
   NdArray.prototype.slice = function (start, end) {
-    start = this._processSliceLocation(start, this._initialLocation());
-    end = this._processSliceLocation(end, this.shape);
+    start = this._processLocation(start, this.start);
+    end = this._processLocation(end, this.shape);
 
     var data = [];
-    var shape = end.map(function (valEnd, i) { return valEnd - start[i] });
     var dtype = this.dtype;
+    var shape = end.map(function (valEnd, i) { return valEnd - start[i] });
 
-    this.forEach(function (value) {
-      data.push(value);
-    }, start, end);
-
-    if (data.length) {
-      return new NdArray(data, shape, dtype);
+    if (NdArray.isValidShape(shape)) {
+      this.forEach(function (value) { data.push(value) }, start, end);
+      if (data.length) {
+        return new NdArray(data, shape, dtype);
+      }
     }
   };
 
@@ -257,8 +270,8 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
    * @public
    */
   NdArray.prototype.forEach = function (fn, start, end) {
-    if (!start || !this.isLocationWithinLimit(start)) start = this._initialLocation();
-    if (!end || !this.isLocationWithinLimit(end)) end = this.shape;
+    if (!this.isValidLocation(start)) start = this.start;
+    if (!this.isValidLimit(end)) end = this.shape;
 
     for (
       var location = start.slice(0);
@@ -562,7 +575,6 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
 
   /**
    * Checks whether a location is within the limits of the shape
-   * based on the shape
    * @param {number[]} location
    * @return {boolean}
    * @public
@@ -572,37 +584,49 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
   }
 
   /**
+   * Checks whether a location is within limits
+   * @param {number[]} location
+   * @return {boolean}
+   * @public
+   */
+  NdArray.prototype.isValidLocation = function (location) {
+    return NdArray.isNotEmpty(location) && 
+      this.isLocationWithinLimit(location);
+  }
+
+  /**
+   * Checks whether a limit is a valid one
+   * @param {number[]} limit
+   * @return {boolean}
+   * @public
+   */
+  NdArray.prototype.isValidLimit = function (limit) {
+    return NdArray.isNotEmpty(limit) && 
+      this._isLocationWithinLimit(limit, this.shape, true);
+  }
+
+  /**
    * Calculates the next location
    * @param {number[]} location
    * @return {boolean}
    * @public
    */
   NdArray.prototype.nextLocation = function (location) {
-    var start = this._initialLocation();
-    var end = this.shape;
-
-    return this._nextLocation(location, start, end);
-  }
-
-  /**
-   * Returns an initial location [0, 0, ..., 0]
-   * @return {number[]}
-   * @private
-   */
-  NdArray.prototype._initialLocation = function () {
-    return Array(this.shape.length).fill(0);
+    return this._nextLocation(location, this.start, this.shape);
   }
 
   /**
    * Checks whether a location is within a specific limit
    * @param {number[]} location
    * @param {number[]} limit
+   * @param {boolean} [included = false]
    * @return {boolean}
    * @private
    */
-  NdArray.prototype._isLocationWithinLimit = function (location, limit) {
+  NdArray.prototype._isLocationWithinLimit = function (location, limit, included) {
     return location.reduce(function (is, dimIdx, idx) {
-      return is && dimIdx >= 0 && dimIdx < limit[idx];
+      return is && dimIdx >= 0 && 
+        (included ? dimIdx <= limit[idx] : dimIdx < limit[idx]);
     }, true);
   }
 
@@ -631,23 +655,26 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
   }
 
   /**
+   * Will do some processing, taking care of offsets and limits
+   * @param {number[]} location
+   * @param {number[]} defaultLoc - used in case of undefined
    * @private
    */
-  NdArray.prototype._processSliceLocation = function (location, elseLoc) {
+  NdArray.prototype._processLocation = function (location, defaultLoc) {
     location = location || [];
 
-    location = this.shape.map(function (shapeVal, i) {
+    return this.shape.map(function (shapeVal, i) {
       var locVal = location[i] ;
 
       if (locVal < 0) { // offset from the end
-        locVal = shapeVal - newVal;
+        locVal = shapeVal + locVal;
       }
 
       if (typeof locVal === 'number') {
-        if (locVal < 0) newVal = 0;
+        if (locVal < 0) locVal = 0;
         if (locVal > shapeVal) locVal = shapeVal;
       } else {
-        locVal = elseLoc[i];
+        locVal = defaultLoc[i];
       }
 
       return locVal;
@@ -681,6 +708,18 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
   };
 
   /**
+   * Returns an pre-filled array 
+   * @memberOf NdArray
+   * @param {number} size
+   * @param {number} value
+   * @returns {number[]}
+   * @static
+   */
+  NdArray.prefill = function (size, value) {
+    return Array(size).fill(value);
+  }
+
+  /**
    * Creates a matrix with a specific diagonal
    * @memberOf NdArray
    * @param {diag} number[]
@@ -694,7 +733,7 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
     var length = size * size;
     var dtype = DTYPE_CONSTRUCTOR[dtype] ? dtype : 'Array';
     var shape = length ? [size, size] : [];
-    var data = Array(length).fill(0);
+    var data = NdArray.prefill(length, 0);
     var nda = new NdArray(data, shape, dtype);
 
     // Sets the diagonal
@@ -715,9 +754,34 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
    * @static
    */
   NdArray.identity = function (size, dtype) {
-    var diag = Array(size).fill(1);
+    var diag = NdArray.prefill(size, 1);
     return NdArray.diagonal(diag, dtype);
   };
+
+
+  /**
+   * Checks whether a shape is valid (dims > 0)
+   * @memberOf NdArray
+   * @param {number[]} number
+   * @returns {boolean}
+   * @static
+   */
+  NdArray.isValidShape = function (shape) {
+    return NdArray.isNotEmpty(shape) && shape.reduce(function (is, dim) {
+      return is && dim > 0;
+    }, true);
+  };
+
+  /**
+   * Checks whether an array isn't empty
+   * @memberOf NdArray
+   * @param {any[]} arr
+   * @returns {boolean}
+   * @static
+   */
+  NdArray.isNotEmpty = function (arr) {
+    return arr && arr.length;
+  }
 
   // =============== Native.NumElm =============== //
 
@@ -829,11 +893,15 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
     var end = toArray(tLocationEnd);
 
     try {
-      slicedNda = nda.slice(start, end);
+      var slicedNda = nda.slice(start, end);
       if (slicedNda) {
         return maybeJust(slicedNda);
       } else {
-        throw 'The location [' + start + '] does not exist';
+        throw [
+          'There was a problem ', 
+          'with start [' + start + '] ', 
+          'and end [' + end + '] locations'
+        ].join('');
       }
     } catch (e) {
       return maybeNothing;
@@ -865,19 +933,6 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
 
   function replace(slicedNda, tLocation, nda) {
     var location = toArray(tLocation);
-
-    /*
-    try {
-      if (nda.isLocationWithinLimit(location)) {
-        return resultOk(nda.replace(location, slicedNda));
-      } else {
-        throw 'The location [' + location + '] does not exist';
-      }
-    } catch (e) {
-      return resultErr(e + '');
-    }
-    */
-
   }
 
   /**

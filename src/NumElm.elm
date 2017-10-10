@@ -74,7 +74,7 @@ module NumElm
 # Pre-filled NdArray
 @docs zeros, ones, diagonal, diag, identity, eye, rand
 
-# Getters and Setters
+# Getting and Setting
 @docs get, slice, getn, set, replace, setn
 
 # Transforming NdArray
@@ -483,7 +483,7 @@ randn dtype shape intSeed =
 
 
 
--- Getters and Setters --
+-- Getting and Setting --
 
 
 {-| Gets the value from a specific location.
