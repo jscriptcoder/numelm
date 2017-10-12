@@ -148,7 +148,7 @@ suit =
                             Err msg ->
                                 msg
                 in
-                    Expect.equal errMsg "NdArray#inverse: NdArray must be square"
+                    Expect.equal errMsg "NdArray#inverse - Wrong shape: NdArray must be square"
             )
         , test "inverse <| matrix Float32 [ [ 2, 3 ], [ 0, 0 ] ] --> Error"
             (\_ ->
@@ -171,6 +171,6 @@ suit =
                             Err msg ->
                                 msg
                 in
-                    Expect.equal errMsg "NdArray#inverse: NdArray not inversable"
+                    Expect.equal errMsg "NdArray#inverse - Forbidden operation: NdArray not inversable"
             )
         ]

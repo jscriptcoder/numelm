@@ -28,9 +28,11 @@ module NumElm
         , slice
         , getn
         , set
-        , replace
-        , setn
+        , concatenateAxis
+        , concatenate
+        , concat
         , map
+        , transposeAxes
         , transpose
         , trans
         , inverse
@@ -75,10 +77,10 @@ module NumElm
 @docs zeros, ones, diagonal, diag, identity, eye, rand
 
 # Getting and Setting
-@docs get, slice, getn, set, replace, setn
+@docs get, slice, getn, set
 
 # Transforming NdArray
-@docs map, transpose, trans, inverse, inv, pinv, svd
+@docs map, transposeAxes, transpose, trans, inverse, inv, pinv, svd
 
 # Arithmetic operations
 @docs add, (.+), subtract, sub, (.-), multiply, mul, (.*), divide, div, (./), power, pow, (.^)
@@ -499,6 +501,28 @@ get location nda =
     Native.NumElm.get location nda
 
 
+{-| Slices the NdArray selected from start to end (end not included).
+
+    let
+        nda = matrix3d
+                Int8
+                [ [ [ 1, 2 ]
+                  , [ 3, 4 ]
+                  ]
+                , [ [ 5, 6 ]
+                  , [ 7, 8 ]
+                  ]
+                , [ [ 9, 10 ]
+                  , [ 11, 12 ]
+                  ]
+                ]
+    in
+        slice [ 1, 1, 0 ] [ 3, 2, 2 ] nda
+        -- [ [ [  7,  8 ] ]
+        -- , [ [ 11, 12 ] ]
+        -- ]
+
+-}
 slice : Location -> Location -> NdArray -> Maybe NdArray
 slice start end nda =
     Native.NumElm.slice start end nda
@@ -532,16 +556,23 @@ set value location nda =
     Native.NumElm.set value location nda
 
 
-replace : NdArray -> Location -> NdArray -> Result String NdArray
-replace slicedNda location nda =
-    Native.NumElm.replace slicedNda location nda
-
-
-{-| Alias for replace.
+{-| Join a sequence of NdArray along an existing axis.
 -}
-setn : NdArray -> Location -> NdArray -> Result String NdArray
-setn slicedNda location nda =
-    replace slicedNda location nda
+concatenateAxis : Int -> NdArray -> NdArray -> Result String NdArray
+concatenateAxis axis nda1 nda2 =
+    Native.NumElm.concatenate axis nda1 nda2
+
+
+concatenate : NdArray -> NdArray -> Result String NdArray
+concatenate nda1 nda2 =
+    concatenateAxis 0 nda1 nda2
+
+
+{-| Alias for concatenate.
+-}
+concat : NdArray -> NdArray -> Result String NdArray
+concat nda1 nda2 =
+    concatenate nda1 nda2
 
 
 
@@ -562,6 +593,13 @@ map callback nda =
     Native.NumElm.map callback nda
 
 
+{-| Permute the axes according to the values given
+-}
+transposeAxes : List Int -> NdArray -> NdArray
+transposeAxes axes nda =
+    Native.NumElm.transpose axes nda
+
+
 {-| Transposes the NdArray. Permute the dimensions, and only the first two.
 
     let
@@ -579,7 +617,12 @@ map callback nda =
 -}
 transpose : NdArray -> NdArray
 transpose nda =
-    Native.NumElm.transpose nda
+    -- 3×2,     [1] swaps 1st and 2nd dimensions            --> 2×3
+    -- 3×2×4,   [2] swaps 1st and 3nd dimensions            --> 4×2×3
+    -- 3×2×4×5, [2, 3] swaps 1st and 3rd then 2nd and 4th   --> 4×5×3×4
+    -- 3×2×4    [1, 2] swaps 1st and 2nd then 2nd and 3rd   --> 2×4×3
+    -- 3×2      [1, 0] swaps 1st and 2nd then 2nd and 1st   --> 3×2
+    transposeAxes [ 1 ] nda
 
 
 {-| Alias for transpose.

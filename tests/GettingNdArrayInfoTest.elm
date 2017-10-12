@@ -70,7 +70,7 @@ suit =
                             Err msg ->
                                 msg
                 in
-                    Expect.equal ndaShapeErr "NdArray#constructor: NdArray has no shape: []"
+                    Expect.equal ndaShapeErr "NdArray#constructor - Wrong shape: NdArray has no shape: []"
             )
         , test "ndim <| ones Float32 [ 3, 2, 1 ]"
             (\_ ->

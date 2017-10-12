@@ -55,7 +55,7 @@ suit =
 
                         Err msg ->
                             Expect.equal msg <|
-                                "NdArray#elementWise: The shape of nda1 is 2×3, but nda2 says 2×2"
+                                "NdArray#elementWise - Incompatible shapes: The shape of nda1 is 2×3, but nda2 says 2×2"
             )
         , test "(ndarray Int8 [ 3, 2 ] [ 1, 2, 3, 4, 5, 6 ]) .+ 5"
             (\_ ->

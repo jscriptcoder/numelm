@@ -38,7 +38,7 @@ suit =
                             Err msg ->
                                 msg
                 in
-                    Expect.equal strnda "NdArray#constructor: NdArray cannot be empty"
+                    Expect.equal strnda "NdArray#constructor - Wrong data length: NdArray cannot be empty"
             )
         , test "ndarray Float32 [ 2, 2 ] [ 1, 2, 3, 4 ]"
             (\_ ->
@@ -70,7 +70,7 @@ suit =
                             Err msg ->
                                 msg
                 in
-                    Expect.equal strnda "NdArray#constructor: The length of the storage data is 6, but the shape says 2×2=4"
+                    Expect.equal strnda "NdArray#constructor - Wrong data length: The length of the storage data is 6, but the shape says 2×2=4"
             )
         , test "vector Int32 [ 1, 2, 3, 4, 5 ]"
             (\_ ->
@@ -118,7 +118,7 @@ suit =
                             Err msg ->
                                 msg
                 in
-                    Expect.equal strnda "NdArray#constructor: The length of the storage data is 5, but the shape says 2×2=4"
+                    Expect.equal strnda "NdArray#constructor - Wrong data length: The length of the storage data is 5, but the shape says 2×2=4"
             )
         , test "matrix3d Int8 [ [ [ 1, 2 ], [ 3, 4 ], [ 5, 6 ] ], [ [ 7, 8 ], [ 9, 10 ], [ 11, 12 ] ] ]"
             (\_ ->
@@ -150,6 +150,6 @@ suit =
                             Err msg ->
                                 msg
                 in
-                    Expect.equal strnda "NdArray#constructor: The length of the storage data is 9, but the shape says 2×2×2=8"
+                    Expect.equal strnda "NdArray#constructor - Wrong data length: The length of the storage data is 9, but the shape says 2×2×2=8"
             )
         ]

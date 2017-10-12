@@ -115,6 +115,6 @@ suit =
                             Expect.fail "This should not happen"
 
                         Err msg ->
-                            Expect.equal msg "NdArray#dot: The shape of nda1 is 3×2, but nda2 says 3×3"
+                            Expect.equal msg "NdArray#dot - Incompatible shapes: The shape of nda1 is 3×2, but nda2 says 3×3"
             )
         ]

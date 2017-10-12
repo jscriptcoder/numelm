@@ -40,20 +40,20 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
     dtype = dtype || 'Array';
 
     if (!data.length) {
-      throw 'NdArray#constructor: NdArray cannot be empty';
+      throw 'NdArray#constructor - Wrong data length: NdArray cannot be empty';
     }
 
     if (shape.length == 1 && shape[0] > 0) {
       shape[1] = 1; // Column vector n×1
     } else if (shape.length == 0 || shape[0] === 0) {
-      throw 'NdArray#constructor: NdArray has no shape: [' + shape + ']';
+      throw 'NdArray#constructor - Wrong shape: NdArray has no shape: [' + shape + ']';
     }
 
     var length = NdArray.toLength(shape);
 
     if (data.length !== length) {
       throw [
-        'NdArray#constructor: The length of the storage data is ',
+        'NdArray#constructor - Wrong data length: The length of the storage data is ',
         data.length,
         ', but the shape says ',
         shape.join('×'), 
@@ -82,7 +82,7 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
      * @public
      */
     this.dtype = dtype;
-    
+
     // Calculates the stride for each dimension
     // Example: 
     //    shape = [3, 2, 5]
@@ -115,6 +115,13 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
      * @private
      */
     this.start = NdArray.prefill(this.shape.length, 0);
+
+    /**
+     * Keeps track of the position of dimensions
+     * @type number[]
+     * @private
+     */
+    this.dimPos = this.shape.map(function (dim, idx) { return idx });
 
     // Memoization to improve calculation of inverse
     this.toIndex.cache = {};
@@ -161,12 +168,15 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
    */
   NdArray.prototype.clone = function () {
     var clone = Object.create(NdArray.prototype);
-    clone.data = this.data.slice(0);
-    clone.shape = this.shape.slice(0);
-    clone.dtype = this.dtype;
-    clone.stride = this.stride.slice(0);
-    clone.start = this.start.slice(0);
-    return clone;
+
+    return Object.assign(clone, {
+      data: NdArray.copy(this.data),
+      shape: NdArray.copy(this.shape),
+      dtype: this.dtype,
+      stride: NdArray.copy(this.stride),
+      start: NdArray.copy(this.start),
+      dimPos: NdArray.copy(this.dimPos),
+    });
   };
 
   /**
@@ -195,9 +205,30 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
     var data = [];
     var dtype = this.dtype;
     var shape = end.map(function (valEnd, i) { return valEnd - start[i] });
+    var idxOneStride = this.stride.findIndex(function (stride) { return stride === 1 });
 
     if (NdArray.isValidShape(shape)) {
-      this.forEach(function (value) { data.push(value) }, start, end);
+
+      // If the dimension with one step stride is greater than 1 
+      // we can optimize the way we walk through the 1D data 
+      // by slicing as many values together as size of this dimension. 
+      // The reason we can do that is because the one stride dimension 
+      // has the values placed consecutively
+      if (shape[idxOneStride] > 1) {
+
+        var steps = shape[idxOneStride];
+        var ndaData = Array.from(this.data);
+
+        this.forEach(function (value, location, idx) {
+          var slicedStep = ndaData.slice(idx, idx + steps);
+          data = data.concat(slicedStep);
+          location[idxOneStride] += steps;
+        }, start, end);
+
+      } else {
+        this.forEach(function (value) { data.push(value) }, start, end);  
+      }
+      
       if (data.length) {
         return new NdArray(data, shape, dtype);
       }
@@ -229,6 +260,56 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
       this.data[idx] = value;
     }
     return this;
+  };
+
+  /**
+   * Concatenates two NdArray
+   * @param {NdArray} nda1
+   * @param {NdArray} nda2
+   * @param {number} [axis = 0]
+   * @returns {NdArray}
+   * @throws {Error} Incompatible shapes
+   * @public
+   */
+  NdArray.prototype.concat = function (nda2, axis) {
+    axis = axis || 0;
+
+    var sh1 = NdArray.copy(this.shape); sh1.splice(axis, 1);
+    var sh2 = NdArray.copy(nda2.shape); sh2.splice(axis, 1);
+    
+    if (sh1.toString() === sh2.toString()) {
+      
+      var data = Array.from(this.data);
+      var dtype = this.dtype;
+      var shape = NdArray.copy(this.shape); shape[axis] += nda2.shape[axis];
+
+      var nda2Data = Array.from(nda2.data);
+      var axisStride = this.stride[axis];
+      var correctedStride;
+
+      // If the stride is the maximun value means we're concatenating
+      // first dimension axis, therefore we just have to do a normal
+      // 1D array concatenation at the end of the data storage
+      if (axisStride === Math.max.apply(null, this.stride)) {
+        data = data.concat(nda2Data);
+        correctedStride = NdArray.copy(this.stride);
+      } else {
+        
+      }
+
+      var concatNda = new NdArray(data, shape, dtype);
+      concatNda.stride = correctedStride || concatNda.stride;
+      return concatNda;
+
+    } else {
+        throw [
+          'NdArray#concat - Incompatible shapes: The shape of nda1 is ',
+          this.shape.join('×'),
+          ', but nda2 says ',
+          nda2.shape.join('×'),
+          ', on axis ' + axis
+        ].join('');
+    }
   };
 
   /**
@@ -274,9 +355,9 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
     if (!this.isValidLimit(end)) end = this.shape;
 
     for (
-      var location = start.slice(0);
+      var location = NdArray.copy(start);
       this._isLocationWithinLimit(location, end);
-      location = this._nextLocation(location, start, end)
+      this._nextLocation(location, start, end)
     ) {
       var idx = this.toIndex(location);
       var value = this.data[idx];
@@ -301,7 +382,7 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
   };
 
   /**
-   * Permute the dimensions of the NdArray
+   * Swaps the dimensions of the NdArray
    * @param {...number[]} dimsIdx
    * @returns {NdArray}
    * @public
@@ -322,10 +403,13 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
           // Permutates dimensions
           var tmp1 = clonedNda.shape[newIdx];
           var tmp2 = clonedNda.stride[newIdx];
+          var tmp3 = clonedNda.dimPos[newIdx];
           clonedNda.shape[newIdx] = clonedNda.shape[oldIdx];
           clonedNda.stride[newIdx] = clonedNda.stride[oldIdx];
+          clonedNda.dimPos[newIdx] = clonedNda.dimPos[oldIdx];
           clonedNda.shape[oldIdx] = tmp1;
           clonedNda.stride[oldIdx] = tmp2;
+          clonedNda.dimPos[oldIdx] = tmp3;
         }
       });
     }
@@ -342,11 +426,11 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
   NdArray.prototype.inverse = function () {
 
     if(this.shape.length > 2) {
-      throw 'NdArray#inverse: Inverse only supported in a 2D NdArray';
+      throw 'NdArray#inverse - Wrong shape: Inverse only supported in a 2D NdArray';
     }
 
     if(this.shape[0] !== this.shape[1]) {
-      throw 'NdArray#inverse: NdArray must be square';
+      throw 'NdArray#inverse - Wrong shape: NdArray must be square';
     }
 
     // Guassian Elimination to calculate the inverse:
@@ -394,7 +478,7 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
 
         //if it's still 0, not invertable (error)
         if(e === 0){
-          throw 'NdArray#inverse: NdArray not inversable';
+          throw 'NdArray#inverse - Forbidden operation: NdArray not inversable';
         }
       }
       
@@ -455,7 +539,7 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
       });
     } else {
         throw [
-          'NdArray#elementWise: The shape of nda1 is ',
+          'NdArray#elementWise - Incompatible shapes: The shape of nda1 is ',
           this.shape.join('×'),
           ', but nda2 says ',
           nda2.shape.join('×')
@@ -501,7 +585,7 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
 
     } else {
         throw [
-          'NdArray#dot: The shape of nda1 is ',
+          'NdArray#dot - Incompatible shapes: The shape of nda1 is ',
           this.shape.join('×'),
           ', but nda2 says ',
           nda2.shape.join('×')
@@ -564,6 +648,15 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
   };
 
   /**
+   * Tells wether or not the NdArray is transposed
+   * @return {boolean}
+   * @public
+   */
+  NdArray.prototype.isTransposed = function () {
+    return this.dimPos[0] !== 0;
+  }
+
+  /**
    * Checks whether an index is within the limits
    * @param {number} index
    * @return {boolean}
@@ -612,7 +705,9 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
    * @public
    */
   NdArray.prototype.nextLocation = function (location) {
-    return this._nextLocation(location, this.start, this.shape);
+    var next = NdArray.copy(location);
+    this._nextLocation(next, this.start, this.shape);
+    return next;
   }
 
   /**
@@ -632,12 +727,12 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
 
   /**
    * Calculates the next location base on a starting and end location
+   * Mutates the location
    * @see NdArray.prototype.forEach
    * @param {number[]} location
    * @param {number[]} start
    * @param {number[]} end
    * @param {number} [idx] - current index being looked at
-   * @return {boolean}
    * @private
    */
   NdArray.prototype._nextLocation = function (location, start, end, idx) {
@@ -647,11 +742,9 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
       location[idx]++;
       if (idx > 0 && location[idx] >= end[idx]) {
         location[idx] = start[idx];
-        location = this._nextLocation(location, start, end, --idx);
+        this._nextLocation(location, start, end, --idx);
       }
     }
-
-    return location;
   }
 
   /**
@@ -783,6 +876,17 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
     return arr && arr.length;
   }
 
+  /**
+   * Copy an Array
+   * @memberOf NdArray
+   * @param {any[]} arr
+   * @returns {any[]}
+   * @static
+   */
+  NdArray.copy = function (arr) {
+    return arr.slice(0);
+  }
+
   // =============== Native.NumElm =============== //
 
 
@@ -888,6 +992,14 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
     }
   }
 
+  /**
+   * Slices the NdArray selected from start to end (end not included)
+   * @param {Location} tLocationStart
+   * @param {Location} tLocationEnd
+   * @param {NdArray} nda
+   * @returns {Maybe Number}
+   * @memberof Native.NumElm
+   */
   function slice(tLocationStart, tLocationEnd, nda) {
     var start = toArray(tLocationStart);
     var end = toArray(tLocationEnd);
@@ -931,8 +1043,20 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
     
   }
 
-  function replace(slicedNda, tLocation, nda) {
-    var location = toArray(tLocation);
+  /**
+   * Join a sequence of NdArray along an existing axis.
+   * @param {number} value
+   * @param {Location} tLocation
+   * @param {NdArray} nda
+   * @returns {Result String NdArray} new NdArray (no mutation)
+   * @memberof Native.NumElm
+   */
+  function concatenate(axis, nda1, nda2) {
+    try {
+      return resultOk(nda1.concat(nda2, axis));
+    } catch (e) {
+      return resultErr(e + '');
+    }
   }
 
   /**
@@ -950,14 +1074,15 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
   }
 
   /**
-   * Transposes the NdArray (Only two dimensions --> [1, 0])
-   * TODO: why not n-d??
+   * Transposes the NdArray (swaps the axes)
+   * @param {List Int} lAxes
    * @param {NdArray} nda
    * @returns {NdArray} transposed NdArray
    * @memberof Native.NumElm
    */
-  function transpose(nda) {
-    return nda.transpose(1);
+  function transpose(lAxes, nda) {
+    var axes = toArray(lAxes);
+    return nda.transpose.apply(nda, axes);
   }
 
   /**
@@ -1017,12 +1142,83 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
     get         : F2(get),
     slice       : F3(slice),
     set         : F3(set),
-    replace     : F3(replace),
+    concatenate : F3(concatenate),
     map         : F2(map),
-    transpose   : transpose,
+    transpose   : F2(transpose),
     inverse     : inverse,
     elementWise : F3(elementWise),
     dot         : F2(dot)
   };
 
 }();
+
+//////////////////////////////
+//          Polyfills       //
+//////////////////////////////
+
+if (typeof Object.assign != 'function') {
+  Object.assign = function(target) {
+    'use strict';
+    if (target == null) {
+      throw new TypeError('Cannot convert undefined or null to object');
+    }
+
+    target = Object(target);
+    for (var index = 1; index < arguments.length; index++) {
+      var source = arguments[index];
+      if (source != null) {
+        for (var key in source) {
+          if (Object.prototype.hasOwnProperty.call(source, key)) {
+            target[key] = source[key];
+          }
+        }
+      }
+    }
+    return target;
+  };
+}
+
+// https://tc39.github.io/ecma262/#sec-array.prototype.findIndex
+if (!Array.prototype.findIndex) {
+  Object.defineProperty(Array.prototype, 'findIndex', {
+    value: function(predicate) {
+     // 1. Let O be ? ToObject(this value).
+      if (this == null) {
+        throw new TypeError('"this" is null or not defined');
+      }
+
+      var o = Object(this);
+
+      // 2. Let len be ? ToLength(? Get(O, "length")).
+      var len = o.length >>> 0;
+
+      // 3. If IsCallable(predicate) is false, throw a TypeError exception.
+      if (typeof predicate !== 'function') {
+        throw new TypeError('predicate must be a function');
+      }
+
+      // 4. If thisArg was supplied, let T be thisArg; else let T be undefined.
+      var thisArg = arguments[1];
+
+      // 5. Let k be 0.
+      var k = 0;
+
+      // 6. Repeat, while k < len
+      while (k < len) {
+        // a. Let Pk be ! ToString(k).
+        // b. Let kValue be ? Get(O, Pk).
+        // c. Let testResult be ToBoolean(? Call(predicate, T, « kValue, k, O »)).
+        // d. If testResult is true, return k.
+        var kValue = o[k];
+        if (predicate.call(thisArg, kValue, k, o)) {
+          return k;
+        }
+        // e. Increase k by 1.
+        k++;
+      }
+
+      // 7. Return -1.
+      return -1;
+    }
+  });
+}

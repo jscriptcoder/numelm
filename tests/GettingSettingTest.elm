@@ -88,7 +88,7 @@ suit =
                         Nothing ->
                             Expect.fail "This should not happen"
             )
-        , test "getn [1, 1, 0] [] <| matrix3d Int8 [ [ [ 1, 2 ], [ 3, 4 ] ], [ [ 5, 6 ], [ 7, 8 ] ], [ [ 9, 10 ], [ 11, 12 ] ] ]"
+        , test "getn [1, 0, 1] [] <| matrix3d Int8 [ [ [ 1, 2 ], [ 3, 4 ] ], [ [ 5, 6 ], [ 7, 8 ] ], [ [ 9, 10 ], [ 11, 12 ] ] ]"
             (\_ ->
                 let
                     ndaResult =
@@ -247,6 +247,41 @@ suit =
 
                         Nothing ->
                             Expect.pass
+            )
+        , test "getn [2, 0] [] <| transpose <| matrix Int8 [ [ 1, 2, 3 ], [ 4, 5, 6 ] ]"
+            (\_ ->
+                let
+                    matrixResult =
+                        NumElm.matrix Int8 [ [ 1, 2, 3 ], [ 4, 5, 6 ] ]
+
+                    matrixTResult =
+                        Result.map
+                            (\matrix -> NumElm.transpose matrix)
+                            matrixResult
+
+                    slicedNdaMaybeResult =
+                        Result.map
+                            (\matrixT -> getn [ 2, 0 ] [] matrixT)
+                            matrixTResult
+
+                    strMatrixResult =
+                        Result.map
+                            (\slicedNdaMaybe ->
+                                case slicedNdaMaybe of
+                                    Just slicedNda ->
+                                        NumElm.dataToString slicedNda
+
+                                    Nothing ->
+                                        "This should not happen"
+                            )
+                            slicedNdaMaybeResult
+                in
+                    case strMatrixResult of
+                        Ok strMatrix ->
+                            Expect.equal strMatrix "[3,6]"
+
+                        Err msg ->
+                            Expect.fail msg
             )
         , test "set 8 [2, 1] <| eye Int16 3"
             (\_ ->
