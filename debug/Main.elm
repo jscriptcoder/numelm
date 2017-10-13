@@ -6,48 +6,21 @@ import NumElm exposing (..)
 
 main =
     let
-        nda1Result =
+        strdataResult =
             NumElm.matrix3d
                 Int8
                 [ [ [ 1, 2 ]
                   , [ 3, 4 ]
-                  , [ 5, 6 ]
                   ]
-                , [ [ 7, 8 ]
-                  , [ 9, 10 ]
+                , [ [ 5, 6 ]
+                  , [ 7, 8 ]
+                  ]
+                , [ [ 9, 10 ]
                   , [ 11, 12 ]
                   ]
                 ]
-
-        -- |> Result.map (\nda1 -> NumElm.trans nda1)
-        nda2Result =
-            NumElm.matrix3d
-                Int8
-                [ [ [ 13, 14 ]
-                  , [ 15, 16 ]
-                  ]
-                , [ [ 19, 20 ]
-                  , [ 21, 22 ]
-                  ]
-                ]
-
-        --|> Result.map (\nda2 -> NumElm.trans nda2)
-        strdataResult =
-            Result.map2
-                (\nda1 nda2 ->
-                    let
-                        concatResult =
-                            NumElm.concatenateAxis 1 nda1 nda2
-                    in
-                        case concatResult of
-                            Ok concat ->
-                                NumElm.dataToString concat
-
-                            Err msg ->
-                                msg
-                )
-                nda1Result
-                nda2Result
+                |> Result.map (\matrix -> NumElm.trans matrix)
+                |> Result.andThen (\matrixT -> Ok (NumElm.dataToString matrixT))
     in
         text <|
             case strdataResult of

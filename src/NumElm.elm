@@ -39,6 +39,7 @@ module NumElm
         , inv
         , pinv
         , svd
+        , eig
         , add
         , (.+)
         , subtract
@@ -80,7 +81,7 @@ module NumElm
 @docs get, slice, getn, set
 
 # Transforming NdArray
-@docs map, transposeAxes, transpose, trans, inverse, inv, pinv, svd
+@docs map, transposeAxes, transpose, trans, inverse, inv, pinv, svd, eig
 
 # Arithmetic operations
 @docs add, (.+), subtract, sub, (.-), multiply, mul, (.*), divide, div, (./), power, pow, (.^)
@@ -557,12 +558,34 @@ set value location nda =
 
 
 {-| Join a sequence of NdArray along an existing axis.
+
+    let
+        nda1 = ndarray Int8 [3, 2] [1, 2, 3, 4, 5, 6]
+        -- [ [1, 2]
+        -- , [3, 4]
+        -- , [5, 6]
+        -- ]
+
+        nda2 = ndarray Int8 [3, 2] [7, 8, 9, 10, 11, 12]
+        -- [ [ 7,  8]
+        -- , [ 9, 10]
+        -- , [11, 12]
+        -- ]
+    in
+        concatenateAxis 1 nda1 nda2
+        -- [ [1, 2,  7,  8]
+        -- , [3, 4,  9, 10]
+        -- , [5, 6, 11, 12]
+        -- ]
+
 -}
 concatenateAxis : Int -> NdArray -> NdArray -> Result String NdArray
 concatenateAxis axis nda1 nda2 =
     Native.NumElm.concatenate axis nda1 nda2
 
 
+{-| Alias for concatenateAxis with axis 0.
+-}
 concatenate : NdArray -> NdArray -> Result String NdArray
 concatenate nda1 nda2 =
     concatenateAxis 0 nda1 nda2
@@ -675,6 +698,16 @@ pinv nda =
 -}
 svd : NdArray -> NdArray
 svd nda =
+    NdArray
+
+
+{-| Compute the eigenvalues and right eigenvectors of a square NdArray.
+
+    -- TODO
+
+-}
+eig : NdArray -> NdArray
+eig nda =
     NdArray
 
 

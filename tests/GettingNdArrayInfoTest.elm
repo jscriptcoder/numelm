@@ -8,7 +8,7 @@ import NumElm exposing (..)
 suit : Test
 suit =
     describe "Getting info from NdArray"
-        [ test "toString <| vector Int32 [ 1, 2 ]"
+        [ test "Converting NdArray to string"
             (\_ ->
                 let
                     ndaResult =
@@ -24,7 +24,7 @@ suit =
                 in
                     Expect.equal strnda "NdArray[length=2,shape=2×1,dtype=Int32]"
             )
-        , test "dataToString <| matrix Float32 [ [1, 2, 3], [4, 5, 6], [7, 8, 9] ]"
+        , test "Converting data to string"
             (\_ ->
                 let
                     ndaResult =
@@ -40,7 +40,7 @@ suit =
                 in
                     Expect.equal dataStr "[1,2,3,4,5,6,7,8,9]"
             )
-        , test "shape <| matrix3d Int8 [ [ [ 1, 2 ] ], [ [ 7, 8 ] ] ]"
+        , test "Getting the shape"
             (\_ ->
                 let
                     ndaResult =
@@ -56,23 +56,7 @@ suit =
                 in
                     Expect.equalLists ndaShape [ 2, 1, 2 ]
             )
-        , test "shape <| ndarray Int8 [ ] [ 1, 2, 3, 4, 5 ] --> Error"
-            (\_ ->
-                let
-                    ndaResult =
-                        NumElm.ndarray Int8 [] [ 1, 2, 3, 4, 5 ]
-
-                    ndaShapeErr =
-                        case ndaResult of
-                            Ok nda ->
-                                "Ok"
-
-                            Err msg ->
-                                msg
-                in
-                    Expect.equal ndaShapeErr "NdArray#constructor - Wrong shape: NdArray has no shape: []"
-            )
-        , test "ndim <| ones Float32 [ 3, 2, 1 ]"
+        , test "Number of dimensions"
             (\_ ->
                 let
                     ndaResult =
@@ -88,7 +72,7 @@ suit =
                 in
                     Expect.equal ndaDim 3
             )
-        , test "numel <| ones Float32 [ 3, 2, 1 ]"
+        , test "Number of elements"
             (\_ ->
                 let
                     ndaResult =
@@ -104,7 +88,7 @@ suit =
                 in
                     Expect.equal ndaLen 12
             )
-        , test "dtype <| matrix3d Float32 [ [ [ 1, 2 ] ], [ [ 7, 8 ] ] ]"
+        , test "Getting dtype"
             (\_ ->
                 let
                     ndaResult =

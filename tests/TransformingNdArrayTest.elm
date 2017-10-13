@@ -8,7 +8,7 @@ import NumElm exposing (..)
 suit : Test
 suit =
     describe "Transforming NdArray"
-        [ test "map (a -> a^2) <| vector Int8 [1, 2, 3]"
+        [ test "Map function"
             (\_ ->
                 let
                     vecResult =
@@ -25,7 +25,7 @@ suit =
                         Err msg ->
                             Expect.fail msg
             )
-        , test "transpose <| matrix Float32 [[1, 2, 3], [4, 5, 6]]"
+        , test "Transpose"
             (\_ ->
                 let
                     matrixResult =
@@ -45,7 +45,7 @@ suit =
                         Err msg ->
                             Expect.fail msg
             )
-        , test "transpose <| matrix3d Int8 [ [ [ 1 ], [ 2 ], [ 3 ] ], [ [ 4 ], [ 5 ], [ 6 ] ] ]"
+        , test "Transpose 3D matrix"
             (\_ ->
                 let
                     matrixResult =
@@ -74,7 +74,7 @@ suit =
                         Err msg ->
                             Expect.fail msg
             )
-        , test "transpose <| matrix Int8 [ [ 1, 2, 3 ], [ 4, 5, 6 ] ]"
+        , test "More transposing"
             (\_ ->
                 let
                     matrixResult =
@@ -106,7 +106,7 @@ suit =
                         Err msg ->
                             Expect.fail msg
             )
-        , test "inv <| matrix Float32 [ [ 8, 1, 6 ], [ 3, 5, 7 ], [ 4, 9, 2 ] ]"
+        , test "Calculate inverse"
             (\_ ->
                 let
                     matrixResult =
@@ -121,13 +121,13 @@ suit =
                 in
                     case matrixInvResult of
                         Ok matrixInv ->
-                            Expect.equal "[0.14722222089767456,-0.14444445073604584,0.06388888508081436,-0.06111111119389534,0.022222211584448814,0.10555555671453476,-0.01944444142282009,0.18888890743255615,-0.10277777910232544]" <|
-                                NumElm.dataToString matrixInv
+                            NumElm.dataToString matrixInv
+                                |> Expect.equal "[0.14722222089767456,-0.14444445073604584,0.06388888508081436,-0.06111111119389534,0.022222211584448814,0.10555555671453476,-0.01944444142282009,0.18888890743255615,-0.10277777910232544]"
 
                         Err msg ->
                             Expect.fail msg
             )
-        , test "inverse <| matrix Float32 [ [ 2, 3, 7 ], [ 1, 3, 2 ] ] --> Error"
+        , test "Inverse with wrong shape"
             (\_ ->
                 let
                     matrixResult =
@@ -148,9 +148,10 @@ suit =
                             Err msg ->
                                 msg
                 in
-                    Expect.equal errMsg "NdArray#inverse - Wrong shape: NdArray must be square"
+                    errMsg
+                        |> Expect.equal "NdArray#inverse - Wrong shape: NdArray must be square"
             )
-        , test "inverse <| matrix Float32 [ [ 2, 3 ], [ 0, 0 ] ] --> Error"
+        , test "Not inversable matrix"
             (\_ ->
                 let
                     matrixResult =
@@ -171,6 +172,7 @@ suit =
                             Err msg ->
                                 msg
                 in
-                    Expect.equal errMsg "NdArray#inverse - Forbidden operation: NdArray not inversable"
+                    errMsg
+                        |> Expect.equal "NdArray#inverse - Forbidden operation: NdArray not inversable"
             )
         ]

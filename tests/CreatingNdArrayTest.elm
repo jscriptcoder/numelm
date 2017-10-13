@@ -8,7 +8,7 @@ import NumElm exposing (..)
 suit : Test
 suit =
     describe "Creating NdArray"
-        [ test "ndarray Int8 [ 3, 2 ] [ 1, 2, 3, 4, 5, 6 ]"
+        [ test "Creating Int8"
             (\_ ->
                 let
                     ndaResult =
@@ -22,9 +22,10 @@ suit =
                             Err msg ->
                                 msg
                 in
-                    Expect.equal strnda "NdArray[length=6,shape=3×2,dtype=Int8]"
+                    strnda
+                        |> Expect.equal "NdArray[length=6,shape=3×2,dtype=Int8]"
             )
-        , test "ndarray Int8 [ 3, 2 ] [ ] --> Error"
+        , test "Creating with empty data"
             (\_ ->
                 let
                     ndaResult =
@@ -38,9 +39,10 @@ suit =
                             Err msg ->
                                 msg
                 in
-                    Expect.equal strnda "NdArray#constructor - Wrong data length: NdArray cannot be empty"
+                    strnda
+                        |> Expect.equal "NdArray#constructor - Wrong data length: NdArray cannot be empty"
             )
-        , test "ndarray Float32 [ 2, 2 ] [ 1, 2, 3, 4 ]"
+        , test "Creating Float32"
             (\_ ->
                 let
                     ndaResult =
@@ -54,9 +56,10 @@ suit =
                             Err msg ->
                                 msg
                 in
-                    Expect.equal strnda "NdArray[length=4,shape=2×2,dtype=Float32]"
+                    strnda
+                        |> Expect.equal "NdArray[length=4,shape=2×2,dtype=Float32]"
             )
-        , test "ndarray Int32 [ 2, 2 ] [ 1, 2, 3, 4, 6 ] --> Error"
+        , test "Creating with wrong data length"
             (\_ ->
                 let
                     ndaResult =
@@ -70,9 +73,10 @@ suit =
                             Err msg ->
                                 msg
                 in
-                    Expect.equal strnda "NdArray#constructor - Wrong data length: The length of the storage data is 6, but the shape says 2×2=4"
+                    strnda
+                        |> Expect.equal "NdArray#constructor - Wrong data length: The length of the storage data is 6, but the shape says 2×2=4"
             )
-        , test "vector Int32 [ 1, 2, 3, 4, 5 ]"
+        , test "Creating vector"
             (\_ ->
                 let
                     ndaResult =
@@ -86,9 +90,10 @@ suit =
                             Err msg ->
                                 msg
                 in
-                    Expect.equal strnda "NdArray[length=5,shape=5×1,dtype=Int32]"
+                    strnda
+                        |> Expect.equal "NdArray[length=5,shape=5×1,dtype=Int32]"
             )
-        , test "matrix Int8 [ [1, 2], [3, 4] ]"
+        , test "Creating matrix"
             (\_ ->
                 let
                     ndaResult =
@@ -102,9 +107,10 @@ suit =
                             Err msg ->
                                 msg
                 in
-                    Expect.equal strnda "NdArray[length=4,shape=2×2,dtype=Int8]"
+                    strnda
+                        |> Expect.equal "NdArray[length=4,shape=2×2,dtype=Int8]"
             )
-        , test "matrix Int8 [ [1, 2], [3, 4, 5] ] --> Error"
+        , test "Creating matrix with wrong length"
             (\_ ->
                 let
                     ndaResult =
@@ -118,9 +124,10 @@ suit =
                             Err msg ->
                                 msg
                 in
-                    Expect.equal strnda "NdArray#constructor - Wrong data length: The length of the storage data is 5, but the shape says 2×2=4"
+                    strnda
+                        |> Expect.equal "NdArray#constructor - Wrong data length: The length of the storage data is 5, but the shape says 2×2=4"
             )
-        , test "matrix3d Int8 [ [ [ 1, 2 ], [ 3, 4 ], [ 5, 6 ] ], [ [ 7, 8 ], [ 9, 10 ], [ 11, 12 ] ] ]"
+        , test "Creating 3D matrix"
             (\_ ->
                 let
                     ndaResult =
@@ -134,9 +141,10 @@ suit =
                             Err msg ->
                                 msg
                 in
-                    Expect.equal strnda "NdArray[length=12,shape=2×3×2,dtype=Int8]"
+                    strnda
+                        |> Expect.equal "NdArray[length=12,shape=2×3×2,dtype=Int8]"
             )
-        , test "matrix3d Int8 [ [ [ 1, 2 ], [ 3, 4 ] ], [ [ 5, 6, 7 ], [ 8, 9 ] ] ] --> Error"
+        , test "Creating 3D matrix with wrong length"
             (\_ ->
                 let
                     ndaResult =
@@ -150,6 +158,24 @@ suit =
                             Err msg ->
                                 msg
                 in
-                    Expect.equal strnda "NdArray#constructor - Wrong data length: The length of the storage data is 9, but the shape says 2×2×2=8"
+                    strnda
+                        |> Expect.equal "NdArray#constructor - Wrong data length: The length of the storage data is 9, but the shape says 2×2×2=8"
+            )
+        , test "Creating with empty shape"
+            (\_ ->
+                let
+                    ndaResult =
+                        NumElm.ndarray Int8 [] [ 1, 2, 3, 4, 5 ]
+
+                    ndaShapeErr =
+                        case ndaResult of
+                            Ok nda ->
+                                "Ok"
+
+                            Err msg ->
+                                msg
+                in
+                    ndaShapeErr
+                        |> Expect.equal "NdArray#constructor - Wrong shape: NdArray has no shape: []"
             )
         ]

@@ -8,7 +8,7 @@ import NumElm exposing (..)
 suit : Test
 suit =
     describe "Matrix multiplication"
-        [ test "dot nda1[4×3] nda2[3×2] |> toString == [4×2]"
+        [ test "Dot multiplication"
             (\_ ->
                 let
                     nda1Result =
@@ -36,15 +36,14 @@ suit =
                 in
                     case ndaDotResult of
                         Ok ndaDot ->
-                            Expect.equal
-                                "NdArray[length=8,shape=4×2,dtype=Int16]"
-                            <|
-                                NumElm.toString ndaDot
+                            NumElm.toString ndaDot
+                                |> Expect.equal
+                                    "NdArray[length=8,shape=4×2,dtype=Int16]"
 
                         Err msg ->
                             Expect.fail msg
             )
-        , test "dot nda1 nda2 |> dataToString"
+        , test "Another dot multiplication"
             (\_ ->
                 let
                     nda1Result =
@@ -77,15 +76,13 @@ suit =
                                , [76, 100]
                                ]
                             -}
-                            Expect.equal
-                                "[22,28,49,64,76,100]"
-                            <|
-                                NumElm.dataToString ndaDot
+                            NumElm.dataToString ndaDot
+                                |> Expect.equal "[22,28,49,64,76,100]"
 
                         Err msg ->
                             Expect.fail msg
             )
-        , test "dot nda1[3×2] nda2[3×3] --> Error"
+        , test "Dot multiplication with incompatible shapes"
             (\_ ->
                 let
                     nda1Result =
@@ -115,6 +112,7 @@ suit =
                             Expect.fail "This should not happen"
 
                         Err msg ->
-                            Expect.equal msg "NdArray#dot - Incompatible shapes: The shape of nda1 is 3×2, but nda2 says 3×3"
+                            msg
+                                |> Expect.equal "NdArray#dot - Incompatible shapes: The shape of nda1 is 3×2, but nda2 says 3×3"
             )
         ]
