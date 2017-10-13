@@ -6,26 +6,17 @@ import NumElm exposing (..)
 
 main =
     let
-        strdataResult =
-            NumElm.matrix3d
-                Int8
-                [ [ [ 1, 2 ]
-                  , [ 3, 4 ]
-                  ]
-                , [ [ 5, 6 ]
-                  , [ 7, 8 ]
-                  ]
-                , [ [ 9, 10 ]
-                  , [ 11, 12 ]
-                  ]
+        matrixResult =
+            matrix Float32
+                [ [ 1.4564, -2.1271 ]
+                , [ -3.6544, 4.3221 ]
                 ]
-                |> Result.map (\matrix -> NumElm.trans matrix)
-                |> Result.andThen (\matrixT -> Ok (NumElm.dataToString matrixT))
+                |> Result.map (\matrix -> NumElm.ceil matrix)
     in
-        text <|
-            case strdataResult of
-                Ok strdata ->
-                    strdata
+        case matrixResult of
+            Ok matrix ->
+                NumElm.dataToString matrix
+                    |> text
 
-                Err msg ->
-                    msg
+            Err msg ->
+                text msg

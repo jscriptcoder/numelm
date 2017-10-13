@@ -61,6 +61,13 @@ module NumElm
         , log10
         , exp
         , dot
+        , around
+        , round
+        , ceil
+        , floor
+        , truncate
+        , trunc
+        , fix
         )
 
 {-| The NumPy for Elm.
@@ -75,10 +82,10 @@ module NumElm
 @docs toString, dataToString, shape, size, ndim, length, numel, dtype
 
 # Pre-filled NdArray
-@docs zeros, ones, diagonal, diag, identity, eye, rand
+@docs zeros, ones, diagonal, diag, identity, eye, rand, randn
 
 # Getting and Setting
-@docs get, slice, getn, set
+@docs get, slice, getn, set, concatenateAxis, concatenate, concat
 
 # Transforming NdArray
 @docs map, transposeAxes, transpose, trans, inverse, inv, pinv, svd, eig
@@ -93,7 +100,7 @@ module NumElm
 @docs dot
 
 # Round off
-@docs around, round, ceil, floor, fix
+@docs around, round, ceil, floor, truncate, trunc, fix
 
 -}
 
@@ -1125,6 +1132,111 @@ dot nda1 nda2 =
 
 
 
+-- Round off --
+
+
+{-| Evenly round to the given number of decimals.
+
+    let
+        A = matrix Float32
+                   [ [ 1.4564, -2.1271]
+                   , [-3.6544,  4.3221]
+                   ]
+
+    in
+        around 2 A
+       -- [ [ 1.46, -2.13]
+       -- , [-3.65,  4.32]
+       -- ]
+
+-}
+around : Int -> NdArray -> NdArray
+around decimals nda =
+    map (\val _ _ -> roundTo decimals val) nda
+
+
+{-| Alias for around and decimals 0.
+-}
+round : NdArray -> NdArray
+round nda =
+    around 0 nda
+
+
+{-| Return the ceiling of the input, element-wise.
+
+    let
+        A = matrix Float32
+                   [ [ 1.4564, -2.1271]
+                   , [-3.6544,  4.3221]
+                   ]
+
+    in
+        ceil 2 A
+       -- [ [ 2, -2]
+       -- , [-4,  5]
+       -- ]
+
+-}
+ceil : NdArray -> NdArray
+ceil nda =
+    map (\val _ _ -> Basics.ceiling val) nda
+
+
+{-| Return the floor of the input, element-wise.
+
+    let
+        A = matrix Float32
+                   [ [ 1.4564, -2.1271]
+                   , [-3.6544,  4.3221]
+                   ]
+
+    in
+        floot 2 A
+       -- [ [ 2, -2]
+       -- , [-3,  5]
+       -- ]
+
+-}
+floor : NdArray -> NdArray
+floor nda =
+    map (\val _ _ -> Basics.floor val) nda
+
+
+{-| Round to nearest integer towards zero.
+
+    let
+        A = matrix Float32
+                   [ [ 1.4564, -2.1271]
+                   , [-3.6544,  4.3221]
+                   ]
+
+    in
+        floot 2 A
+       -- [ [ 1, -2]
+       -- , [-3,  4]
+       -- ]
+
+-}
+truncate : NdArray -> NdArray
+truncate nda =
+    map (\val _ _ -> Basics.truncate val) nda
+
+
+{-| Alias for truncate.
+-}
+trunc : NdArray -> NdArray
+trunc nda =
+    truncate nda
+
+
+{-| Alias for truncate.
+-}
+fix : NdArray -> NdArray
+fix nda =
+    trunc nda
+
+
+
 -- Helper functions --
 
 
@@ -1168,3 +1280,17 @@ randomList size intSeed generator =
         Tuple.first <|
             Random.step rndList <|
                 Random.initialSeed intSeed
+
+
+roundTo : Int -> Float -> Float
+roundTo places value =
+    let
+        factor =
+            (10 ^ places)
+                |> Basics.toFloat
+    in
+        ((value * factor)
+            |> Basics.round
+            |> Basics.toFloat
+        )
+            / factor
