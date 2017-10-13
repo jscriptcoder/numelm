@@ -1,3 +1,204 @@
+//////////////////////////////
+//          Polyfills       //
+//////////////////////////////
+
+if (typeof Object.assign != 'function') {
+  Object.assign = function(target) {
+    'use strict';
+    if (target == null) {
+      throw new TypeError('Cannot convert undefined or null to object');
+    }
+
+    target = Object(target);
+    for (var index = 1; index < arguments.length; index++) {
+      var source = arguments[index];
+      if (source != null) {
+        for (var key in source) {
+          if (Object.prototype.hasOwnProperty.call(source, key)) {
+            target[key] = source[key];
+          }
+        }
+      }
+    }
+    return target;
+  };
+}
+
+if (!Array.prototype.fill) {
+  Object.defineProperty(Array.prototype, 'fill', {
+    value: function(value) {
+
+      // Steps 1-2.
+      if (this == null) {
+        throw new TypeError('this is null or not defined');
+      }
+
+      var O = Object(this);
+
+      // Steps 3-5.
+      var len = O.length >>> 0;
+
+      // Steps 6-7.
+      var start = arguments[1];
+      var relativeStart = start >> 0;
+
+      // Step 8.
+      var k = relativeStart < 0 ?
+        Math.max(len + relativeStart, 0) :
+        Math.min(relativeStart, len);
+
+      // Steps 9-10.
+      var end = arguments[2];
+      var relativeEnd = end === undefined ?
+        len : end >> 0;
+
+      // Step 11.
+      var final = relativeEnd < 0 ?
+        Math.max(len + relativeEnd, 0) :
+        Math.min(relativeEnd, len);
+
+      // Step 12.
+      while (k < final) {
+        O[k] = value;
+        k++;
+      }
+
+      // Step 13.
+      return O;
+    }
+  });
+}
+
+// https://tc39.github.io/ecma262/#sec-array.prototype.findIndex
+if (!Array.prototype.findIndex) {
+  Object.defineProperty(Array.prototype, 'findIndex', {
+    value: function(predicate) {
+     // 1. Let O be ? ToObject(this value).
+      if (this == null) {
+        throw new TypeError('"this" is null or not defined');
+      }
+
+      var o = Object(this);
+
+      // 2. Let len be ? ToLength(? Get(O, "length")).
+      var len = o.length >>> 0;
+
+      // 3. If IsCallable(predicate) is false, throw a TypeError exception.
+      if (typeof predicate !== 'function') {
+        throw new TypeError('predicate must be a function');
+      }
+
+      // 4. If thisArg was supplied, let T be thisArg; else let T be undefined.
+      var thisArg = arguments[1];
+
+      // 5. Let k be 0.
+      var k = 0;
+
+      // 6. Repeat, while k < len
+      while (k < len) {
+        // a. Let Pk be ! ToString(k).
+        // b. Let kValue be ? Get(O, Pk).
+        // c. Let testResult be ToBoolean(? Call(predicate, T, « kValue, k, O »)).
+        // d. If testResult is true, return k.
+        var kValue = o[k];
+        if (predicate.call(thisArg, kValue, k, o)) {
+          return k;
+        }
+        // e. Increase k by 1.
+        k++;
+      }
+
+      // 7. Return -1.
+      return -1;
+    }
+  });
+}
+
+// Production steps of ECMA-262, Edition 6, 22.1.2.1
+if (!Array.from) {
+  Array.from = (function () {
+    var toStr = Object.prototype.toString;
+    var isCallable = function (fn) {
+      return typeof fn === 'function' || toStr.call(fn) === '[object Function]';
+    };
+    var toInteger = function (value) {
+      var number = Number(value);
+      if (isNaN(number)) { return 0; }
+      if (number === 0 || !isFinite(number)) { return number; }
+      return (number > 0 ? 1 : -1) * Math.floor(Math.abs(number));
+    };
+    var maxSafeInteger = Math.pow(2, 53) - 1;
+    var toLength = function (value) {
+      var len = toInteger(value);
+      return Math.min(Math.max(len, 0), maxSafeInteger);
+    };
+
+    // The length property of the from method is 1.
+    return function from(arrayLike/*, mapFn, thisArg */) {
+      // 1. Let C be the this value.
+      var C = this;
+
+      // 2. Let items be ToObject(arrayLike).
+      var items = Object(arrayLike);
+
+      // 3. ReturnIfAbrupt(items).
+      if (arrayLike == null) {
+        throw new TypeError('Array.from requires an array-like object - not null or undefined');
+      }
+
+      // 4. If mapfn is undefined, then let mapping be false.
+      var mapFn = arguments.length > 1 ? arguments[1] : void undefined;
+      var T;
+      if (typeof mapFn !== 'undefined') {
+        // 5. else
+        // 5. a If IsCallable(mapfn) is false, throw a TypeError exception.
+        if (!isCallable(mapFn)) {
+          throw new TypeError('Array.from: when provided, the second argument must be a function');
+        }
+
+        // 5. b. If thisArg was supplied, let T be thisArg; else let T be undefined.
+        if (arguments.length > 2) {
+          T = arguments[2];
+        }
+      }
+
+      // 10. Let lenValue be Get(items, "length").
+      // 11. Let len be ToLength(lenValue).
+      var len = toLength(items.length);
+
+      // 13. If IsConstructor(C) is true, then
+      // 13. a. Let A be the result of calling the [[Construct]] internal method 
+      // of C with an argument list containing the single item len.
+      // 14. a. Else, Let A be ArrayCreate(len).
+      var A = isCallable(C) ? Object(new C(len)) : new Array(len);
+
+      // 16. Let k be 0.
+      var k = 0;
+      // 17. Repeat, while k < len… (also steps a - h)
+      var kValue;
+      while (k < len) {
+        kValue = items[k];
+        if (mapFn) {
+          A[k] = typeof T === 'undefined' ? mapFn(kValue, k) : mapFn.call(T, kValue, k);
+        } else {
+          A[k] = kValue;
+        }
+        k += 1;
+      }
+      // 18. Let putStatus be Put(A, "length", len, true).
+      A.length = len;
+      // 20. Return A.
+      return A;
+    };
+  }());
+}
+
+
+
+/////////////////////////////////////////
+//          Native NumElm Package      //
+/////////////////////////////////////////
+
 var _jscriptcoder$numelm$Native_NumElm = function() {
 
   // Imports
@@ -7,7 +208,6 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
   var resultErr     = _elm_lang$core$Result$Err;
   var maybeJust     = _elm_lang$core$Maybe$Just;
   var maybeNothing  = _elm_lang$core$Maybe$Nothing;
-
 
   /**
    * Maps dtype to TypedArray constructor.
@@ -117,14 +317,11 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
     this.start = NdArray.prefill(this.shape.length, 0);
 
     /**
-     * Keeps track of the position of dimensions
-     * @type number[]
+     * Memoization to improve calculations
+     * @type {[loc: string]: number}
      * @private
      */
-    this.dimPos = this.shape.map(function (dim, idx) { return idx });
-
-    // Memoization to improve calculation of inverse
-    this.toIndex.cache = {};
+    this.loc2idxCache = {};
   }
 
   /**
@@ -153,6 +350,38 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
   };
 
   /**
+   * String representation of the raw data storage
+   * @returns {string}
+   * @public
+   */
+  NdArray.prototype.rawDataToString = function () {
+    return '[' + this.data + ']';
+  };
+
+
+  /**
+   * Array representation of the data storage
+   * @returns {string}
+   * @public
+   */
+  NdArray.prototype.dataToArray = function () {
+    var data = [];
+    this.forEach(function (value) {
+      data.push(value);
+    });
+    return data;
+  };
+
+  /**
+   * Array representation of the raw data storage
+   * @returns {string}
+   * @public
+   */
+  NdArray.prototype.rawDataToArray = function () {
+    return Array.from(this.data);
+  };
+
+  /**
    * String representation of the shape
    * @returns {string}
    * @public
@@ -170,12 +399,12 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
     var clone = Object.create(NdArray.prototype);
 
     return Object.assign(clone, {
-      data: NdArray.copy(this.data),
-      shape: NdArray.copy(this.shape),
-      dtype: this.dtype,
-      stride: NdArray.copy(this.stride),
-      start: NdArray.copy(this.start),
-      dimPos: NdArray.copy(this.dimPos),
+      data        : NdArray.copy(this.data),
+      shape       : NdArray.copy(this.shape),
+      dtype       : this.dtype,
+      stride      : NdArray.copy(this.stride),
+      start       : NdArray.copy(this.start),
+      loc2idxCache: NdArray.copy(this.loc2idxCache)
     });
   };
 
@@ -205,33 +434,12 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
     var data = [];
     var dtype = this.dtype;
     var shape = end.map(function (valEnd, i) { return valEnd - start[i] });
-    var idxOneStride = this.stride.findIndex(function (stride) { return stride === 1 });
 
-    if (NdArray.isValidShape(shape)) {
-
-      // If the dimension with one step stride is greater than 1 
-      // we can optimize the way we walk through the 1D data 
-      // by slicing as many values together as size of this dimension. 
-      // The reason we can do that is because the one stride dimension 
-      // has the values placed consecutively
-      if (shape[idxOneStride] > 1) {
-
-        var steps = shape[idxOneStride];
-        var ndaData = Array.from(this.data);
-
-        this.forEach(function (value, location, idx) {
-          var slicedStep = ndaData.slice(idx, idx + steps);
-          data = data.concat(slicedStep);
-          location[idxOneStride] += steps;
-        }, start, end);
-
-      } else {
-        this.forEach(function (value) { data.push(value) }, start, end);  
-      }
+    // TODO: improve this by slicing chunks instead of walking each value
+    this.forEach(function (value) { data.push(value) }, start, end);
       
-      if (data.length) {
-        return new NdArray(data, shape, dtype);
-      }
+    if (data.length) {
+      return new NdArray(data, shape, dtype);
     }
   };
 
@@ -264,7 +472,6 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
 
   /**
    * Concatenates two NdArray
-   * @param {NdArray} nda1
    * @param {NdArray} nda2
    * @param {number} [axis = 0]
    * @returns {NdArray}
@@ -274,32 +481,54 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
   NdArray.prototype.concat = function (nda2, axis) {
     axis = axis || 0;
 
-    var sh1 = NdArray.copy(this.shape); sh1.splice(axis, 1);
+    var nda1 = this;
+    var sh1 = NdArray.copy(nda1.shape); sh1.splice(axis, 1);
     var sh2 = NdArray.copy(nda2.shape); sh2.splice(axis, 1);
-    
+
     if (sh1.toString() === sh2.toString()) {
       
-      var data = Array.from(this.data);
-      var dtype = this.dtype;
-      var shape = NdArray.copy(this.shape); shape[axis] += nda2.shape[axis];
+      var data = [];
+      var dtype = nda1.dtype;
+      var shape = NdArray.copy(nda1.shape); shape[axis] += nda2.shape[axis];
 
-      var nda2Data = Array.from(nda2.data);
-      var axisStride = this.stride[axis];
-      var correctedStride;
-
-      // If the stride is the maximun value means we're concatenating
-      // first dimension axis, therefore we just have to do a normal
-      // 1D array concatenation at the end of the data storage
-      if (axisStride === Math.max.apply(null, this.stride)) {
-        data = data.concat(nda2Data);
-        correctedStride = NdArray.copy(this.stride);
+      // If the axis is the first dimension, we just need to
+      // concatenate at the end of the data storage
+      if (axis === 0) {
+        data = nda1.rawDataToArray().concat(nda2.rawDataToArray());
       } else {
-        
+
+        // This is the tricky part. Took me fucking ages to figure this one out
+
+        // TODO: Is there something we can do to improve this?
+        var data = nda1.dataToArray();
+        var nda1Idx = 0;
+
+        // We need to calculate the strides for the new NdArray
+        var res = shape.reduce(function (acc, dim) {
+          acc.dims *= dim;
+          acc.stride.push(acc.length / acc.dims);
+          return acc;
+        }, {
+          dims: 1,
+          stride: [],
+          length: NdArray.toLength(shape)
+        });
+
+        // There is a little bit of magic going on here
+        nda2.forEach(function (value, location) {
+          var loc = NdArray.copy(location);
+          loc[axis] += nda1.shape[axis];
+
+          var idx = loc.reduce(function (acc, val, i) {
+            return acc + (res.stride[i] * val);
+          }, 0);
+
+          data.splice(idx, 0, value);
+        });
+
       }
 
-      var concatNda = new NdArray(data, shape, dtype);
-      concatNda.stride = correctedStride || concatNda.stride;
-      return concatNda;
+      return new NdArray(data, shape, dtype);
 
     } else {
         throw [
@@ -307,7 +536,7 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
           this.shape.join('×'),
           ', but nda2 says ',
           nda2.shape.join('×'),
-          ', on axis ' + axis
+          ' on axis ' + axis
         ].join('');
     }
   };
@@ -403,15 +632,14 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
           // Permutates dimensions
           var tmp1 = clonedNda.shape[newIdx];
           var tmp2 = clonedNda.stride[newIdx];
-          var tmp3 = clonedNda.dimPos[newIdx];
           clonedNda.shape[newIdx] = clonedNda.shape[oldIdx];
           clonedNda.stride[newIdx] = clonedNda.stride[oldIdx];
-          clonedNda.dimPos[newIdx] = clonedNda.dimPos[oldIdx];
           clonedNda.shape[oldIdx] = tmp1;
           clonedNda.stride[oldIdx] = tmp2;
-          clonedNda.dimPos[oldIdx] = tmp3;
         }
       });
+
+      this.loc2idxCache = {};
     }
 
     return clonedNda;
@@ -601,8 +829,8 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
    */
   NdArray.prototype.toIndex = function (location) {
     // Memoization
-    if (this.toIndex.cache[location]) {
-      return this.toIndex.cache[location];
+    if (this.loc2idxCache[location]) {
+      return this.loc2idxCache[location];
     }
 
     var idx = -1;
@@ -618,7 +846,7 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
       }, 0);
     }
 
-    return this.toIndex.cache[location] = idx;
+    return this.loc2idxCache[location] = idx;
   };
 
   /**
@@ -648,15 +876,6 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
   };
 
   /**
-   * Tells wether or not the NdArray is transposed
-   * @return {boolean}
-   * @public
-   */
-  NdArray.prototype.isTransposed = function () {
-    return this.dimPos[0] !== 0;
-  }
-
-  /**
    * Checks whether an index is within the limits
    * @param {number} index
    * @return {boolean}
@@ -683,7 +902,7 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
    * @public
    */
   NdArray.prototype.isValidLocation = function (location) {
-    return NdArray.isNotEmpty(location) && 
+    return !NdArray.isEmpty(location) && 
       this.isLocationWithinLimit(location);
   }
 
@@ -694,7 +913,7 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
    * @public
    */
   NdArray.prototype.isValidLimit = function (limit) {
-    return NdArray.isNotEmpty(limit) && 
+    return !NdArray.isEmpty(limit) && 
       this._isLocationWithinLimit(limit, this.shape, true);
   }
 
@@ -736,7 +955,7 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
    * @private
    */
   NdArray.prototype._nextLocation = function (location, start, end, idx) {
-    idx = typeof idx === 'undefined' ? location.length -1 : idx;
+    idx = typeof idx === 'undefined' ? location.length - 1 : idx;
 
     if (idx >= 0) {
       location[idx]++;
@@ -759,7 +978,7 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
     return this.shape.map(function (shapeVal, i) {
       var locVal = location[i] ;
 
-      if (locVal < 0) { // offset from the end
+      if (locVal < 0) { // Offset from the end
         locVal = shapeVal + locVal;
       }
 
@@ -860,31 +1079,47 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
    * @static
    */
   NdArray.isValidShape = function (shape) {
-    return NdArray.isNotEmpty(shape) && shape.reduce(function (is, dim) {
+    return !NdArray.isEmpty(shape) && shape.reduce(function (is, dim) {
       return is && dim > 0;
     }, true);
   };
 
   /**
-   * Checks whether an array isn't empty
+   * Checks whether an object (or array) is empty
    * @memberOf NdArray
-   * @param {any[]} arr
+   * @param {Object | any[]} obj
    * @returns {boolean}
    * @static
    */
-  NdArray.isNotEmpty = function (arr) {
-    return arr && arr.length;
+  NdArray.isEmpty = function (obj) {
+    if (obj && typeof obj === 'object') {
+      if (obj instanceof Array) {
+        return !obj.length;
+      } else {
+        return !Object.keys(obj).length;
+      }
+    }
+
+    return true;
   }
 
   /**
-   * Copy an Array
+   * Copy an array or object
    * @memberOf NdArray
-   * @param {any[]} arr
+   * @param {Object | any[]} obj
    * @returns {any[]}
    * @static
    */
-  NdArray.copy = function (arr) {
-    return arr.slice(0);
+  NdArray.copy = function (obj) {
+    if (obj && typeof obj === 'object') {
+      if (typeof obj.slice === 'function') {
+        return obj.slice(0);
+      } else {
+        return Object.assign({}, obj);
+      }
+    }
+
+    return obj;
   }
 
   // =============== Native.NumElm =============== //
@@ -1151,74 +1386,3 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
   };
 
 }();
-
-//////////////////////////////
-//          Polyfills       //
-//////////////////////////////
-
-if (typeof Object.assign != 'function') {
-  Object.assign = function(target) {
-    'use strict';
-    if (target == null) {
-      throw new TypeError('Cannot convert undefined or null to object');
-    }
-
-    target = Object(target);
-    for (var index = 1; index < arguments.length; index++) {
-      var source = arguments[index];
-      if (source != null) {
-        for (var key in source) {
-          if (Object.prototype.hasOwnProperty.call(source, key)) {
-            target[key] = source[key];
-          }
-        }
-      }
-    }
-    return target;
-  };
-}
-
-// https://tc39.github.io/ecma262/#sec-array.prototype.findIndex
-if (!Array.prototype.findIndex) {
-  Object.defineProperty(Array.prototype, 'findIndex', {
-    value: function(predicate) {
-     // 1. Let O be ? ToObject(this value).
-      if (this == null) {
-        throw new TypeError('"this" is null or not defined');
-      }
-
-      var o = Object(this);
-
-      // 2. Let len be ? ToLength(? Get(O, "length")).
-      var len = o.length >>> 0;
-
-      // 3. If IsCallable(predicate) is false, throw a TypeError exception.
-      if (typeof predicate !== 'function') {
-        throw new TypeError('predicate must be a function');
-      }
-
-      // 4. If thisArg was supplied, let T be thisArg; else let T be undefined.
-      var thisArg = arguments[1];
-
-      // 5. Let k be 0.
-      var k = 0;
-
-      // 6. Repeat, while k < len
-      while (k < len) {
-        // a. Let Pk be ! ToString(k).
-        // b. Let kValue be ? Get(O, Pk).
-        // c. Let testResult be ToBoolean(? Call(predicate, T, « kValue, k, O »)).
-        // d. If testResult is true, return k.
-        var kValue = o[k];
-        if (predicate.call(thisArg, kValue, k, o)) {
-          return k;
-        }
-        // e. Increase k by 1.
-        k++;
-      }
-
-      // 7. Return -1.
-      return -1;
-    }
-  });
-}

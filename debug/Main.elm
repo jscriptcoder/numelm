@@ -7,21 +7,31 @@ import NumElm exposing (..)
 main =
     let
         nda1Result =
-            NumElm.matrix
+            NumElm.matrix3d
                 Int8
-                [ [ 1, 4 ]
-                , [ 2, 5 ]
-                , [ 3, 6 ]
+                [ [ [ 1, 2 ]
+                  , [ 3, 4 ]
+                  , [ 5, 6 ]
+                  ]
+                , [ [ 7, 8 ]
+                  , [ 9, 10 ]
+                  , [ 11, 12 ]
+                  ]
                 ]
 
         -- |> Result.map (\nda1 -> NumElm.trans nda1)
         nda2Result =
-            NumElm.matrix
+            NumElm.matrix3d
                 Int8
-                [ [ 7, 8, 9 ]
+                [ [ [ 13, 14 ]
+                  , [ 15, 16 ]
+                  ]
+                , [ [ 19, 20 ]
+                  , [ 21, 22 ]
+                  ]
                 ]
-                |> Result.map (\nda2 -> NumElm.trans nda2)
 
+        --|> Result.map (\nda2 -> NumElm.trans nda2)
         strdataResult =
             Result.map2
                 (\nda1 nda2 ->
