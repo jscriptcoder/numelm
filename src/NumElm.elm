@@ -99,7 +99,8 @@ be used as a multi-dimensional container of generic data.
 @docs map, transposeAxes, transpose, trans, inverse, inv, pinv, svd, eig
 
 # Arithmetic operations
-@docs add, (.+), subtract, sub, (.-), multiply, mul, (.*), divide, div, (./), power, pow, (.^)
+@docs add, (.+), subtract, sub, (.-), multiply, mul, (.*)
+@docs divide, div, (./), power, pow, (.^)
 
 # Root and Logarithm
 @docs sqrt, logBase, log, log2, log10, exp
@@ -112,6 +113,10 @@ be used as a multi-dimensional container of generic data.
 
 # Aggregate operations
 @docs max, maxAxis, min, minAxis, sum, sumAxis
+
+# Relational operators
+@docs equal, eq, (.==), less, le, (.<), greater, gr, (.>), lessEqual, leq, (.<=)
+@docs greaterEqual, geq, (.>=), notEqual, neq, (.!=)
 
 -}
 
@@ -1660,6 +1665,100 @@ sumAxis axis nda =
         (\values _ -> List.foldr (+) 0 values)
         axis
         nda
+
+
+
+-- Relational operators --
+
+
+equal : NdArray -> NdArray -> Result String NdArray
+equal nda1 nda2 =
+    Native.NumElm.elementWise (==) nda1 nda2
+
+
+eq : NdArray -> NdArray -> Result String NdArray
+eq nda1 nda2 =
+    equal nda1 nda2
+
+
+(.==) : NdArray -> number -> NdArray
+(.==) nda num =
+    map (\val _ _ -> val == num) nda
+
+
+less : NdArray -> NdArray -> Result String NdArray
+less nda1 nda2 =
+    Native.NumElm.elementWise (<) nda1 nda2
+
+
+le : NdArray -> NdArray -> Result String NdArray
+le nda1 nda2 =
+    less nda1 nda2
+
+
+(.<) : NdArray -> number -> NdArray
+(.<) nda num =
+    map (\val _ _ -> val < num) nda
+
+
+greater : NdArray -> NdArray -> Result String NdArray
+greater nda1 nda2 =
+    Native.NumElm.elementWise (>) nda1 nda2
+
+
+gr : NdArray -> NdArray -> Result String NdArray
+gr nda1 nda2 =
+    greater nda1 nda2
+
+
+(.>) : NdArray -> number -> NdArray
+(.>) nda num =
+    map (\val _ _ -> val > num) nda
+
+
+lessEqual : NdArray -> NdArray -> Result String NdArray
+lessEqual nda1 nda2 =
+    Native.NumElm.elementWise (<=) nda1 nda2
+
+
+leq : NdArray -> NdArray -> Result String NdArray
+leq nda1 nda2 =
+    lessEqual nda1 nda2
+
+
+(.<=) : NdArray -> number -> NdArray
+(.<=) nda num =
+    map (\val _ _ -> val <= num) nda
+
+
+greaterEqual : NdArray -> NdArray -> Result String NdArray
+greaterEqual nda1 nda2 =
+    Native.NumElm.elementWise (>=) nda1 nda2
+
+
+geq : NdArray -> NdArray -> Result String NdArray
+geq nda1 nda2 =
+    greaterEqual nda1 nda2
+
+
+(.>=) : NdArray -> number -> NdArray
+(.>=) nda num =
+    map (\val _ _ -> val >= num) nda
+
+
+notEqual : NdArray -> NdArray -> Result String NdArray
+notEqual nda1 nda2 =
+    Native.NumElm.elementWise (!=) nda1 nda2
+
+
+neq : NdArray -> NdArray -> Result String NdArray
+neq nda1 nda2 =
+    notEqual nda1 nda2
+
+
+(.!=) : NdArray -> number -> NdArray
+(.!=) nda num =
+    map (\val _ _ -> val != num) nda
 
 
 
