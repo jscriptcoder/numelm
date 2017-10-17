@@ -1,13 +1,16 @@
 module NumElm
     exposing
-        ( NdArray
+        ( -- Types --
+          NdArray
         , Shape
         , Location
         , Dtype(..)
+          -- Creating NdArray --
         , ndarray
         , vector
         , matrix
         , matrix3d
+          -- Getting info from NdArray --
         , toString
         , dataToString
         , shape
@@ -16,6 +19,7 @@ module NumElm
         , length
         , numel
         , dtype
+          -- Pre-filled NdArray --
         , zeros
         , ones
         , diagonal
@@ -24,6 +28,7 @@ module NumElm
         , eye
         , rand
         , randn
+          -- Getting and Setting --
         , get
         , slice
         , getn
@@ -31,6 +36,7 @@ module NumElm
         , concatenateAxis
         , concatenate
         , concat
+          -- Transforming NdArray --
         , map
         , transposeAxes
         , transpose
@@ -40,6 +46,7 @@ module NumElm
         , pinv
         , svd
         , eig
+          -- Arithmetic operations --
         , add
         , (.+)
         , subtract
@@ -54,13 +61,16 @@ module NumElm
         , power
         , pow
         , (.^)
+          -- Root and Logarithm --
         , sqrt
         , logBase
         , log
         , log2
         , log10
         , exp
+          -- Matrix mutiplication --
         , dot
+          -- Round off --
         , around
         , round
         , ceil
@@ -68,12 +78,32 @@ module NumElm
         , truncate
         , trunc
         , fix
+          -- Aggregate operations --
         , max
         , maxAxis
         , min
         , minAxis
         , sum
         , sumAxis
+          -- Relational operators --
+        , equal
+        , eq
+        , (.==)
+        , less
+        , lt
+        , (.<)
+        , greater
+        , gt
+        , (.>)
+        , lessEqual
+        , lte
+        , (.<=)
+        , greaterEqual
+        , gte
+        , (.>=)
+        , notEqual
+        , neq
+        , (.!=)
         )
 
 {-| Based on NumPy, [Python package](http://www.numpy.org/), NumElm is the fundamental package for
@@ -115,8 +145,8 @@ be used as a multi-dimensional container of generic data.
 @docs max, maxAxis, min, minAxis, sum, sumAxis
 
 # Relational operators
-@docs equal, eq, (.==), less, le, (.<), greater, gr, (.>), lessEqual, leq, (.<=)
-@docs greaterEqual, geq, (.>=), notEqual, neq, (.!=)
+@docs equal, eq, (.==), less, lt, (.<), greater, gt, (.>), lessEqual, lte, (.<=)
+@docs greaterEqual, gte, (.>=), notEqual, neq, (.!=)
 
 -}
 
@@ -1691,8 +1721,8 @@ less nda1 nda2 =
     Native.NumElm.elementWise (<) nda1 nda2
 
 
-le : NdArray -> NdArray -> Result String NdArray
-le nda1 nda2 =
+lt : NdArray -> NdArray -> Result String NdArray
+lt nda1 nda2 =
     less nda1 nda2
 
 
@@ -1706,8 +1736,8 @@ greater nda1 nda2 =
     Native.NumElm.elementWise (>) nda1 nda2
 
 
-gr : NdArray -> NdArray -> Result String NdArray
-gr nda1 nda2 =
+gt : NdArray -> NdArray -> Result String NdArray
+gt nda1 nda2 =
     greater nda1 nda2
 
 
@@ -1721,8 +1751,8 @@ lessEqual nda1 nda2 =
     Native.NumElm.elementWise (<=) nda1 nda2
 
 
-leq : NdArray -> NdArray -> Result String NdArray
-leq nda1 nda2 =
+lte : NdArray -> NdArray -> Result String NdArray
+lte nda1 nda2 =
     lessEqual nda1 nda2
 
 
@@ -1736,8 +1766,8 @@ greaterEqual nda1 nda2 =
     Native.NumElm.elementWise (>=) nda1 nda2
 
 
-geq : NdArray -> NdArray -> Result String NdArray
-geq nda1 nda2 =
+gte : NdArray -> NdArray -> Result String NdArray
+gte nda1 nda2 =
     greaterEqual nda1 nda2
 
 
