@@ -401,7 +401,7 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
 
   /**
    * Implements map method
-   * @param {(number, number[], number, NdArray) => void} fn
+   * @param {(number, number[], number, NdArray) => number} fn
    * @returns {NdArray}
    * @public
    */
@@ -411,6 +411,57 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
       return fn(value, clonedNda.toLocation(idx), idx, clonedNda);
     });
     return clonedNda;
+  };
+
+  /**
+   * Implements reduce method
+   * @param {(any, number, NdArray) => any} fn
+   * @param {any} initialValue
+   * @returns {any}
+   * @public
+   */
+  NdArray.prototype.reduce = function (fn, initialValue) {
+    var self = this;
+    return this.data.reduce(function (acc, value) {
+      return fn(acc, value, self);
+    }, initialValue);
+  };
+
+  /**
+   * Maps the NdArray in a fixed axis
+   * therefore reducing the dimentions by one
+   * @param {(number[], number, number[], number[], NdArray) => number} fn
+   * @returns {NdArray}
+   * @public
+   */
+  NdArray.prototype.mapAxis = function (fn, axis) {
+    axis = axis || 0;
+
+    var data = [];
+    var dtype = this.dtype;
+    var shape = NdArray.copy(this.shape); shape.splice(axis, 1);
+
+    for (
+      var location = NdArray.copy(this.start);
+      this._isLocationWithinLimit(location, this.shape);
+      this._nextLocationWithAxis(location, axis)
+    ) {
+      var values = [];
+      var idxs = [], idx;
+      var loc = NdArray.copy(location);
+
+      for (var i = 0; i < this.shape[axis]; i++) {
+        loc[axis] = i;
+        idx = this.toIndex(loc);
+        idxs.push(idx);
+        values.push(this.data[idx]);
+      }
+
+      loc[axis] = 0;
+      data.push(fn(values, loc, idxs, this));
+    }
+
+    return new NdArray(data, shape, dtype);
   };
 
   /**
@@ -768,6 +819,31 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
       }
     }
   }
+  /**
+   * Calculates the next location skiping an axis
+   * Mutates the location
+   * @see NdArray.prototype.mapAxis
+   * @param {number[]} location
+   * @param {number} axis - fixes the axis
+   * @param {number} [idx] - current index being looked at
+   * @private
+   */
+  NdArray.prototype._nextLocationWithAxis = function (location, axis, idx) {
+    idx = typeof idx === 'undefined' ? location.length - 1 : idx;
+
+    if (idx >= 0) {
+      if (idx === axis) {
+        location[idx] = this.shape[idx];
+      } else {
+        location[idx]++;
+      }
+      
+      if (idx > 0 && location[idx] >= this.shape[idx]) {
+        location[idx] = this.start[idx];
+        this._nextLocationWithAxis(location, axis, --idx);
+      }
+    }
+  }
 
   /**
    * Will do some processing, taking care of offsets and limits
@@ -1099,7 +1175,7 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
 
   /**
    * Transforms the values of the NdArray with mapping
-   * @param {(a -> Location -> NdArray -> b)} fCallback
+   * @param {(number -> Location -> NdArray -> number)} fCallback
    * @param {NdArray} nda
    * @returns {NdArray} new NdArray (no mutation)
    * @memberof Native.NumElm
@@ -1109,6 +1185,41 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
       var tLocation = fromArray(location);
       return A3(fCallback, value, tLocation, nda);
     });
+  }
+
+  /**
+   * Apply reduce function to the NdArray
+   * @param {(number -> number -> NdArray -> number)} fCallback
+   * @param {number} initialValue
+   * @param {NdArray} nda
+   * @returns {NdArray} new NdArray (no mutation)
+   * @memberof Native.NumElm
+   */
+  function reduce(fCallback, initialValue, nda) {
+    return nda.reduce(function (accumulator, value, nda) {
+      return A3(fCallback, accumulator, value, nda);
+    }, initialValue);
+  }
+
+  /**
+   * Transforms the values of the NdArray with mapping
+   * over a fixed axis
+   * @param {(number -> NdArray -> number)} fCallback
+   * @param {number} axis
+   * @param {NdArray} nda
+   * @returns {NdArray} new NdArray with reduced dimensions
+   * @memberof Native.NumElm
+   */
+  function mapAxis(fCallback, axis, nda) {
+    try {
+      var ndaAxis = nda.mapAxis(function (values, location, idxs, nda) {
+        var lValues = fromArray(values);
+        return A2(fCallback, lValues, nda);
+      }, axis);
+      return resultOk(ndaAxis);
+    } catch (e) {
+      return resultErr(e + '');
+    }
   }
 
   /**
@@ -1182,6 +1293,8 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
     set         : F3(set),
     concatenate : F3(concatenate),
     map         : F2(map),
+    reduce      : F3(reduce),
+    mapAxis     : F3(mapAxis),
     transpose   : F2(transpose),
     inverse     : inverse,
     elementWise : F3(elementWise),

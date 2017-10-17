@@ -68,6 +68,12 @@ module NumElm
         , truncate
         , trunc
         , fix
+        , max
+        , maxAxis
+        , min
+        , minAxis
+        , sum
+        , sumAxis
         )
 
 {-| The NumPy for Elm.
@@ -101,6 +107,9 @@ module NumElm
 
 # Round off
 @docs around, round, ceil, floor, truncate, trunc, fix
+
+# Aggregating operations
+@docs max, maxAxis, min, minAxis, sum, sumAxis
 
 -}
 
@@ -1234,6 +1243,228 @@ trunc nda =
 fix : NdArray -> NdArray
 fix nda =
     trunc nda
+
+
+
+-- Aggregating operations --
+
+
+{-| Element-wise maximum of an NdArray.
+
+    let
+        A = matrix Int16
+                   [ [ [  1, -2 ]
+                     , [ -6,  3 ]
+                     , [  3, -7 ]
+                     ]
+                   , [ [ 10, -6 ]
+                     , [ -3, 12 ]
+                     , [ -8,  7 ]
+                     ]
+                   , [ [ 0,  3 ]
+                     , [ 1, 15 ]
+                     , [ 5,  7 ]
+                     ]
+                   ]
+
+    in
+        max A == 15
+
+-}
+max : NdArray -> number
+max nda =
+    let
+        infinity =
+            1 / 0
+    in
+        Native.NumElm.reduce
+            (\acc val _ -> Basics.max acc val)
+            -infinity
+            nda
+
+
+{-| Return the maximum along a given axis.
+
+    let
+        A = matrix Int16
+                   [ [ [  1, -2 ]
+                     , [ -6,  3 ]
+                     , [  3, -7 ]
+                     ]
+                   , [ [ 10, -6 ]
+                     , [ -3, 12 ]
+                     , [ -8,  7 ]
+                     ]
+                   , [ [ 0,  3 ]
+                     , [ 1, 15 ]
+                     , [ 5,  7 ]
+                     ]
+                   ]
+
+    in
+        maxAxis 1 A
+       -- [ [ 3, 3 ]
+       -- , [ 10, 12 ]
+       -- , [ 5,  15 ]
+       -- ]
+
+-}
+maxAxis : Int -> NdArray -> Result String NdArray
+maxAxis axis nda =
+    let
+        infinity =
+            1 / 0
+    in
+        Native.NumElm.mapAxis
+            (\values _ ->
+                List.foldr
+                    Basics.max
+                    -infinity
+                    values
+            )
+            axis
+            nda
+
+
+{-| Element-wise minimum of an NdArray.
+
+    let
+        A = matrix Int16
+                   [ [ [  1, -2 ]
+                     , [ -6,  3 ]
+                     , [  3, -7 ]
+                     ]
+                   , [ [ 10, -6 ]
+                     , [ -3, 12 ]
+                     , [ -8,  7 ]
+                     ]
+                   , [ [ 0,  3 ]
+                     , [ 1, 15 ]
+                     , [ 5,  7 ]
+                     ]
+                   ]
+
+    in
+        min A == -8
+
+-}
+min : NdArray -> number
+min nda =
+    let
+        infinity =
+            1 / 0
+    in
+        Native.NumElm.reduce
+            (\acc val _ -> Basics.min acc val)
+            infinity
+            nda
+
+
+{-| Return the minimum along a given axis.
+
+    let
+        A = matrix Int16
+                   [ [ [  1, -2 ]
+                     , [ -6,  3 ]
+                     , [  3, -7 ]
+                     ]
+                   , [ [ 10, -6 ]
+                     , [ -3, 12 ]
+                     , [ -8,  7 ]
+                     ]
+                   , [ [ 0,  3 ]
+                     , [ 1, 15 ]
+                     , [ 5,  7 ]
+                     ]
+                   ]
+
+    in
+        minAxis 0 A
+       -- [ [  0, -6 ]
+       -- , [ -6,  3 ]
+       -- , [ -8,  7 ]
+       -- ]
+
+-}
+minAxis : Int -> NdArray -> Result String NdArray
+minAxis axis nda =
+    let
+        infinity =
+            1 / 0
+    in
+        Native.NumElm.mapAxis
+            (\values _ ->
+                List.foldr
+                    Basics.min
+                    infinity
+                    values
+            )
+            axis
+            nda
+
+
+{-| Element-wise total sum of an NdArray.
+
+    let
+        A = matrix Int16
+                   [ [ [  1, -2 ]
+                     , [ -6,  3 ]
+                     , [  3, -7 ]
+                     ]
+                   , [ [ 10, -6 ]
+                     , [ -3, 12 ]
+                     , [ -8,  7 ]
+                     ]
+                   , [ [ 0,  3 ]
+                     , [ 1, 15 ]
+                     , [ 5,  7 ]
+                     ]
+                   ]
+
+    in
+        sum A == 35
+
+-}
+sum : NdArray -> number
+sum nda =
+    Native.NumElm.reduce
+        (\acc val _ -> acc + val)
+        0
+        nda
+
+
+{-| Return the sum of the NdArray elements over the given axis..
+
+    let
+        A = matrix Int16
+                   [ [ [  1, -2 ]
+                     , [ -6,  3 ]
+                     , [  3, -7 ]
+                     ]
+                   , [ [ 10, -6 ]
+                     , [ -3, 12 ]
+                     , [ -8,  7 ]
+                     ]
+                   , [ [ 0,  3 ]
+                     , [ 1, 15 ]
+                     , [ 5,  7 ]
+                     ]
+                   ]
+
+    in
+        sumAxis  2 A
+       -- [ [ -1, -3, -4 ]
+       -- , [  4,  9, -1 ]
+       -- , [  3, 16, 12 ]
+       -- ]
+
+-}
+sumAxis : Int -> NdArray -> Result String NdArray
+sumAxis axis nda =
+    Native.NumElm.mapAxis
+        (\values _ -> List.foldr (+) 0 values)
+        axis
+        nda
 
 
 
