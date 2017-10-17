@@ -108,7 +108,7 @@ module NumElm
 # Round off
 @docs around, round, ceil, floor, truncate, trunc, fix
 
-# Aggregating operations
+# Aggregate operations
 @docs max, maxAxis, min, minAxis, sum, sumAxis
 
 -}
@@ -1246,26 +1246,26 @@ fix nda =
 
 
 
--- Aggregating operations --
+-- Aggregate operations --
 
 
 {-| Element-wise maximum of an NdArray.
 
     let
-        A = matrix Int16
-                   [ [ [  1, -2 ]
-                     , [ -6,  3 ]
-                     , [  3, -7 ]
+        A = matrix3d Int16
+                     [ [ [  1, -2 ]
+                       , [ -6,  3 ]
+                       , [  3, -7 ]
+                       ]
+                     , [ [ 10, -6 ]
+                       , [ -3, 12 ]
+                       , [ -8,  7 ]
+                       ]
+                     , [ [ 0,  3 ]
+                       , [ 1, 15 ]
+                       , [ 5,  7 ]
+                       ]
                      ]
-                   , [ [ 10, -6 ]
-                     , [ -3, 12 ]
-                     , [ -8,  7 ]
-                     ]
-                   , [ [ 0,  3 ]
-                     , [ 1, 15 ]
-                     , [ 5,  7 ]
-                     ]
-                   ]
 
     in
         max A == 15
@@ -1286,20 +1286,20 @@ max nda =
 {-| Return the maximum along a given axis.
 
     let
-        A = matrix Int16
-                   [ [ [  1, -2 ]
-                     , [ -6,  3 ]
-                     , [  3, -7 ]
+        A = matrix3d Int16
+                     [ [ [  1, -2 ]
+                       , [ -6,  3 ]
+                       , [  3, -7 ]
+                       ]
+                     , [ [ 10, -6 ]
+                       , [ -3, 12 ]
+                       , [ -8,  7 ]
+                       ]
+                     , [ [ 0,  3 ]
+                       , [ 1, 15 ]
+                       , [ 5,  7 ]
+                       ]
                      ]
-                   , [ [ 10, -6 ]
-                     , [ -3, 12 ]
-                     , [ -8,  7 ]
-                     ]
-                   , [ [ 0,  3 ]
-                     , [ 1, 15 ]
-                     , [ 5,  7 ]
-                     ]
-                   ]
 
     in
         maxAxis 1 A
@@ -1329,20 +1329,20 @@ maxAxis axis nda =
 {-| Element-wise minimum of an NdArray.
 
     let
-        A = matrix Int16
-                   [ [ [  1, -2 ]
-                     , [ -6,  3 ]
-                     , [  3, -7 ]
+        A = matrix3d Int16
+                     [ [ [  1, -2 ]
+                       , [ -6,  3 ]
+                       , [  3, -7 ]
+                       ]
+                     , [ [ 10, -6 ]
+                       , [ -3, 12 ]
+                       , [ -8,  7 ]
+                       ]
+                     , [ [ 0,  3 ]
+                       , [ 1, 15 ]
+                       , [ 5,  7 ]
+                       ]
                      ]
-                   , [ [ 10, -6 ]
-                     , [ -3, 12 ]
-                     , [ -8,  7 ]
-                     ]
-                   , [ [ 0,  3 ]
-                     , [ 1, 15 ]
-                     , [ 5,  7 ]
-                     ]
-                   ]
 
     in
         min A == -8
@@ -1363,20 +1363,20 @@ min nda =
 {-| Return the minimum along a given axis.
 
     let
-        A = matrix Int16
-                   [ [ [  1, -2 ]
-                     , [ -6,  3 ]
-                     , [  3, -7 ]
+        A = matrix3d Int16
+                     [ [ [  1, -2 ]
+                       , [ -6,  3 ]
+                       , [  3, -7 ]
+                       ]
+                     , [ [ 10, -6 ]
+                       , [ -3, 12 ]
+                       , [ -8,  7 ]
+                       ]
+                     , [ [ 0,  3 ]
+                       , [ 1, 15 ]
+                       , [ 5,  7 ]
+                       ]
                      ]
-                   , [ [ 10, -6 ]
-                     , [ -3, 12 ]
-                     , [ -8,  7 ]
-                     ]
-                   , [ [ 0,  3 ]
-                     , [ 1, 15 ]
-                     , [ 5,  7 ]
-                     ]
-                   ]
 
     in
         minAxis 0 A
@@ -1406,20 +1406,20 @@ minAxis axis nda =
 {-| Element-wise total sum of an NdArray.
 
     let
-        A = matrix Int16
-                   [ [ [  1, -2 ]
-                     , [ -6,  3 ]
-                     , [  3, -7 ]
+        A = matrix3d Int16
+                     [ [ [  1, -2 ]
+                       , [ -6,  3 ]
+                       , [  3, -7 ]
+                       ]
+                     , [ [ 10, -6 ]
+                       , [ -3, 12 ]
+                       , [ -8,  7 ]
+                       ]
+                     , [ [ 0,  3 ]
+                       , [ 1, 15 ]
+                       , [ 5,  7 ]
+                       ]
                      ]
-                   , [ [ 10, -6 ]
-                     , [ -3, 12 ]
-                     , [ -8,  7 ]
-                     ]
-                   , [ [ 0,  3 ]
-                     , [ 1, 15 ]
-                     , [ 5,  7 ]
-                     ]
-                   ]
 
     in
         sum A == 35
@@ -1436,20 +1436,20 @@ sum nda =
 {-| Return the sum of the NdArray elements over the given axis..
 
     let
-        A = matrix Int16
-                   [ [ [  1, -2 ]
-                     , [ -6,  3 ]
-                     , [  3, -7 ]
+        A = matrix3d Int16
+                     [ [ [  1, -2 ]
+                       , [ -6,  3 ]
+                       , [  3, -7 ]
+                       ]
+                     , [ [ 10, -6 ]
+                       , [ -3, 12 ]
+                       , [ -8,  7 ]
+                       ]
+                     , [ [ 0,  3 ]
+                       , [ 1, 15 ]
+                       , [ 5,  7 ]
+                       ]
                      ]
-                   , [ [ 10, -6 ]
-                     , [ -3, 12 ]
-                     , [ -8,  7 ]
-                     ]
-                   , [ [ 0,  3 ]
-                     , [ 1, 15 ]
-                     , [ 5,  7 ]
-                     ]
-                   ]
 
     in
         sumAxis  2 A

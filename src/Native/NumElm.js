@@ -432,6 +432,7 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
    * therefore reducing the dimentions by one
    * @param {(number[], number, number[], number[], NdArray) => number} fn
    * @returns {NdArray}
+   * @throws {Error} Axis does not exist
    * @public
    */
   NdArray.prototype.mapAxis = function (fn, axis) {
@@ -439,29 +440,40 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
 
     var data = [];
     var dtype = this.dtype;
-    var shape = NdArray.copy(this.shape); shape.splice(axis, 1);
+    var shape = NdArray.copy(this.shape);
 
-    for (
-      var location = NdArray.copy(this.start);
-      this._isLocationWithinLimit(location, this.shape);
-      this._nextLocationWithAxis(location, axis)
-    ) {
-      var values = [];
-      var idxs = [], idx;
-      var loc = NdArray.copy(location);
+    if (typeof shape[axis] !== 'undefined') {
+      shape.splice(axis, 1);
 
-      for (var i = 0; i < this.shape[axis]; i++) {
-        loc[axis] = i;
-        idx = this.toIndex(loc);
-        idxs.push(idx);
-        values.push(this.data[idx]);
+      for (
+        var location = NdArray.copy(this.start);
+        this._isLocationWithinLimit(location, this.shape);
+        this._nextLocationWithAxis(location, axis)
+      ) {
+        var values = [];
+        var idxs = [], idx;
+        var loc = NdArray.copy(location);
+
+        for (var i = 0; i < this.shape[axis]; i++) {
+          loc[axis] = i;
+          idx = this.toIndex(loc);
+          idxs.push(idx);
+          values.push(this.data[idx]);
+        }
+
+        loc[axis] = 0;
+        data.push(fn(values, loc, idxs, this));
       }
 
-      loc[axis] = 0;
-      data.push(fn(values, loc, idxs, this));
-    }
+      return new NdArray(data, shape, dtype);
 
-    return new NdArray(data, shape, dtype);
+    } else {
+        throw [
+          'NdArray#mapAxis - Axis does not exist: The shape of nda is ',
+          this.shape.join('×'),
+          ', trying to loop along axis ' + axis
+        ].join('');
+    }
   };
 
   /**
@@ -1111,7 +1123,7 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
    * @param {Location} tLocationStart
    * @param {Location} tLocationEnd
    * @param {NdArray} nda
-   * @returns {Maybe Number}
+   * @returns {Maybe NdArray}
    * @memberof Native.NumElm
    */
   function slice(tLocationStart, tLocationEnd, nda) {
