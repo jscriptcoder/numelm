@@ -138,8 +138,108 @@ module NumElm
         )
 
 {-| Based on NumPy, [Python package](http://www.numpy.org/), NumElm is the fundamental package for
-scientific computing with Elm. Besides its scientific uses, NumElm can also
-be used as a multi-dimensional container of generic data.
+scientific computing with Elm.
+
+**API**
+   1. [Types](#types)
+    * [NdArray](#NdArray)
+    * [Shape](#Shape)
+    * [Location](#Location)
+    * [Dtype](#Dtype)
+
+   2. [Creating NdArray](#creating-ndarray)
+    * [ndarray](#ndarray)
+    * [vector](#vector)
+    * [matrix](#matrix)
+    * [matrix3d](#matrix3d)
+
+   3. [Getting info from NdArray](#getting-info-from-ndarray)
+    * [toString](#toString)
+    * [dataToString](#dataToString)
+    * [shape](#shape), [size](#size)
+    * [ndim](#ndim)
+    * [length](#length), [numel](#numel)
+    * [dtype](#dtype)
+
+   4. [Pre-filled NdArray](#pre-filled-ndarray)
+    * [zeros](#zeros)
+    * [ones](#ones)
+    * [diagonal](#diagonal), [diag](#diag)
+    * [identity](#identity), [eye](#eye)
+    * [rand](#rand)
+    * [randn](#randn)
+
+   5. [Getting and Setting](#getting-and-setting)
+    * [get](#get)
+    * [slice](#slice), [getn](#getn)
+    * [set](#set)
+    * [concatenateAxis](#concatenateAxis)
+    * [concatenate](#concatenate), [concat](#concat)
+
+   6. [Transforming NdArray](#transforming-ndarray)
+    * [map](#map)
+    * [transposeAxes](#transposeAxes)
+    * [transpose](#transpose), [trans](#trans)
+    * [inverse](#inverse), [inv](#inv)
+    * [pinv](#pinv) - TODO
+    * [svd](#svd) - TODO
+    * [eig](#eig) - TODO
+
+   7. [Arithmetic operations](#arithmetic-operations)
+    * [add](#add)
+    * [(.+)](#.+)
+    * [subtract](#subtract), [sub](#sub)
+    * [(.-)](#.-)
+    * [multiply](#multiply), [mul](#mul)
+    * [(.*)](#.*)
+    * [divide](#divide), [div](#div)
+    * [(./)](#./)
+    * [power](#power), [pow](#pow)
+    * [(.^)](#.^)
+    * [mod](#mod)
+    * [(.%)](#.%)
+
+   8. [Root and Logarithm](#root-and-logarithm)
+    * [sqrt](#sqrt)
+    * [logBase](#logBase)
+    * [log](#log)
+    * [log2](#log2)
+    * [log10](#log10)
+    * [exp](#exp)
+
+   9. [Matrix mutiplication](#matrix-mutiplication)
+    * [dot](#dot)
+
+   10. [Round off](#round-off)
+    * [around](#around)
+    * [round](#round)
+    * [ceil](#ceil)
+    * [floor](#floor)
+    * [truncate](#truncate), [trunc](#trunc), [fix](#fix)
+
+   11. [Aggregate functions](#aggregate-functions)
+    * [max](#max)
+    * [maxAxis](#maxAxis)
+    * [min](#min)
+    * [minAxis](#minAxis)
+    * [sum](#sum)
+    * [sumAxis](#sumAxis)
+    * [prod](#prod)
+    * [prodAxis](#prodAxis)
+
+   12. [Relational operators](#relational-operators)
+    * [equal](#equal), [eq](#eq)
+    * [(.==)](#.==)
+    * [less](#less), [lt](#lt)
+    * [(.<)](#.<)
+    * [greater](#greater), [gt](#gt)
+    * [(.>)](#.>)
+    * [lessEqual](#lessEqual), [lte](#lte)
+    * [(.<=)](#.<=)
+    * [greaterEqual](#greaterEqual), [gte](#gte)
+    * [(.>=)](#.>=)
+    * [notEqual](#notEqual), [neq](#neq)
+    * [(./=)](#./=)
 
 # Types
 @docs NdArray, Shape, Location, Dtype
@@ -176,8 +276,8 @@ be used as a multi-dimensional container of generic data.
 @docs max, maxAxis, min, minAxis, sum, sumAxis, prod, prodAxis
 
 # Relational operators
-@docs equal, eq, (.==), less, lt, (.<), greater, gt, (.>), lessEqual, lte, (.<=)
-@docs greaterEqual, gte, (.>=), notEqual, neq, (.!=)
+@docs equal, eq, (.==), less, lt, (.<), greater, gt, (.>), lessEqual
+@docs lte, (.<=), greaterEqual, gte, (.>=), notEqual, neq, (./=)
 
 -}
 
@@ -195,7 +295,7 @@ import Tuple
 The number of dimensions and items in an NdArray is defined by its
 [Shape](#Shape), which is a list of N positive integers that specify
 the sizes of each dimension. The type of items in the array is
-specified by a separate data-type object (Dtype), one of which is
+specified by a separate data-type object, [Dtype](#Dtype), one of which is
 associated with each NdArray.
 
 -}
@@ -449,7 +549,7 @@ ndim nda =
 {-| Returns the number of elements in the [NdArray](#NdArray).
 
     -- 2×4×1 matrix
-    numel nda == 3
+    length nda == 8
 
 -}
 length : NdArray -> Int
@@ -777,7 +877,7 @@ concatenateAxis axis nda1 nda2 =
     Native.NumElm.concatenate axis nda1 nda2
 
 
-{-| Alias for [concatenateAxis](#concatenateAxis) with axis set to 0.
+{-| Alias for [concatenateAxis](#concatenateAxis) with `axis` set to 0.
 -}
 concatenate : NdArray -> NdArray -> Result String NdArray
 concatenate nda1 nda2 =
@@ -814,8 +914,8 @@ map callback nda =
     Native.NumElm.map callback nda
 
 
-{-| Returns a new [NdArray](#NdArray) with axes transposed.
-This function differs slighly from the way NumPy [transposes](https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.transpose.html)
+{-| Returns a new [NdArray](#NdArray) with `axes` transposed.
+This function slighly differs from the way NumPy [transposes](https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.transpose.html)
 
     let
         A =
@@ -1021,7 +1121,7 @@ sub nda1 nda2 =
     subtract nda1 nda2
 
 
-{-| Substract scalar, element-wise.
+{-| Substracts scalar, element-wise.
 
     let
         A =
@@ -1152,7 +1252,7 @@ div nda1 nda2 =
     map (\val _ _ -> val / num) nda
 
 
-{-| [NdArray](#NdArray) elements raised to power of from second [NdArray](#NdArray), element-wise.
+{-| [NdArray](#NdArray) elements raised to power of second [NdArray](#NdArray), element-wise.
 
     let
         A =
@@ -1306,7 +1406,7 @@ logBase base nda =
     map (\val _ _ -> Basics.logBase base val) nda
 
 
-{-| Natural logarithm (in base e), element-wise.
+{-| Natural logarithm, `base e`, element-wise.
 
     let
         A =
@@ -1580,7 +1680,7 @@ max nda =
             nda
 
 
-{-| Returns the maximum along a given axis.
+{-| Returns the maximum along a given `axis`.
 
     let
         A =
@@ -1662,7 +1762,7 @@ min nda =
             nda
 
 
-{-| Returns the minimum along a given axis.
+{-| Returns the minimum along a given `axis`.
 
     let
         A =
@@ -1740,7 +1840,7 @@ sum nda =
         nda
 
 
-{-| Returns the sum of all the elements along a given axis.
+{-| Returns the sum of all the elements along a given `axis`.
 
     let
         A =
@@ -1809,7 +1909,7 @@ prod nda =
         nda
 
 
-{-| Returns the product of all the elements along a given axis.
+{-| Returns the product of all the elements along a given `axis`.
 
     let
         A =
@@ -1851,7 +1951,7 @@ prodAxis axis nda =
 -- Relational operators --
 
 
-{-| Returns A == B, element-wise, with 1's (True) and 0's (False)
+{-| Returns `A == B`, element-wise, with 1's (`True`) and 0's (`False`).
 
     let
         A =
@@ -1885,7 +1985,7 @@ eq nda1 nda2 =
     equal nda1 nda2
 
 
-{-| Compares each element with an scalar, nda(i) == value
+{-| Compares each element with an scalar, `nda(i) == value`.
 
     let
         nda =
@@ -1909,7 +2009,7 @@ eq nda1 nda2 =
     map (\val _ _ -> val == num) nda
 
 
-{-| Returns A < B, element-wise, with 1's (True) and 0's (False)
+{-| Returns `A < B`, element-wise, with 1's (`True`) and 0's (`False`).
 
     let
         A =
@@ -1943,7 +2043,7 @@ lt nda1 nda2 =
     less nda1 nda2
 
 
-{-| Compares each element with an scalar, nda(i) < value
+{-| Compares each element with an scalar, `nda(i) < value`.
 
     let
         nda =
@@ -1967,7 +2067,7 @@ lt nda1 nda2 =
     map (\val _ _ -> val < num) nda
 
 
-{-| Returns A > B, element-wise, with 1's (True) and 0's (False)
+{-| Returns `A > B`, element-wise, with 1's (`True`) and 0's (`False`).
 
     let
         A =
@@ -2001,7 +2101,7 @@ gt nda1 nda2 =
     greater nda1 nda2
 
 
-{-| Compares each element with an scalar, nda(i) > value
+{-| Compares each element with an scalar, `nda(i) > value`.
 
     let
         nda =
@@ -2025,7 +2125,7 @@ gt nda1 nda2 =
     map (\val _ _ -> val > num) nda
 
 
-{-| Returns A <= B, element-wise, with 1's (True) and 0's (False)
+{-| Returns `A <= B`, element-wise, with 1's (`True`) and 0's (`False`).
 
     let
         A =
@@ -2059,7 +2159,7 @@ lte nda1 nda2 =
     lessEqual nda1 nda2
 
 
-{-| Compares each element with an scalar, nda(i) <= value
+{-| Compares each element with an scalar, `nda(i) <= value`.
 
     let
         nda =
@@ -2083,7 +2183,7 @@ lte nda1 nda2 =
     map (\val _ _ -> val <= num) nda
 
 
-{-| Returns A >= B, element-wise, with 1's (True) and 0's (False)
+{-| Returns `A >= B`, element-wise, with 1's (`True`) and 0's (`False`).
 
     let
         A =
@@ -2117,7 +2217,7 @@ gte nda1 nda2 =
     greaterEqual nda1 nda2
 
 
-{-| Compares each element with an scalar, nda(i) >= value
+{-| Compares each element with an scalar, `nda(i) >= value`.
 
     let
         nda =
@@ -2141,7 +2241,7 @@ gte nda1 nda2 =
     map (\val _ _ -> val >= num) nda
 
 
-{-| Returns A != B, element-wise, with 1's (True) and 0's (False)
+{-| Returns `A /= B`, element-wise, with 1's (`True`) and 0's (`False`).
 
     let
         A =
@@ -2175,7 +2275,7 @@ neq nda1 nda2 =
     notEqual nda1 nda2
 
 
-{-| Compares each element with an scalar, nda(i) != value
+{-| Compares each element with an scalar, `nda(i) /= value`.
 
     let
         nda =

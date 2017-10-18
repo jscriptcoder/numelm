@@ -1,7 +1,7 @@
 [
   {
     "name": "NumElm",
-    "comment": " Based on NumPy, [Python package](http://www.numpy.org/), NumElm is the fundamental package for\nscientific computing with Elm. Besides its scientific uses, NumElm can also\nbe used as a multi-dimensional container of generic data.\n\n# Types\n@docs NdArray, Shape, Location, Dtype\n\n# Creating NdArray\n@docs ndarray, vector, matrix, matrix3d\n\n# Getting info from NdArray\n@docs toString, dataToString, shape, size, ndim, length, numel, dtype\n\n# Pre-filled NdArray\n@docs zeros, ones, diagonal, diag, identity, eye, rand, randn\n\n# Getting and Setting\n@docs get, slice, getn, set, concatenateAxis, concatenate, concat\n\n# Transforming NdArray\n@docs map, transposeAxes, transpose, trans, inverse, inv, pinv, svd, eig\n\n# Arithmetic operations\n@docs add, (.+), subtract, sub, (.-), multiply, mul, (.*), divide, div, (./), power, pow, (.^)\n\n# Root and Logarithm\n@docs sqrt, logBase, log, log2, log10, exp\n\n# Matrix mutiplication\n@docs dot\n\n# Round off\n@docs around, round, ceil, floor, truncate, trunc, fix\n\n# Aggregate operations\n@docs max, maxAxis, min, minAxis, sum, sumAxis\n\n",
+    "comment": " Based on NumPy, [Python package](http://www.numpy.org/), NumElm is the fundamental package for\nscientific computing with Elm.\n\n**API**\n   1. [Types](#types)\n    * [NdArray](#NdArray)\n    * [Shape](#Shape)\n    * [Location](#Location)\n    * [Dtype](#Dtype)\n\n   2. [Creating NdArray](#creating-ndarray)\n    * [ndarray](#ndarray)\n    * [vector](#vector)\n    * [matrix](#matrix)\n    * [matrix3d](#matrix3d)\n\n   3. [Getting info from NdArray](#getting-info-from-ndarray)\n    * [toString](#toString)\n    * [dataToString](#dataToString)\n    * [shape](#shape), [size](#size)\n    * [ndim](#ndim)\n    * [length](#length), [numel](#numel)\n    * [dtype](#dtype)\n\n   4. [Pre-filled NdArray](#pre-filled-ndarray)\n    * [zeros](#zeros)\n    * [ones](#ones)\n    * [diagonal](#diagonal), [diag](#diag)\n    * [identity](#identity), [eye](#eye)\n    * [rand](#rand)\n    * [randn](#randn)\n\n   5. [Getting and Setting](#getting-and-setting)\n    * [get](#get)\n    * [slice](#slice), [getn](#getn)\n    * [set](#set)\n    * [concatenateAxis](#concatenateAxis)\n    * [concatenate](#concatenate), [concat](#concat)\n\n   6. [Transforming NdArray](#transforming-ndarray)\n    * [map](#map)\n    * [transposeAxes](#transposeAxes)\n    * [transpose](#transpose), [trans](#trans)\n    * [inverse](#inverse), [inv](#inv)\n    * [pinv](#pinv) - TODO\n    * [svd](#svd) - TODO\n    * [eig](#eig) - TODO\n\n   7. [Arithmetic operations](#arithmetic-operations)\n    * [add](#add)\n    * [(.+)](#.+)\n    * [subtract](#subtract), [sub](#sub)\n    * [(.-)](#.-)\n    * [multiply](#multiply), [mul](#mul)\n    * [(.*)](#.*)\n    * [divide](#divide), [div](#div)\n    * [(./)](#./)\n    * [power](#power), [pow](#pow)\n    * [(.^)](#.^)\n    * [mod](#mod)\n    * [(.%)](#.%)\n\n   8. [Root and Logarithm](#root-and-logarithm)\n    * [sqrt](#sqrt)\n    * [logBase](#logBase)\n    * [log](#log)\n    * [log2](#log2)\n    * [log10](#log10)\n    * [exp](#exp)\n\n   9. [Matrix mutiplication](#matrix-mutiplication)\n    * [dot](#dot)\n\n   10. [Round off](#round-off)\n    * [around](#around)\n    * [round](#round)\n    * [ceil](#ceil)\n    * [floor](#floor)\n    * [truncate](#truncate), [trunc](#trunc), [fix](#fix)\n\n   11. [Aggregate functions](#aggregate-functions)\n    * [max](#max)\n    * [maxAxis](#maxAxis)\n    * [min](#min)\n    * [minAxis](#minAxis)\n    * [sum](#sum)\n    * [sumAxis](#sumAxis)\n    * [prod](#prod)\n    * [prodAxis](#prodAxis)\n\n   12. [Relational operators](#relational-operators)\n    * [equal](#equal), [eq](#eq)\n    * [(.==)](#.==)\n    * [less](#less), [lt](#lt)\n    * [(.<)](#.<)\n    * [greater](#greater), [gt](#gt)\n    * [(.>)](#.>)\n    * [lessEqual](#lessEqual), [lte](#lte)\n    * [(.<=)](#.<=)\n    * [greaterEqual](#greaterEqual), [gte](#gte)\n    * [(.>=)](#.>=)\n    * [notEqual](#notEqual), [neq](#neq)\n    * [(./=)](#./=)\n\n# Types\n@docs NdArray, Shape, Location, Dtype\n\n# Creating NdArray\n@docs ndarray, vector, matrix, matrix3d\n\n# Getting info from NdArray\n@docs toString, dataToString, shape, size, ndim, length, numel, dtype\n\n# Pre-filled NdArray\n@docs zeros, ones, diagonal, diag, identity, eye, rand, randn\n\n# Getting and Setting\n@docs get, slice, getn, set, concatenateAxis, concatenate, concat\n\n# Transforming NdArray\n@docs map, transposeAxes, transpose, trans, inverse, inv, pinv, svd, eig\n\n# Arithmetic operations\n@docs add, (.+), subtract, sub, (.-), multiply, mul, (.*)\n@docs divide, div, (./), power, pow, (.^), mod, (.%)\n\n# Root and Logarithm\n@docs sqrt, logBase, log, log2, log10, exp\n\n# Matrix mutiplication\n@docs dot\n\n# Round off\n@docs around, round, ceil, floor, truncate, trunc, fix\n\n# Aggregate functions\n@docs max, maxAxis, min, minAxis, sum, sumAxis, prod, prodAxis\n\n# Relational operators\n@docs equal, eq, (.==), less, lt, (.<), greater, gt, (.>), lessEqual\n@docs lte, (.<=), greaterEqual, gte, (.>=), notEqual, neq, (./=)\n\n",
     "aliases": [
       {
         "name": "Location",
@@ -62,35 +62,70 @@
       },
       {
         "name": "NdArray",
-        "comment": " Multidimensional container of items of the same type and size.\nThe number of dimensions and items in an NdArray is defined by its\n[Shape](#Shape), which is a list of N positive integers that specify\nthe sizes of each dimension. The type of items in the array is\nspecified by a separate data-type object (Dtype), one of which is\nassociated with each NdArray.\n\n",
+        "comment": " Multidimensional container of items of the same type and size.\nThe number of dimensions and items in an NdArray is defined by its\n[Shape](#Shape), which is a list of N positive integers that specify\nthe sizes of each dimension. The type of items in the array is\nspecified by a separate data-type object, [Dtype](#Dtype), one of which is\nassociated with each NdArray.\n\n",
         "args": [],
         "cases": []
       }
     ],
     "values": [
       {
+        "name": ".%",
+        "comment": " Returns element-wise remainder of division by scalar.\n\n    let\n        A =\n            matrix Int8\n                   [ [1, 2]\n                   , [3, 4]\n                   , [5, 6]\n                   ]\n\n    in\n        A .% 2\n        -- [ [1, 0]\n        -- , [1, 0]\n        -- , [1, 0]\n        -- ]\n\n",
+        "type": "NumElm.NdArray -> Int -> NumElm.NdArray"
+      },
+      {
         "name": ".*",
-        "comment": " Multiplies escalar, element-wise.\n\n    let\n        A =\n            matrix Int8\n                   [ [1, 2]\n                   , [3, 4]\n                   ]\n\n    in\n        A .* 5\n        -- [ [ 5, 10]\n        -- , [15, 20]\n        -- ]\n\n",
+        "comment": " Multiplies scalar, element-wise.\n\n    let\n        A =\n            matrix Int8\n                   [ [1, 2]\n                   , [3, 4]\n                   ]\n\n    in\n        A .* 5\n        -- [ [ 5, 10]\n        -- , [15, 20]\n        -- ]\n\n",
         "type": "NumElm.NdArray -> number -> NumElm.NdArray"
       },
       {
         "name": ".+",
-        "comment": " Adds escalar, element-wise.\n\n    let\n        A =\n            matrix Int8\n                   [ [1, 2]\n                   , [3, 4]\n                   ]\n\n    in\n        A .+ 5\n        -- [ [6, 7]\n        -- , [8, 9]\n        -- ]\n\n",
+        "comment": " Adds scalar, element-wise.\n\n    let\n        A =\n            matrix Int8\n                   [ [1, 2]\n                   , [3, 4]\n                   ]\n\n    in\n        A .+ 5\n        -- [ [6, 7]\n        -- , [8, 9]\n        -- ]\n\n",
         "type": "NumElm.NdArray -> number -> NumElm.NdArray"
       },
       {
         "name": ".-",
-        "comment": " Substract escalar, element-wise.\n\n    let\n        A =\n            matrix Int8\n                   [ [1, 2]\n                   , [3, 4]\n                   ]\n\n    in\n        A .- 5\n        -- [ [-4, -3]\n        -- , [-2, -1]\n        -- ]\n\n",
+        "comment": " Substracts scalar, element-wise.\n\n    let\n        A =\n            matrix Int8\n                   [ [1, 2]\n                   , [3, 4]\n                   ]\n\n    in\n        A .- 5\n        -- [ [-4, -3]\n        -- , [-2, -1]\n        -- ]\n\n",
         "type": "NumElm.NdArray -> number -> NumElm.NdArray"
       },
       {
         "name": "./",
-        "comment": " Devides escalar, element-wise.\n\n    let\n        A =\n            matrix Int8\n                   [ [1, 2]\n                   , [3, 4]\n                   ]\n\n    in\n        A ./ 5\n        -- [ [1/5, 2/5]\n        -- , [3/5, 4/5]\n        -- ]\n\n",
+        "comment": " Devides scalar, element-wise.\n\n    let\n        A =\n            matrix Int8\n                   [ [1, 2]\n                   , [3, 4]\n                   ]\n\n    in\n        A ./ 5\n        -- [ [1/5, 2/5]\n        -- , [3/5, 4/5]\n        -- ]\n\n",
         "type": "NumElm.NdArray -> Float -> NumElm.NdArray"
       },
       {
+        "name": "./=",
+        "comment": " Compares each element with an scalar, `nda(i) /= value`.\n\n    let\n        nda =\n            matrix Int16\n                   [ [1, 2, 3]\n                   , [3, 4, 5]\n                   ]\n\n        value =\n            3\n\n    in\n        nda .>= value\n        -- [ [1, 1, 0]\n        -- , [0, 1, 1]\n        -- ]\n\n",
+        "type": "NumElm.NdArray -> comparable -> NumElm.NdArray"
+      },
+      {
+        "name": ".<",
+        "comment": " Compares each element with an scalar, `nda(i) < value`.\n\n    let\n        nda =\n            matrix Int16\n                   [ [1, 2, 3]\n                   , [3, 4, 5]\n                   ]\n\n        value =\n            3\n\n    in\n        nda .< value\n        -- [ [1, 1, 0]\n        -- , [0, 0, 0]\n        -- ]\n\n",
+        "type": "NumElm.NdArray -> comparable -> NumElm.NdArray"
+      },
+      {
+        "name": ".<=",
+        "comment": " Compares each element with an scalar, `nda(i) <= value`.\n\n    let\n        nda =\n            matrix Int16\n                   [ [1, 2, 3]\n                   , [3, 4, 5]\n                   ]\n\n        value =\n            3\n\n    in\n        nda .<= value\n        -- [ [1, 1, 1]\n        -- , [1, 0, 0]\n        -- ]\n\n",
+        "type": "NumElm.NdArray -> comparable -> NumElm.NdArray"
+      },
+      {
+        "name": ".==",
+        "comment": " Compares each element with an scalar, `nda(i) == value`.\n\n    let\n        nda =\n            matrix Int16\n                   [ [1, 2, 3]\n                   , [3, 4, 5]\n                   ]\n\n        value =\n            3\n\n    in\n        nda .== value\n        -- [ [0, 0, 1]\n        -- , [1, 0, 0]\n        -- ]\n\n",
+        "type": "NumElm.NdArray -> number -> NumElm.NdArray"
+      },
+      {
+        "name": ".>",
+        "comment": " Compares each element with an scalar, `nda(i) > value`.\n\n    let\n        nda =\n            matrix Int16\n                   [ [1, 2, 3]\n                   , [3, 4, 5]\n                   ]\n\n        value =\n            3\n\n    in\n        nda .> value\n        -- [ [0, 0, 0]\n        -- , [0, 1, 1]\n        -- ]\n\n",
+        "type": "NumElm.NdArray -> comparable -> NumElm.NdArray"
+      },
+      {
+        "name": ".>=",
+        "comment": " Compares each element with an scalar, `nda(i) >= value`.\n\n    let\n        nda =\n            matrix Int16\n                   [ [1, 2, 3]\n                   , [3, 4, 5]\n                   ]\n\n        value =\n            3\n\n    in\n        nda .>= value\n        -- [ [0, 0, 1]\n        -- , [1, 1, 1]\n        -- ]\n\n",
+        "type": "NumElm.NdArray -> comparable -> NumElm.NdArray"
+      },
+      {
         "name": ".^",
-        "comment": " [NdArray](#NdArray) elements raised to the power of an escalar, element-wise.\n\n    let\n        A =\n            matrix Int8\n                   [ [1, 2]\n                   , [3, 4]\n                   ]\n\n    in\n        A .^ 2\n        -- [ [1,  4]\n        -- , [9, 16]\n        -- ]\n\n",
+        "comment": " [NdArray](#NdArray) elements raised to the power of an scalar, element-wise.\n\n    let\n        A =\n            matrix Int8\n                   [ [1, 2]\n                   , [3, 4]\n                   ]\n\n    in\n        A .^ 2\n        -- [ [1,  4]\n        -- , [9, 16]\n        -- ]\n\n",
         "type": "NumElm.NdArray -> number -> NumElm.NdArray"
       },
       {
@@ -115,7 +150,7 @@
       },
       {
         "name": "concatenate",
-        "comment": " Alias for [concatenateAxis](#concatenateAxis) with axis set to 0.\n",
+        "comment": " Alias for [concatenateAxis](#concatenateAxis) with `axis` set to 0.\n",
         "type": "NumElm.NdArray -> NumElm.NdArray -> Result.Result String NumElm.NdArray"
       },
       {
@@ -164,6 +199,16 @@
         "type": "NumElm.NdArray -> NumElm.NdArray"
       },
       {
+        "name": "eq",
+        "comment": " Alias for [equal](#equal).\n",
+        "type": "NumElm.NdArray -> NumElm.NdArray -> Result.Result String NumElm.NdArray"
+      },
+      {
+        "name": "equal",
+        "comment": " Returns `A == B`, element-wise, with 1's (`True`) and 0's (`False`).\n\n    let\n        A =\n            matrix Int16\n                   [ [1, 2, 3]\n                   , [3, 4, 5]\n                   ]\n\n        B =\n            matrix Int16\n                   [ [2, 2, 2]\n                   , [5, 4, 5]\n                   ]\n\n    in\n        equal A B\n        -- [ [0, 1, 0]\n        -- , [0, 1, 1]\n        -- ]\n\n",
+        "type": "NumElm.NdArray -> NumElm.NdArray -> Result.Result String NumElm.NdArray"
+      },
+      {
         "name": "exp",
         "comment": " Calculates the exponential of all elements in the [NdArray](#NdArray).\n\n    let\n        A =\n            matrix Int8\n                   [ [1, 2]\n                   , [3, 4]\n                   ]\n\n    in\n        exp A\n        -- [ [ 2.71,  7.38]\n        -- , [20.08, 54.59]\n        -- ]\n\n",
         "type": "NumElm.NdArray -> NumElm.NdArray"
@@ -194,6 +239,26 @@
         "type": "NumElm.Location -> NumElm.Location -> NumElm.NdArray -> Maybe.Maybe NumElm.NdArray"
       },
       {
+        "name": "greater",
+        "comment": " Returns `A > B`, element-wise, with 1's (`True`) and 0's (`False`).\n\n    let\n        A =\n            matrix Int16\n                   [ [1, 2, 3]\n                   , [3, 4, 5]\n                   ]\n\n        B =\n            matrix Int16\n                   [ [2, 2, 2]\n                   , [5, 4, 5]\n                   ]\n\n    in\n        greater A B\n        -- [ [0, 0, 1]\n        -- , [0, 0, 0]\n        -- ]\n\n",
+        "type": "NumElm.NdArray -> NumElm.NdArray -> Result.Result String NumElm.NdArray"
+      },
+      {
+        "name": "greaterEqual",
+        "comment": " Returns `A >= B`, element-wise, with 1's (`True`) and 0's (`False`).\n\n    let\n        A =\n            matrix Int16\n                   [ [1, 2, 3]\n                   , [3, 4, 5]\n                   ]\n\n        B =\n            matrix Int16\n                   [ [2, 2, 2]\n                   , [5, 4, 5]\n                   ]\n\n    in\n        greaterEqual A B\n        -- [ [0, 1, 1]\n        -- , [0, 1, 1]\n        -- ]\n\n",
+        "type": "NumElm.NdArray -> NumElm.NdArray -> Result.Result String NumElm.NdArray"
+      },
+      {
+        "name": "gt",
+        "comment": " Alias for [greater](#greater).\n",
+        "type": "NumElm.NdArray -> NumElm.NdArray -> Result.Result String NumElm.NdArray"
+      },
+      {
+        "name": "gte",
+        "comment": " Alias for [greaterEqual](#greaterEqual).\n",
+        "type": "NumElm.NdArray -> NumElm.NdArray -> Result.Result String NumElm.NdArray"
+      },
+      {
         "name": "identity",
         "comment": " Creates an identity square matrix, given a size.\n\n    let\n        dtype =\n            Int16\n\n        size =\n            3\n\n    in\n        identity dtype size\n        -- [ [1, 0, 0]\n        -- , [0, 1, 0]\n        -- , [0, 0, 1]\n        -- ]\n\n",
         "type": "NumElm.Dtype -> Int -> Result.Result String NumElm.NdArray"
@@ -210,12 +275,22 @@
       },
       {
         "name": "length",
-        "comment": " Returns the number of elements in the [NdArray](#NdArray).\n\n    -- 2×4×1 matrix\n    numel nda == 3\n\n",
+        "comment": " Returns the number of elements in the [NdArray](#NdArray).\n\n    -- 2×4×1 matrix\n    length nda == 8\n\n",
         "type": "NumElm.NdArray -> Int"
       },
       {
+        "name": "less",
+        "comment": " Returns `A < B`, element-wise, with 1's (`True`) and 0's (`False`).\n\n    let\n        A =\n            matrix Int16\n                   [ [1, 2, 3]\n                   , [3, 4, 5]\n                   ]\n\n        B =\n            matrix Int16\n                   [ [2, 2, 2]\n                   , [5, 4, 5]\n                   ]\n\n    in\n        less A B\n        -- [ [1, 0, 0]\n        -- , [1, 0, 0]\n        -- ]\n\n",
+        "type": "NumElm.NdArray -> NumElm.NdArray -> Result.Result String NumElm.NdArray"
+      },
+      {
+        "name": "lessEqual",
+        "comment": " Returns `A <= B`, element-wise, with 1's (`True`) and 0's (`False`).\n\n    let\n        A =\n            matrix Int16\n                   [ [1, 2, 3]\n                   , [3, 4, 5]\n                   ]\n\n        B =\n            matrix Int16\n                   [ [2, 2, 2]\n                   , [5, 4, 5]\n                   ]\n\n    in\n        lessEqual A B\n        -- [ [1, 1, 0]\n        -- , [1, 1, 0]\n        -- ]\n\n",
+        "type": "NumElm.NdArray -> NumElm.NdArray -> Result.Result String NumElm.NdArray"
+      },
+      {
         "name": "log",
-        "comment": " Natural logarithm (in base e), element-wise.\n\n    let\n        A =\n            matrix Float32\n                   [ [1, 2]\n                   , [3, 4]\n                   ]\n\n    in\n        log A\n        -- [ [   0, 0.69]\n        -- , [1.09, 1.38]\n        -- ]\n\n",
+        "comment": " Natural logarithm, `base e`, element-wise.\n\n    let\n        A =\n            matrix Float32\n                   [ [1, 2]\n                   , [3, 4]\n                   ]\n\n    in\n        log A\n        -- [ [   0, 0.69]\n        -- , [1.09, 1.38]\n        -- ]\n\n",
         "type": "NumElm.NdArray -> NumElm.NdArray"
       },
       {
@@ -234,9 +309,19 @@
         "type": "Float -> NumElm.NdArray -> NumElm.NdArray"
       },
       {
+        "name": "lt",
+        "comment": " Alias for [less](#less).\n",
+        "type": "NumElm.NdArray -> NumElm.NdArray -> Result.Result String NumElm.NdArray"
+      },
+      {
+        "name": "lte",
+        "comment": " Alias for [lessEqual](#lessEqual).\n",
+        "type": "NumElm.NdArray -> NumElm.NdArray -> Result.Result String NumElm.NdArray"
+      },
+      {
         "name": "map",
         "comment": " Transforms the values of the [NdArray](#NdArray) with mapping.\n\n    let\n        vec =\n            vector Int8 [1, 2, 3]\n\n        toPower2 =\n            (\\a _ _ -> a^2)\n\n    in\n        map toPower2 vec\n        --> [1, 4, 9]\n\n",
-        "type": "(number1 -> NumElm.Location -> NumElm.NdArray -> number2) -> NumElm.NdArray -> NumElm.NdArray"
+        "type": "(number -> NumElm.Location -> NumElm.NdArray -> a) -> NumElm.NdArray -> NumElm.NdArray"
       },
       {
         "name": "matrix",
@@ -255,7 +340,7 @@
       },
       {
         "name": "maxAxis",
-        "comment": " Returns the maximum along a given axis.\n\n    let\n        A =\n            matrix3d Int16\n                     [ [ [  1, -2 ]\n                       , [ -6,  3 ]\n                       , [  3, -7 ]\n                       ]\n                     , [ [ 10, -6 ]\n                       , [ -3, 12 ]\n                       , [ -8,  7 ]\n                       ]\n                     , [ [ 0,  3 ]\n                       , [ 1, 15 ]\n                       , [ 5,  7 ]\n                       ]\n                     ]\n\n        axis =\n            1\n\n    in\n        maxAxis axis A\n        -- [ [ 3, 3 ]\n        -- , [ 10, 12 ]\n        -- , [ 5,  15 ]\n        -- ]\n\n",
+        "comment": " Returns the maximum along a given `axis`.\n\n    let\n        A =\n            matrix3d Int16\n                     [ [ [  1, -2 ]\n                       , [ -6,  3 ]\n                       , [  3, -7 ]\n                       ]\n                     , [ [ 10, -6 ]\n                       , [ -3, 12 ]\n                       , [ -8,  7 ]\n                       ]\n                     , [ [ 0,  3 ]\n                       , [ 1, 15 ]\n                       , [ 5,  7 ]\n                       ]\n                     ]\n\n        axis =\n            1\n\n    in\n        maxAxis axis A\n        -- [ [ 3, 3 ]\n        -- , [ 10, 12 ]\n        -- , [ 5,  15 ]\n        -- ]\n\n",
         "type": "Int -> NumElm.NdArray -> Result.Result String NumElm.NdArray"
       },
       {
@@ -265,8 +350,13 @@
       },
       {
         "name": "minAxis",
-        "comment": " Returns the minimum along a given axis.\n\n    let\n        A =\n            matrix3d Int16\n                     [ [ [  1, -2 ]\n                       , [ -6,  3 ]\n                       , [  3, -7 ]\n                       ]\n                     , [ [ 10, -6 ]\n                       , [ -3, 12 ]\n                       , [ -8,  7 ]\n                       ]\n                     , [ [ 0,  3 ]\n                       , [ 1, 15 ]\n                       , [ 5,  7 ]\n                       ]\n                     ]\n\n        axis =\n            0\n\n    in\n        minAxis axis A\n        -- [ [  0, -6 ]\n        -- , [ -6,  3 ]\n        -- , [ -8,  7 ]\n        -- ]\n\n",
+        "comment": " Returns the minimum along a given `axis`.\n\n    let\n        A =\n            matrix3d Int16\n                     [ [ [  1, -2 ]\n                       , [ -6,  3 ]\n                       , [  3, -7 ]\n                       ]\n                     , [ [ 10, -6 ]\n                       , [ -3, 12 ]\n                       , [ -8,  7 ]\n                       ]\n                     , [ [ 0,  3 ]\n                       , [ 1, 15 ]\n                       , [ 5,  7 ]\n                       ]\n                     ]\n\n        axis =\n            0\n\n    in\n        minAxis axis A\n        -- [ [  0, -6 ]\n        -- , [ -6,  3 ]\n        -- , [ -8,  7 ]\n        -- ]\n\n",
         "type": "Int -> NumElm.NdArray -> Result.Result String NumElm.NdArray"
+      },
+      {
+        "name": "mod",
+        "comment": " Returns element-wise remainder of division.\n\n    let\n        A =\n            matrix Int8\n                   [ [1,  2]\n                   , [9, 53]\n                   ]\n\n        B =\n            matrix Int8\n                   [ [5, 2]\n                   , [3, 3]\n                   ]\n\n    in\n        mod A B\n        -- [ [1, 0]\n        -- , [0, 2]\n        -- ]\n\n",
+        "type": "NumElm.NdArray -> NumElm.NdArray -> Result.Result String NumElm.NdArray"
       },
       {
         "name": "mul",
@@ -287,6 +377,16 @@
         "name": "ndim",
         "comment": " Returns the number of dimensions of the [NdArray](#NdArray).\n\n    -- 2×4×1 matrix\n    ndim nda == 3\n\n",
         "type": "NumElm.NdArray -> Int"
+      },
+      {
+        "name": "neq",
+        "comment": " Alias for [notEqual](#notEqual).\n",
+        "type": "NumElm.NdArray -> NumElm.NdArray -> Result.Result String NumElm.NdArray"
+      },
+      {
+        "name": "notEqual",
+        "comment": " Returns `A /= B`, element-wise, with 1's (`True`) and 0's (`False`).\n\n    let\n        A =\n            matrix Int16\n                   [ [1, 2, 3]\n                   , [3, 4, 5]\n                   ]\n\n        B =\n            matrix Int16\n                   [ [2, 2, 2]\n                   , [5, 4, 5]\n                   ]\n\n    in\n        notEqual A B\n        -- [ [1, 0, 1]\n        -- , [1, 0, 0]\n        -- ]\n\n",
+        "type": "NumElm.NdArray -> NumElm.NdArray -> Result.Result String NumElm.NdArray"
       },
       {
         "name": "numel",
@@ -310,8 +410,18 @@
       },
       {
         "name": "power",
-        "comment": " [NdArray](#NdArray) elements raised to power of from second [NdArray](#NdArray), element-wise.\n\n    let\n        A =\n            matrix Int8\n                   [ [1, 2]\n                   , [3, 4]\n                   ]\n\n        B =\n            matrix Int8\n                   [ [2, 2]\n                   , [3, 4]\n                   ]\n\n    in\n        divide A B\n        -- [ [ 1,   4]\n        -- , [27, 256]\n        -- ]\n\n",
+        "comment": " [NdArray](#NdArray) elements raised to power of second [NdArray](#NdArray), element-wise.\n\n    let\n        A =\n            matrix Int8\n                   [ [1, 2]\n                   , [3, 4]\n                   ]\n\n        B =\n            matrix Int8\n                   [ [2, 2]\n                   , [3, 4]\n                   ]\n\n    in\n        divide A B\n        -- [ [ 1,   4]\n        -- , [27, 256]\n        -- ]\n\n",
         "type": "NumElm.NdArray -> NumElm.NdArray -> Result.Result String NumElm.NdArray"
+      },
+      {
+        "name": "prod",
+        "comment": " Element-wise total product of a [NdArray](#NdArray).\n\n    let\n        A =\n            matrix3d Int16\n                     [ [ [  1, -2 ]\n                       , [ -6,  3 ]\n                       , [  3, -7 ]\n                       ]\n                     , [ [ 10, -6 ]\n                       , [ -3, 12 ]\n                       , [ -8,  7 ]\n                       ]\n                     , [ [ 1,  3 ]\n                       , [ 1, 15 ]\n                       , [ 5,  7 ]\n                       ]\n                     ]\n\n    in\n        prod A == 144027072000\n\n",
+        "type": "NumElm.NdArray -> number"
+      },
+      {
+        "name": "prodAxis",
+        "comment": " Returns the product of all the elements along a given `axis`.\n\n    let\n        A =\n            matrix3d Int16\n                     [ [ [  1, -2 ]\n                       , [ -6,  3 ]\n                       , [  3, -7 ]\n                       ]\n                     , [ [ 10, -6 ]\n                       , [ -3, 12 ]\n                       , [ -8,  7 ]\n                       ]\n                     , [ [ 1,  3 ]\n                       , [ 1, 15 ]\n                       , [ 5,  7 ]\n                       ]\n                     ]\n\n        axis =\n            2\n\n    in\n        prodAxis axis A\n        -- [ [  -2, -18, -21 ]\n        -- , [ -60, -36, -56 ]\n        -- , [   3,  15,  35 ]\n        -- ]\n\n",
+        "type": "Int -> NumElm.NdArray -> Result.Result String NumElm.NdArray"
       },
       {
         "name": "rand",
@@ -365,12 +475,12 @@
       },
       {
         "name": "sum",
-        "comment": " Element-wise total sum of an [NdArray](#NdArray).\n\n    let\n        A =\n            matrix3d Int16\n                     [ [ [  1, -2 ]\n                       , [ -6,  3 ]\n                       , [  3, -7 ]\n                       ]\n                     , [ [ 10, -6 ]\n                       , [ -3, 12 ]\n                       , [ -8,  7 ]\n                       ]\n                     , [ [ 0,  3 ]\n                       , [ 1, 15 ]\n                       , [ 5,  7 ]\n                       ]\n                     ]\n\n    in\n        sum A == 35\n\n",
+        "comment": " Element-wise total sum of a [NdArray](#NdArray).\n\n    let\n        A =\n            matrix3d Int16\n                     [ [ [  1, -2 ]\n                       , [ -6,  3 ]\n                       , [  3, -7 ]\n                       ]\n                     , [ [ 10, -6 ]\n                       , [ -3, 12 ]\n                       , [ -8,  7 ]\n                       ]\n                     , [ [ 0,  3 ]\n                       , [ 1, 15 ]\n                       , [ 5,  7 ]\n                       ]\n                     ]\n\n    in\n        sum A == 35\n\n",
         "type": "NumElm.NdArray -> number"
       },
       {
         "name": "sumAxis",
-        "comment": " Returns the sum of all the elements over the given axis..\n\n    let\n        A =\n            matrix3d Int16\n                     [ [ [  1, -2 ]\n                       , [ -6,  3 ]\n                       , [  3, -7 ]\n                       ]\n                     , [ [ 10, -6 ]\n                       , [ -3, 12 ]\n                       , [ -8,  7 ]\n                       ]\n                     , [ [ 0,  3 ]\n                       , [ 1, 15 ]\n                       , [ 5,  7 ]\n                       ]\n                     ]\n\n        axis =\n            2\n\n    in\n        sumAxis axis A\n        -- [ [ -1, -3, -4 ]\n        -- , [  4,  9, -1 ]\n        -- , [  3, 16, 12 ]\n        -- ]\n\n",
+        "comment": " Returns the sum of all the elements along a given `axis`.\n\n    let\n        A =\n            matrix3d Int16\n                     [ [ [  1, -2 ]\n                       , [ -6,  3 ]\n                       , [  3, -7 ]\n                       ]\n                     , [ [ 10, -6 ]\n                       , [ -3, 12 ]\n                       , [ -8,  7 ]\n                       ]\n                     , [ [ 0,  3 ]\n                       , [ 1, 15 ]\n                       , [ 5,  7 ]\n                       ]\n                     ]\n\n        axis =\n            2\n\n    in\n        sumAxis axis A\n        -- [ [ -1, -3, -4 ]\n        -- , [  4,  9, -1 ]\n        -- , [  3, 16, 12 ]\n        -- ]\n\n",
         "type": "Int -> NumElm.NdArray -> Result.Result String NumElm.NdArray"
       },
       {
@@ -395,7 +505,7 @@
       },
       {
         "name": "transposeAxes",
-        "comment": " Returns a new [NdArray](#NdArray) with axes transposed.\nThis function differs slighly from the way NumPy [transposes](https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.transpose.html)\n\n    let\n        A =\n            matrix Float32\n                   [ [1, 2, 3]\n                   , [4, 5, 6]\n                   ]\n\n        -- 3×2,     [1] swaps 1st and 2nd dimensions            --> 2×3\n        -- 3×2×4,   [2] swaps 1st and 3nd dimensions            --> 4×2×3\n        -- 3×2×4×5, [2, 3] swaps 1st and 3rd then 2nd and 4th   --> 4×5×3×4\n        -- 3×2×4    [1, 2] swaps 1st and 2nd then 2nd and 3rd   --> 2×4×3\n        -- 3×2      [1, 0] swaps 1st and 2nd then 2nd and 1st   --> 3×2\n        axes =\n            [ 1 ]\n\n    in\n        transposeAxes axes A\n        -- [ [1, 4]\n        -- , [2, 5]\n        -- , [3, 6]\n        -- ]\n\n\n",
+        "comment": " Returns a new [NdArray](#NdArray) with `axes` transposed.\nThis function slighly differs from the way NumPy [transposes](https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.transpose.html)\n\n    let\n        A =\n            matrix Float32\n                   [ [1, 2, 3]\n                   , [4, 5, 6]\n                   ]\n\n        -- 3×2,     [1] swaps 1st and 2nd dimensions            --> 2×3\n        -- 3×2×4,   [2] swaps 1st and 3nd dimensions            --> 4×2×3\n        -- 3×2×4×5, [2, 3] swaps 1st and 3rd then 2nd and 4th   --> 4×5×3×4\n        -- 3×2×4    [1, 2] swaps 1st and 2nd then 2nd and 3rd   --> 2×4×3\n        -- 3×2      [1, 0] swaps 1st and 2nd then 2nd and 1st   --> 3×2\n        axes =\n            [ 1 ]\n\n    in\n        transposeAxes axes A\n        -- [ [1, 4]\n        -- , [2, 5]\n        -- , [3, 6]\n        -- ]\n\n\n",
         "type": "List Int -> NumElm.NdArray -> NumElm.NdArray"
       },
       {
