@@ -107,7 +107,7 @@ module NumElm
         , (.>=)
         , notEqual
         , neq
-        , (.!=)
+        , (./=)
           -- Trigonometry functions --
           {-
              , sin
@@ -2194,8 +2194,8 @@ neq nda1 nda2 =
         -- ]
 
 -}
-(.!=) : NdArray -> comparable -> NdArray
-(.!=) nda num =
+(./=) : NdArray -> comparable -> NdArray
+(./=) nda num =
     map (\val _ _ -> val /= num) nda
 
 
