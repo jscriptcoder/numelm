@@ -1701,91 +1701,349 @@ sumAxis axis nda =
 -- Relational operators --
 
 
+{-| Returns A == B, element-wise, with 1's (True) and 0's (False)
+
+    let
+        A =
+            matrix Int16
+                   [ [1, 2, 3]
+                   , [3, 4, 5]
+                   ]
+
+        B =
+            matrix Int16
+                   [ [2, 2, 2]
+                   , [5, 4, 5]
+                   ]
+
+    in
+        equal A B
+        -- [ [0, 1, 0]
+        -- , [0, 1, 1]
+        -- ]
+
+-}
 equal : NdArray -> NdArray -> Result String NdArray
 equal nda1 nda2 =
     Native.NumElm.elementWise (==) nda1 nda2
 
 
+{-| Alias for [equal](#equal).
+-}
 eq : NdArray -> NdArray -> Result String NdArray
 eq nda1 nda2 =
     equal nda1 nda2
 
 
+{-| Compares each element with an scalar, nda(i) == value
+
+    let
+        nda =
+            matrix Int16
+                   [ [1, 2, 3]
+                   , [3, 4, 5]
+                   ]
+
+        value =
+            3
+
+    in
+        nda .== value
+        -- [ [0, 0, 1]
+        -- , [1, 0, 0]
+        -- ]
+
+-}
 (.==) : NdArray -> number -> NdArray
 (.==) nda num =
     map (\val _ _ -> val == num) nda
 
 
+{-| Returns A < B, element-wise, with 1's (True) and 0's (False)
+
+    let
+        A =
+            matrix Int16
+                   [ [1, 2, 3]
+                   , [3, 4, 5]
+                   ]
+
+        B =
+            matrix Int16
+                   [ [2, 2, 2]
+                   , [5, 4, 5]
+                   ]
+
+    in
+        less A B
+        -- [ [1, 0, 0]
+        -- , [1, 0, 0]
+        -- ]
+
+-}
 less : NdArray -> NdArray -> Result String NdArray
 less nda1 nda2 =
     Native.NumElm.elementWise (<) nda1 nda2
 
 
+{-| Alias for [less](#less).
+-}
 lt : NdArray -> NdArray -> Result String NdArray
 lt nda1 nda2 =
     less nda1 nda2
 
 
+{-| Compares each element with an scalar, nda(i) < value
+
+    let
+        nda =
+            matrix Int16
+                   [ [1, 2, 3]
+                   , [3, 4, 5]
+                   ]
+
+        value =
+            3
+
+    in
+        nda .< value
+        -- [ [1, 1, 0]
+        -- , [0, 0, 0]
+        -- ]
+
+-}
 (.<) : NdArray -> number -> NdArray
 (.<) nda num =
     map (\val _ _ -> val < num) nda
 
 
+{-| Returns A > B, element-wise, with 1's (True) and 0's (False)
+
+    let
+        A =
+            matrix Int16
+                   [ [1, 2, 3]
+                   , [3, 4, 5]
+                   ]
+
+        B =
+            matrix Int16
+                   [ [2, 2, 2]
+                   , [5, 4, 5]
+                   ]
+
+    in
+        greater A B
+        -- [ [0, 0, 1]
+        -- , [0, 0, 0]
+        -- ]
+
+-}
 greater : NdArray -> NdArray -> Result String NdArray
 greater nda1 nda2 =
     Native.NumElm.elementWise (>) nda1 nda2
 
 
+{-| Alias for [greater](#greater).
+-}
 gt : NdArray -> NdArray -> Result String NdArray
 gt nda1 nda2 =
     greater nda1 nda2
 
 
+{-| Compares each element with an scalar, nda(i) > value
+
+    let
+        nda =
+            matrix Int16
+                   [ [1, 2, 3]
+                   , [3, 4, 5]
+                   ]
+
+        value =
+            3
+
+    in
+        nda .> value
+        -- [ [0, 0, 0]
+        -- , [0, 1, 1]
+        -- ]
+
+-}
 (.>) : NdArray -> number -> NdArray
 (.>) nda num =
     map (\val _ _ -> val > num) nda
 
 
+{-| Returns A <= B, element-wise, with 1's (True) and 0's (False)
+
+    let
+        A =
+            matrix Int16
+                   [ [1, 2, 3]
+                   , [3, 4, 5]
+                   ]
+
+        B =
+            matrix Int16
+                   [ [2, 2, 2]
+                   , [5, 4, 5]
+                   ]
+
+    in
+        lessEqual A B
+        -- [ [1, 1, 0]
+        -- , [1, 1, 0]
+        -- ]
+
+-}
 lessEqual : NdArray -> NdArray -> Result String NdArray
 lessEqual nda1 nda2 =
     Native.NumElm.elementWise (<=) nda1 nda2
 
 
+{-| Alias for [lessEqual](#lessEqual).
+-}
 lte : NdArray -> NdArray -> Result String NdArray
 lte nda1 nda2 =
     lessEqual nda1 nda2
 
 
+{-| Compares each element with an scalar, nda(i) <= value
+
+    let
+        nda =
+            matrix Int16
+                   [ [1, 2, 3]
+                   , [3, 4, 5]
+                   ]
+
+        value =
+            3
+
+    in
+        nda .<= value
+        -- [ [1, 1, 1]
+        -- , [1, 0, 0]
+        -- ]
+
+-}
 (.<=) : NdArray -> number -> NdArray
 (.<=) nda num =
     map (\val _ _ -> val <= num) nda
 
 
+{-| Returns A >= B, element-wise, with 1's (True) and 0's (False)
+
+    let
+        A =
+            matrix Int16
+                   [ [1, 2, 3]
+                   , [3, 4, 5]
+                   ]
+
+        B =
+            matrix Int16
+                   [ [2, 2, 2]
+                   , [5, 4, 5]
+                   ]
+
+    in
+        greaterEqual A B
+        -- [ [0, 1, 1]
+        -- , [0, 1, 1]
+        -- ]
+
+-}
 greaterEqual : NdArray -> NdArray -> Result String NdArray
 greaterEqual nda1 nda2 =
     Native.NumElm.elementWise (>=) nda1 nda2
 
 
+{-| Alias for [greaterEqual](#greaterEqual).
+-}
 gte : NdArray -> NdArray -> Result String NdArray
 gte nda1 nda2 =
     greaterEqual nda1 nda2
 
 
+{-| Compares each element with an scalar, nda(i) >= value
+
+    let
+        nda =
+            matrix Int16
+                   [ [1, 2, 3]
+                   , [3, 4, 5]
+                   ]
+
+        value =
+            3
+
+    in
+        nda .>= value
+        -- [ [0, 0, 1]
+        -- , [1, 1, 1]
+        -- ]
+
+-}
 (.>=) : NdArray -> number -> NdArray
 (.>=) nda num =
     map (\val _ _ -> val >= num) nda
 
 
+{-| Returns A != B, element-wise, with 1's (True) and 0's (False)
+
+    let
+        A =
+            matrix Int16
+                   [ [1, 2, 3]
+                   , [3, 4, 5]
+                   ]
+
+        B =
+            matrix Int16
+                   [ [2, 2, 2]
+                   , [5, 4, 5]
+                   ]
+
+    in
+        notEqual A B
+        -- [ [1, 0, 1]
+        -- , [1, 0, 0]
+        -- ]
+
+-}
 notEqual : NdArray -> NdArray -> Result String NdArray
 notEqual nda1 nda2 =
     Native.NumElm.elementWise (!=) nda1 nda2
 
 
+{-| Alias for [notEqual](#notEqual).
+-}
 neq : NdArray -> NdArray -> Result String NdArray
 neq nda1 nda2 =
     notEqual nda1 nda2
 
 
+{-| Compares each element with an scalar, nda(i) != value
+
+    let
+        nda =
+            matrix Int16
+                   [ [1, 2, 3]
+                   , [3, 4, 5]
+                   ]
+
+        value =
+            3
+
+    in
+        nda .>= value
+        -- [ [1, 1, 0]
+        -- , [0, 1, 1]
+        -- ]
+
+-}
 (.!=) : NdArray -> number -> NdArray
 (.!=) nda num =
     map (\val _ _ -> val != num) nda
