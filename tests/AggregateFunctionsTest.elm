@@ -1,4 +1,4 @@
-module AggregateOperationsTest exposing (..)
+module AggregateFunctionsTest exposing (..)
 
 import Expect exposing (Expectation)
 import Test exposing (..)
@@ -7,7 +7,7 @@ import NumElm exposing (..)
 
 suit : Test
 suit =
-    describe "Aggregate operations"
+    describe "Aggregate functions"
         [ test "Max value"
             (\_ ->
                 let
@@ -37,7 +37,7 @@ suit =
                 in
                     Expect.equal max 15
             )
-        , test "Max value on axis"
+        , test "Max value along an axis"
             (\_ ->
                 let
                     ndaMaxDataResult =
@@ -96,7 +96,7 @@ suit =
                 in
                     Expect.equal min -8
             )
-        , test "Min value on axis"
+        , test "Min value along an axis"
             (\_ ->
                 let
                     ndaMinDataResult =
@@ -155,7 +155,7 @@ suit =
                 in
                     Expect.equal sum 35
             )
-        , test "Total sum on axis"
+        , test "Total sum along an axis"
             (\_ ->
                 let
                     ndaSumDataResult =
@@ -205,5 +205,64 @@ suit =
                         Err msg ->
                             msg
                                 |> Expect.equal "NdArray#mapAxis - Axis does not exist: The shape of nda is 3×1, trying to loop along axis 2"
+            )
+        , test "Total product"
+            (\_ ->
+                let
+                    ndaResult =
+                        NumElm.matrix3d Int16
+                            [ [ [ 1, -2 ]
+                              , [ -6, 3 ]
+                              , [ 3, -7 ]
+                              ]
+                            , [ [ 10, -6 ]
+                              , [ -3, 12 ]
+                              , [ -8, 7 ]
+                              ]
+                            , [ [ 1, 3 ]
+                              , [ 1, 15 ]
+                              , [ 5, 7 ]
+                              ]
+                            ]
+
+                    prodResult =
+                        Result.map
+                            (\nda -> NumElm.prod nda)
+                            ndaResult
+
+                    prod =
+                        Result.withDefault 0 prodResult
+                in
+                    Expect.equal prod 144027072000
+            )
+        , test "Total product along an axis"
+            (\_ ->
+                let
+                    ndaProdDataResult =
+                        NumElm.matrix3d Int16
+                            [ [ [ 1, -2 ]
+                              , [ -6, 3 ]
+                              , [ 3, -7 ]
+                              ]
+                            , [ [ 10, -6 ]
+                              , [ -3, 12 ]
+                              , [ -8, 7 ]
+                              ]
+                            , [ [ 1, 3 ]
+                              , [ 1, 15 ]
+                              , [ 5, 7 ]
+                              ]
+                            ]
+                            |> Result.andThen
+                                (\nda -> NumElm.prodAxis 2 nda)
+                            |> Result.andThen
+                                (\ndaProd -> Ok (NumElm.dataToString ndaProd))
+                in
+                    case ndaProdDataResult of
+                        Ok ndaProdData ->
+                            Expect.equal ndaProdData "[-2,-18,-21,-60,-36,-56,3,15,35]"
+
+                        Err msg ->
+                            Expect.fail msg
             )
         ]

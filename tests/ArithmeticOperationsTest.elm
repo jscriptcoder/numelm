@@ -239,4 +239,45 @@ suit =
                 in
                     Expect.equal strdata "[1,4,9,16,25,36]"
             )
+        , test "Module"
+            (\_ ->
+                let
+                    nda1Result =
+                        NumElm.ndarray Int8 [ 2, 2 ] [ 1, 2, 9, 53 ]
+
+                    nda2Result =
+                        NumElm.ndarray Int8 [ 2, 2 ] [ 5, 2, 3, 3 ]
+
+                    ndaModResult =
+                        Result.map2
+                            (\nd1 nd2 -> NumElm.mod nd1 nd2)
+                            nda1Result
+                            nda2Result
+                            |> Result.andThen
+                                (\opModResult -> Result.map Basics.identity opModResult)
+                in
+                    case ndaModResult of
+                        Ok ndaMod ->
+                            NumElm.dataToString ndaMod
+                                |> Expect.equal "[1,0,0,2]"
+
+                        Err msg ->
+                            Expect.fail msg
+            )
+        , test "Scalar module"
+            (\_ ->
+                let
+                    ndaResult =
+                        NumElm.ndarray Int8 [ 3, 2 ] [ 1, 2, 3, 4, 5, 6 ]
+
+                    strdata =
+                        case ndaResult of
+                            Ok nda ->
+                                NumElm.dataToString <| nda .% 2
+
+                            Err msg ->
+                                msg
+                in
+                    Expect.equal strdata "[1,0,1,0,1,0]"
+            )
         ]

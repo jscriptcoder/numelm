@@ -61,6 +61,8 @@ module NumElm
         , power
         , pow
         , (.^)
+        , mod
+        , (.%)
           -- Root and Logarithm --
         , sqrt
         , logBase
@@ -78,13 +80,15 @@ module NumElm
         , truncate
         , trunc
         , fix
-          -- Aggregate operations --
+          -- Aggregate functions --
         , max
         , maxAxis
         , min
         , minAxis
         , sum
         , sumAxis
+        , prod
+        , prodAxis
           -- Relational operators --
         , equal
         , eq
@@ -104,6 +108,33 @@ module NumElm
         , notEqual
         , neq
         , (.!=)
+          -- Trigonometry functions --
+          {-
+             , sin
+             , arcsin
+             , asin
+             , cos
+             , arccos
+             , acos
+             , tan
+             , arctan
+             , atan
+             , arctan2
+             , atan2
+          -}
+          -- Hyperbolic functions --
+          {-
+
+             , sinh
+             , arcsinh
+             , asinh
+             , cosh
+             , arccosh
+             , acosh
+             , tanh
+             , arctan
+             , atanh
+          -}
         )
 
 {-| Based on NumPy, [Python package](http://www.numpy.org/), NumElm is the fundamental package for
@@ -130,7 +161,7 @@ be used as a multi-dimensional container of generic data.
 
 # Arithmetic operations
 @docs add, (.+), subtract, sub, (.-), multiply, mul, (.*)
-@docs divide, div, (./), power, pow, (.^)
+@docs divide, div, (./), power, pow, (.^), mod, (.%)
 
 # Root and Logarithm
 @docs sqrt, logBase, log, log2, log10, exp
@@ -141,8 +172,8 @@ be used as a multi-dimensional container of generic data.
 # Round off
 @docs around, round, ceil, floor, truncate, trunc, fix
 
-# Aggregate operations
-@docs max, maxAxis, min, minAxis, sum, sumAxis
+# Aggregate functions
+@docs max, maxAxis, min, minAxis, sum, sumAxis, prod, prodAxis
 
 # Relational operators
 @docs equal, eq, (.==), less, lt, (.<), greater, gt, (.>), lessEqual, lte, (.<=)
@@ -778,7 +809,7 @@ concat nda1 nda2 =
         --> [1, 4, 9]
 
 -}
-map : (number1 -> Location -> NdArray -> number2) -> NdArray -> NdArray
+map : (number -> Location -> NdArray -> a) -> NdArray -> NdArray
 map callback nda =
     Native.NumElm.map callback nda
 
@@ -935,7 +966,7 @@ add nda1 nda2 =
     Native.NumElm.elementWise (+) nda1 nda2
 
 
-{-| Adds escalar, element-wise.
+{-| Adds scalar, element-wise.
 
     let
         A =
@@ -990,7 +1021,7 @@ sub nda1 nda2 =
     subtract nda1 nda2
 
 
-{-| Substract escalar, element-wise.
+{-| Substract scalar, element-wise.
 
     let
         A =
@@ -1045,7 +1076,7 @@ mul nda1 nda2 =
     multiply nda1 nda2
 
 
-{-| Multiplies escalar, element-wise.
+{-| Multiplies scalar, element-wise.
 
     let
         A =
@@ -1100,7 +1131,7 @@ div nda1 nda2 =
     divide nda1 nda2
 
 
-{-| Devides escalar, element-wise.
+{-| Devides scalar, element-wise.
 
     let
         A =
@@ -1155,7 +1186,7 @@ pow nda1 nda2 =
     power nda1 nda2
 
 
-{-| [NdArray](#NdArray) elements raised to the power of an escalar, element-wise.
+{-| [NdArray](#NdArray) elements raised to the power of an scalar, element-wise.
 
     let
         A =
@@ -1174,6 +1205,56 @@ pow nda1 nda2 =
 (.^) : NdArray -> number -> NdArray
 (.^) nda num =
     map (\val _ _ -> val ^ num) nda
+
+
+{-| Returns element-wise remainder of division.
+
+    let
+        A =
+            matrix Int8
+                   [ [1,  2]
+                   , [9, 53]
+                   ]
+
+        B =
+            matrix Int8
+                   [ [5, 2]
+                   , [3, 3]
+                   ]
+
+    in
+        mod A B
+        -- [ [1, 0]
+        -- , [0, 2]
+        -- ]
+
+-}
+mod : NdArray -> NdArray -> Result String NdArray
+mod nda1 nda2 =
+    Native.NumElm.elementWise (%) nda1 nda2
+
+
+{-| Returns element-wise remainder of division by scalar.
+
+    let
+        A =
+            matrix Int8
+                   [ [1, 2]
+                   , [3, 4]
+                   , [5, 6]
+                   ]
+
+    in
+        A .% 2
+        -- [ [1, 0]
+        -- , [1, 0]
+        -- , [1, 0]
+        -- ]
+
+-}
+(.%) : NdArray -> Int -> NdArray
+(.%) nda num =
+    map (\val _ _ -> val % num) nda
 
 
 
@@ -1461,7 +1542,7 @@ fix nda =
 
 
 
--- Aggregate operations --
+-- Aggregate functions --
 
 
 {-| Element-wise maximum of a [NdArray](#NdArray).
@@ -1628,7 +1709,7 @@ minAxis axis nda =
             nda
 
 
-{-| Element-wise total sum of an [NdArray](#NdArray).
+{-| Element-wise total sum of a [NdArray](#NdArray).
 
     let
         A =
@@ -1659,7 +1740,7 @@ sum nda =
         nda
 
 
-{-| Returns the sum of all the elements over the given axis..
+{-| Returns the sum of all the elements along a given axis.
 
     let
         A =
@@ -1693,6 +1774,75 @@ sumAxis : Int -> NdArray -> Result String NdArray
 sumAxis axis nda =
     Native.NumElm.mapAxis
         (\values _ -> List.foldr (+) 0 values)
+        axis
+        nda
+
+
+{-| Element-wise total product of a [NdArray](#NdArray).
+
+    let
+        A =
+            matrix3d Int16
+                     [ [ [  1, -2 ]
+                       , [ -6,  3 ]
+                       , [  3, -7 ]
+                       ]
+                     , [ [ 10, -6 ]
+                       , [ -3, 12 ]
+                       , [ -8,  7 ]
+                       ]
+                     , [ [ 1,  3 ]
+                       , [ 1, 15 ]
+                       , [ 5,  7 ]
+                       ]
+                     ]
+
+    in
+        prod A == 144027072000
+
+-}
+prod : NdArray -> number
+prod nda =
+    Native.NumElm.reduce
+        (\acc val _ -> acc * val)
+        1
+        nda
+
+
+{-| Returns the product of all the elements along a given axis.
+
+    let
+        A =
+            matrix3d Int16
+                     [ [ [  1, -2 ]
+                       , [ -6,  3 ]
+                       , [  3, -7 ]
+                       ]
+                     , [ [ 10, -6 ]
+                       , [ -3, 12 ]
+                       , [ -8,  7 ]
+                       ]
+                     , [ [ 1,  3 ]
+                       , [ 1, 15 ]
+                       , [ 5,  7 ]
+                       ]
+                     ]
+
+        axis =
+            2
+
+    in
+        prodAxis axis A
+        -- [ [  -2, -18, -21 ]
+        -- , [ -60, -36, -56 ]
+        -- , [   3,  15,  35 ]
+        -- ]
+
+-}
+prodAxis : Int -> NdArray -> Result String NdArray
+prodAxis axis nda =
+    Native.NumElm.mapAxis
+        (\values _ -> List.foldr (*) 1 values)
         axis
         nda
 
@@ -1812,7 +1962,7 @@ lt nda1 nda2 =
         -- ]
 
 -}
-(.<) : NdArray -> number -> NdArray
+(.<) : NdArray -> comparable -> NdArray
 (.<) nda num =
     map (\val _ _ -> val < num) nda
 
@@ -1870,7 +2020,7 @@ gt nda1 nda2 =
         -- ]
 
 -}
-(.>) : NdArray -> number -> NdArray
+(.>) : NdArray -> comparable -> NdArray
 (.>) nda num =
     map (\val _ _ -> val > num) nda
 
@@ -1928,7 +2078,7 @@ lte nda1 nda2 =
         -- ]
 
 -}
-(.<=) : NdArray -> number -> NdArray
+(.<=) : NdArray -> comparable -> NdArray
 (.<=) nda num =
     map (\val _ _ -> val <= num) nda
 
@@ -1986,7 +2136,7 @@ gte nda1 nda2 =
         -- ]
 
 -}
-(.>=) : NdArray -> number -> NdArray
+(.>=) : NdArray -> comparable -> NdArray
 (.>=) nda num =
     map (\val _ _ -> val >= num) nda
 
@@ -2015,7 +2165,7 @@ gte nda1 nda2 =
 -}
 notEqual : NdArray -> NdArray -> Result String NdArray
 notEqual nda1 nda2 =
-    Native.NumElm.elementWise (!=) nda1 nda2
+    Native.NumElm.elementWise (/=) nda1 nda2
 
 
 {-| Alias for [notEqual](#notEqual).
@@ -2044,12 +2194,38 @@ neq nda1 nda2 =
         -- ]
 
 -}
-(.!=) : NdArray -> number -> NdArray
+(.!=) : NdArray -> comparable -> NdArray
 (.!=) nda num =
-    map (\val _ _ -> val != num) nda
+    map (\val _ _ -> val /= num) nda
 
 
 
+-- Trigonometry functions --
+{-
+   sin: NdArray -> NdArray
+   arcsin: NdArray -> NdArray
+   asin: NdArray -> NdArray
+   cos: NdArray -> NdArray
+   arccos: NdArray -> NdArray
+   acos: NdArray -> NdArray
+   tan: NdArray -> NdArray
+   arctan: NdArray -> NdArray
+   atan: NdArray -> NdArray
+   arctan2
+   atan2
+-}
+-- Hyperbolic functions --
+{-
+   sinh
+   arcsinh
+   asinh
+   cosh
+   arccosh
+   acosh
+   tanh
+   arctan
+   atanh
+-}
 -- Helper functions --
 
 
