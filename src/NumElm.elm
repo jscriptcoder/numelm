@@ -108,6 +108,15 @@ module NumElm
         , notEqual
         , neq
         , (./=)
+        , (.!=)
+        , (.~=)
+          -- Logical operators --
+        , and
+        , or
+        , not
+        , xor
+        , any
+        , all
           -- Trigonometry functions --
         , sin
         , arcsin
@@ -236,6 +245,14 @@ scientific computing with Elm.
     * [notEqual](#notEqual), [neq](#neq)
     * [(./=)](#./=)
 
+   13. [Logical operators](#logical-operators)
+    * [and](#and)
+    * [or](#or)
+    * [not](#not)
+    * [xor](#xor)
+    * [any](#any)
+    * [all](#all)
+
 # Types
 @docs NdArray, Shape, Location, Dtype
 
@@ -273,6 +290,9 @@ scientific computing with Elm.
 # Relational operators
 @docs equal, eq, (.==), less, lt, (.<), greater, gt, (.>), lessEqual
 @docs lte, (.<=), greaterEqual, gte, (.>=), notEqual, neq, (./=)
+
+# Logical operators
+@docs and, or, not, xor, any, all
 
 -}
 
@@ -2292,6 +2312,116 @@ neq nda1 nda2 =
 (./=) : NdArray -> comparable -> NdArray
 (./=) nda num =
     map (\val _ _ -> val /= num) nda
+
+
+{-| Alias for [(./=)](#./=).
+-}
+(.!=) : NdArray -> comparable -> NdArray
+(.!=) nda num =
+    map (\val _ _ -> val /= num) nda
+
+
+{-| Alias for [(./=)](#./=).
+-}
+(.~=) : NdArray -> comparable -> NdArray
+(.~=) nda num =
+    map (\val _ _ -> val /= num) nda
+
+
+
+-- Logical operators --
+
+
+and : NdArray -> NdArray -> Result String NdArray
+and nda1 nda2 =
+    Native.NumElm.elementWise
+        (\val1 val2 ->
+            let
+                bVal1 =
+                    val1 > 0
+
+                bVal2 =
+                    val2 > 0
+            in
+                bVal1 && bVal2
+        )
+        nda1
+        nda2
+
+
+or : NdArray -> NdArray -> Result String NdArray
+or nda1 nda2 =
+    Native.NumElm.elementWise
+        (\val1 val2 ->
+            let
+                bVal1 =
+                    val1 > 0
+
+                bVal2 =
+                    val2 > 0
+            in
+                bVal1 || bVal2
+        )
+        nda1
+        nda2
+
+
+not : NdArray -> NdArray
+not nda =
+    map
+        (\val _ _ ->
+            let
+                bVal =
+                    val > 0
+            in
+                Basics.not bVal
+        )
+        nda
+
+
+xor : NdArray -> NdArray -> Result String NdArray
+xor nda1 nda2 =
+    Native.NumElm.elementWise
+        (\val1 val2 ->
+            let
+                bVal1 =
+                    val1 > 0
+
+                bVal2 =
+                    val2 > 0
+            in
+                Basics.xor bVal1 bVal2
+        )
+        nda1
+        nda2
+
+
+any : NdArray -> Bool
+any nda =
+    Native.NumElm.reduce
+        (\acc val _ ->
+            let
+                bVal =
+                    val > 0
+            in
+                acc || bVal
+        )
+        False
+        nda
+
+
+all : NdArray -> Bool
+all nda =
+    Native.NumElm.reduce
+        (\acc val _ ->
+            let
+                bVal =
+                    val > 0
+            in
+                acc && bVal
+        )
+        True
+        nda
 
 
 
