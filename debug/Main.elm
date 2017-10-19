@@ -6,36 +6,17 @@ import NumElm exposing (..)
 
 main =
     let
-        valResult =
-            matrix3d
-                Int16
-                [ [ [ 1, -2 ]
-                  , [ -6, 3 ]
-                  , [ 3, -7 ]
-                  ]
-                , [ [ 10, -6 ]
-                  , [ -3, 12 ]
-                  , [ -8, 7 ]
-                  ]
-                , [ [ 0, 3 ]
-                  , [ 1, 15 ]
-                  , [ 5, 7 ]
-                  ]
+        ndaResult =
+            matrix Float32
+                [ [ 0.1, 0.2 ]
+                , [ 0.3, 0.4 ]
                 ]
-                --|> Result.map (\nda -> NumElm.sum nda)
-                |>
-                    Result.andThen (\nda -> NumElm.sumAxis 2 nda)
-                |> Result.map Basics.identity
+                |> Result.map (\nda -> NumElm.arctanh nda)
     in
-        case valResult of
-            Ok val ->
-                val
-                    --|> Basics.toString
-                    |>
-                        NumElm.dataToString
-                    --|> NumElm.toString
-                    |>
-                        text
+        text <|
+            case ndaResult of
+                Ok nda ->
+                    NumElm.dataToString nda
 
-            Err msg ->
-                text msg
+                Err msg ->
+                    msg

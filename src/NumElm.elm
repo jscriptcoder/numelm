@@ -109,32 +109,27 @@ module NumElm
         , neq
         , (./=)
           -- Trigonometry functions --
-          {-
-             , sin
-             , arcsin
-             , asin
-             , cos
-             , arccos
-             , acos
-             , tan
-             , arctan
-             , atan
-             , arctan2
-             , atan2
-          -}
+        , sin
+        , arcsin
+        , asin
+        , cos
+        , arccos
+        , acos
+        , tan
+        , arctan
+        , atan
+        , arctan2
+        , atan2
           -- Hyperbolic functions --
-          {-
-
-             , sinh
-             , arcsinh
-             , asinh
-             , cosh
-             , arccosh
-             , acosh
-             , tanh
-             , arctan
-             , atanh
-          -}
+        , sinh
+        , arcsinh
+        , asinh
+        , cosh
+        , arccosh
+        , acosh
+        , tanh
+        , arctanh
+        , atanh
         )
 
 {-| Based on NumPy, [Python package](http://www.numpy.org/), NumElm is the fundamental package for
@@ -918,7 +913,7 @@ map callback nda =
 This function slighly differs from the way NumPy [transposes](https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.ndarray.transpose.html)
 
     let
-        A =
+        nda =
             matrix Float32
                    [ [1, 2, 3]
                    , [4, 5, 6]
@@ -933,7 +928,7 @@ This function slighly differs from the way NumPy [transposes](https://docs.scipy
             [ 1 ]
 
     in
-        transposeAxes axes A
+        transposeAxes axes nda
         -- [ [1, 4]
         -- , [2, 5]
         -- , [3, 6]
@@ -949,14 +944,14 @@ transposeAxes axes nda =
 {-| Permutes only the first two the dimensions, `transposeAxes [1] nda`.
 
     let
-        A =
+        nda =
             matrix Float32
                    [ [1, 2, 3]
                    , [4, 5, 6]
                    ]
 
     in
-        transpose A
+        transpose nda
         -- [ [1, 4]
         -- , [2, 5]
         -- , [3, 6]
@@ -980,14 +975,14 @@ trans nda =
 Only supports square matrixes.
 
     let
-        A =
+        nda =
             matrix Float32
                    [ [1, 2]
                    , [3, 4]
                    ]
 
     in
-        inverse A
+        inverse nda
         -- [ [-2.0,  1.0]
         -- , [ 1.5, -0.5]
         -- ]
@@ -1042,20 +1037,20 @@ eig nda =
 {-| Adds arguments, element-wise.
 
     let
-        A =
+        nda1 =
             matrix Int8
                    [ [1, 2]
                    , [3, 4]
                    ]
 
-        B =
+        nda2 =
             matrix Int8
                    [ [4, 1]
                    , [5, 3]
                    ]
 
     in
-        add A B
+        add nda1 nda2
         -- [ [5, 3]
         -- , [8, 7]
         -- ]
@@ -1069,14 +1064,14 @@ add nda1 nda2 =
 {-| Adds scalar, element-wise.
 
     let
-        A =
+        nda =
             matrix Int8
                    [ [1, 2]
                    , [3, 4]
                    ]
 
     in
-        A .+ 5
+        nda .+ 5
         -- [ [6, 7]
         -- , [8, 9]
         -- ]
@@ -1090,20 +1085,20 @@ add nda1 nda2 =
 {-| Substracts arguments, element-wise.
 
     let
-        A =
+        nda1 =
             matrix Int8
                    [ [1, 2]
                    , [3, 4]
                    ]
 
-        B =
+        nda2 =
             matrix Int8
                    [ [4, 1]
                    , [5, 3]
                    ]
 
     in
-        subtract A B
+        subtract nda1 nda2
         -- [ [-3, 1]
         -- , [-2, 1]
         -- ]
@@ -1124,14 +1119,14 @@ sub nda1 nda2 =
 {-| Substracts scalar, element-wise.
 
     let
-        A =
+        nda =
             matrix Int8
                    [ [1, 2]
                    , [3, 4]
                    ]
 
     in
-        A .- 5
+        nda .- 5
         -- [ [-4, -3]
         -- , [-2, -1]
         -- ]
@@ -1145,20 +1140,20 @@ sub nda1 nda2 =
 {-| Multiplies arguments, element-wise.
 
     let
-        A =
+        nda1 =
             matrix Int8
                    [ [1, 2]
                    , [3, 4]
                    ]
 
-        B =
+        nda2 =
             matrix Int8
                    [ [4, 1]
                    , [5, 3]
                    ]
 
     in
-        multiply A B
+        multiply nda1 nda2
         -- [ [ 4,  2]
         -- , [15, 12]
         -- ]
@@ -1179,14 +1174,14 @@ mul nda1 nda2 =
 {-| Multiplies scalar, element-wise.
 
     let
-        A =
+        nda =
             matrix Int8
                    [ [1, 2]
                    , [3, 4]
                    ]
 
     in
-        A .* 5
+        nda .* 5
         -- [ [ 5, 10]
         -- , [15, 20]
         -- ]
@@ -1200,20 +1195,20 @@ mul nda1 nda2 =
 {-| Devides arguments, element-wise.
 
     let
-        A =
+        nda1 =
             matrix Int8
                    [ [1, 2]
                    , [3, 4]
                    ]
 
-        B =
+        nda2 =
             matrix Int8
                    [ [4, 1]
                    , [5, 3]
                    ]
 
     in
-        divide A B
+        divide nda1 nda2
         -- [ [1/4,   2]
         -- , [3/5, 4/3]
         -- ]
@@ -1234,14 +1229,14 @@ div nda1 nda2 =
 {-| Devides scalar, element-wise.
 
     let
-        A =
+        nda =
             matrix Int8
                    [ [1, 2]
                    , [3, 4]
                    ]
 
     in
-        A ./ 5
+        nda ./ 5
         -- [ [1/5, 2/5]
         -- , [3/5, 4/5]
         -- ]
@@ -1255,20 +1250,20 @@ div nda1 nda2 =
 {-| [NdArray](#NdArray) elements raised to power of second [NdArray](#NdArray), element-wise.
 
     let
-        A =
+        nda1 =
             matrix Int8
                    [ [1, 2]
                    , [3, 4]
                    ]
 
-        B =
+        nda2 =
             matrix Int8
                    [ [2, 2]
                    , [3, 4]
                    ]
 
     in
-        divide A B
+        divide nda1 nda2
         -- [ [ 1,   4]
         -- , [27, 256]
         -- ]
@@ -1289,14 +1284,14 @@ pow nda1 nda2 =
 {-| [NdArray](#NdArray) elements raised to the power of an scalar, element-wise.
 
     let
-        A =
+        nda =
             matrix Int8
                    [ [1, 2]
                    , [3, 4]
                    ]
 
     in
-        A .^ 2
+        nda .^ 2
         -- [ [1,  4]
         -- , [9, 16]
         -- ]
@@ -1310,20 +1305,20 @@ pow nda1 nda2 =
 {-| Returns element-wise remainder of division.
 
     let
-        A =
+        nda1 =
             matrix Int8
                    [ [1,  2]
                    , [9, 53]
                    ]
 
-        B =
+        nda2 =
             matrix Int8
                    [ [5, 2]
                    , [3, 3]
                    ]
 
     in
-        mod A B
+        mod nda1 nda2
         -- [ [1, 0]
         -- , [0, 2]
         -- ]
@@ -1337,7 +1332,7 @@ mod nda1 nda2 =
 {-| Returns element-wise remainder of division by scalar.
 
     let
-        A =
+        nda =
             matrix Int8
                    [ [1, 2]
                    , [3, 4]
@@ -1345,7 +1340,7 @@ mod nda1 nda2 =
                    ]
 
     in
-        A .% 2
+        nda .% 2
         -- [ [1, 0]
         -- , [1, 0]
         -- , [1, 0]
@@ -1364,14 +1359,14 @@ mod nda1 nda2 =
 {-| Returns the positive square-root of a [NdArray](#NdArray), element-wise.
 
     let
-        A =
+        nda =
             matrix Float32
                    [ [1, 2]
                    , [3, 4]
                    ]
 
     in
-        sqrt A
+        sqrt nda
         -- [ [   1, 1.41]
         -- , [1.73,    2]
         -- ]
@@ -1385,7 +1380,7 @@ sqrt nda =
 {-| Logarithm given a `base`, element-wise.
 
     let
-        A =
+        nda =
             matrix Float32
                    [ [1, 2]
                    , [3, 4]
@@ -1395,7 +1390,7 @@ sqrt nda =
             3
 
     in
-        logBase base A
+        logBase base nda
         -- [ [0, 0.63]
         -- , [1, 1.26]
         -- ]
@@ -1409,14 +1404,14 @@ logBase base nda =
 {-| Natural logarithm, `base e`, element-wise.
 
     let
-        A =
+        nda =
             matrix Float32
                    [ [1, 2]
                    , [3, 4]
                    ]
 
     in
-        log A
+        log nda
         -- [ [   0, 0.69]
         -- , [1.09, 1.38]
         -- ]
@@ -1430,14 +1425,14 @@ log nda =
 {-| Logarithm `base 2`, element-wise.
 
     let
-        A =
+        nda =
             matrix Float32
                    [ [1, 2]
                    , [3, 4]
                    ]
 
     in
-        log2 A
+        log2 nda
         -- [ [   0, 1]
         -- , [1.58, 2]
         -- ]
@@ -1451,14 +1446,14 @@ log2 nda =
 {-| Logarithm `base 10`, element-wise.
 
     let
-        A =
+        nda =
             matrix Float32
                    [ [1, 2]
                    , [3, 4]
                    ]
 
     in
-        log10 A
+        log10 nda
         -- [ [   0, 0.3]
         -- , [0.47, 0.6]
         -- ]
@@ -1472,14 +1467,14 @@ log10 nda =
 {-| Calculates the exponential of all elements in the [NdArray](#NdArray).
 
     let
-        A =
+        nda =
             matrix Int8
                    [ [1, 2]
                    , [3, 4]
                    ]
 
     in
-        exp A
+        exp nda
         -- [ [ 2.71,  7.38]
         -- , [20.08, 54.59]
         -- ]
@@ -1498,7 +1493,7 @@ exp nda =
 
     let
         -- 4×3 matrix
-        A =
+        nda1 =
             matrix Int16
                    [ [1, 2, 3]
                    , [4, 5, 6]
@@ -1507,7 +1502,7 @@ exp nda =
                    ]
 
         -- 3×2 matrix
-        B =
+        nda2 =
             matrix Int16
                    [ [4, 1]
                    , [5, 3]
@@ -1516,7 +1511,7 @@ exp nda =
 
     in
         -- 4×3 (dot) 3×2 == 4×2
-        dot A B
+        dot nda nda2
         -- [ [1×4 + 2×5 + 3×2, 1×1 + 2×3 + 3×6]
         -- , [4×4 + 5×5 + 6×2, 4×1 + 5×3 + 6×6]
         -- , [7×4 + 8×5 + 9×2, 7×1 + 8×3 + 9×6]
@@ -1536,7 +1531,7 @@ dot nda1 nda2 =
 {-| Evenly rounds to the given number of decimals.
 
     let
-        A =
+        nda =
             matrix Float32
                    [ [ 1.4564, -2.1271]
                    , [-3.6544,  4.3221]
@@ -1546,7 +1541,7 @@ dot nda1 nda2 =
             2
 
     in
-        around decimals A
+        around decimals nda
         -- [ [ 1.46, -2.13]
         -- , [-3.65,  4.32]
         -- ]
@@ -1567,14 +1562,14 @@ round nda =
 {-| Returns the ceiling of the [NdArray](#NdArray), element-wise.
 
     let
-        A =
+        nda =
             matrix Float32
                    [ [ 1.4564, -2.1271]
                    , [-3.6544,  4.3221]
                    ]
 
     in
-        ceil A
+        ceil nda
         -- [ [ 2, -2]
         -- , [-4,  5]
         -- ]
@@ -1588,14 +1583,14 @@ ceil nda =
 {-| Returns the floor of the [NdArray](#NdArray), element-wise.
 
     let
-        A =
+        nda =
             matrix Float32
                    [ [ 1.4564, -2.1271]
                    , [-3.6544,  4.3221]
                    ]
 
     in
-        floot A
+        floot nda
         -- [ [ 2, -2]
         -- , [-3,  5]
         -- ]
@@ -1609,14 +1604,14 @@ floor nda =
 {-| Rounds to nearest integer towards zero.
 
     let
-        A =
+        nda =
             matrix Float32
                    [ [ 1.4564, -2.1271]
                    , [-3.6544,  4.3221]
                    ]
 
     in
-        truncate A
+        truncate nda
         -- [ [ 1, -2]
         -- , [-3,  4]
         -- ]
@@ -1648,7 +1643,7 @@ fix nda =
 {-| Element-wise maximum of a [NdArray](#NdArray).
 
     let
-        A =
+        nda =
             matrix3d Int16
                      [ [ [  1, -2 ]
                        , [ -6,  3 ]
@@ -1665,7 +1660,7 @@ fix nda =
                      ]
 
     in
-        max A == 15
+        max nda == 15
 
 -}
 max : NdArray -> number
@@ -1683,7 +1678,7 @@ max nda =
 {-| Returns the maximum along a given `axis`.
 
     let
-        A =
+        nda =
             matrix3d Int16
                      [ [ [  1, -2 ]
                        , [ -6,  3 ]
@@ -1703,7 +1698,7 @@ max nda =
             1
 
     in
-        maxAxis axis A
+        maxAxis axis nda
         -- [ [ 3, 3 ]
         -- , [ 10, 12 ]
         -- , [ 5,  15 ]
@@ -1730,7 +1725,7 @@ maxAxis axis nda =
 {-| Element-wise minimum of a [NdArray](#NdArray).
 
     let
-        A =
+        nda =
             matrix3d Int16
                      [ [ [  1, -2 ]
                        , [ -6,  3 ]
@@ -1747,7 +1742,7 @@ maxAxis axis nda =
                      ]
 
     in
-        min A == -8
+        min nda == -8
 
 -}
 min : NdArray -> number
@@ -1765,7 +1760,7 @@ min nda =
 {-| Returns the minimum along a given `axis`.
 
     let
-        A =
+        nda =
             matrix3d Int16
                      [ [ [  1, -2 ]
                        , [ -6,  3 ]
@@ -1785,7 +1780,7 @@ min nda =
             0
 
     in
-        minAxis axis A
+        minAxis axis nda
         -- [ [  0, -6 ]
         -- , [ -6,  3 ]
         -- , [ -8,  7 ]
@@ -1812,7 +1807,7 @@ minAxis axis nda =
 {-| Element-wise total sum of a [NdArray](#NdArray).
 
     let
-        A =
+        nda =
             matrix3d Int16
                      [ [ [  1, -2 ]
                        , [ -6,  3 ]
@@ -1829,7 +1824,7 @@ minAxis axis nda =
                      ]
 
     in
-        sum A == 35
+        sum nda == 35
 
 -}
 sum : NdArray -> number
@@ -1843,7 +1838,7 @@ sum nda =
 {-| Returns the sum of all the elements along a given `axis`.
 
     let
-        A =
+        nda =
             matrix3d Int16
                      [ [ [  1, -2 ]
                        , [ -6,  3 ]
@@ -1863,7 +1858,7 @@ sum nda =
             2
 
     in
-        sumAxis axis A
+        sumAxis axis nda
         -- [ [ -1, -3, -4 ]
         -- , [  4,  9, -1 ]
         -- , [  3, 16, 12 ]
@@ -1881,7 +1876,7 @@ sumAxis axis nda =
 {-| Element-wise total product of a [NdArray](#NdArray).
 
     let
-        A =
+        nda =
             matrix3d Int16
                      [ [ [  1, -2 ]
                        , [ -6,  3 ]
@@ -1898,7 +1893,7 @@ sumAxis axis nda =
                      ]
 
     in
-        prod A == 144027072000
+        prod nda == 144027072000
 
 -}
 prod : NdArray -> number
@@ -1912,7 +1907,7 @@ prod nda =
 {-| Returns the product of all the elements along a given `axis`.
 
     let
-        A =
+        nda =
             matrix3d Int16
                      [ [ [  1, -2 ]
                        , [ -6,  3 ]
@@ -1932,7 +1927,7 @@ prod nda =
             2
 
     in
-        prodAxis axis A
+        prodAxis axis nda
         -- [ [  -2, -18, -21 ]
         -- , [ -60, -36, -56 ]
         -- , [   3,  15,  35 ]
@@ -1951,23 +1946,23 @@ prodAxis axis nda =
 -- Relational operators --
 
 
-{-| Returns `A == B`, element-wise, with 1's (`True`) and 0's (`False`).
+{-| Returns `nda1 == nda2`, element-wise, with 1's (`True`) and 0's (`False`).
 
     let
-        A =
+        nda1 =
             matrix Int16
                    [ [1, 2, 3]
                    , [3, 4, 5]
                    ]
 
-        B =
+        nda2 =
             matrix Int16
                    [ [2, 2, 2]
                    , [5, 4, 5]
                    ]
 
     in
-        equal A B
+        equal nda1 nda2
         -- [ [0, 1, 0]
         -- , [0, 1, 1]
         -- ]
@@ -2009,23 +2004,23 @@ eq nda1 nda2 =
     map (\val _ _ -> val == num) nda
 
 
-{-| Returns `A < B`, element-wise, with 1's (`True`) and 0's (`False`).
+{-| Returns `nda1 < nda2`, element-wise, with 1's (`True`) and 0's (`False`).
 
     let
-        A =
+        nda1 =
             matrix Int16
                    [ [1, 2, 3]
                    , [3, 4, 5]
                    ]
 
-        B =
+        nda2 =
             matrix Int16
                    [ [2, 2, 2]
                    , [5, 4, 5]
                    ]
 
     in
-        less A B
+        less nda1 nda2
         -- [ [1, 0, 0]
         -- , [1, 0, 0]
         -- ]
@@ -2067,23 +2062,23 @@ lt nda1 nda2 =
     map (\val _ _ -> val < num) nda
 
 
-{-| Returns `A > B`, element-wise, with 1's (`True`) and 0's (`False`).
+{-| Returns `nda1 > nda2`, element-wise, with 1's (`True`) and 0's (`False`).
 
     let
-        A =
+        nda1 =
             matrix Int16
                    [ [1, 2, 3]
                    , [3, 4, 5]
                    ]
 
-        B =
+        nda2 =
             matrix Int16
                    [ [2, 2, 2]
                    , [5, 4, 5]
                    ]
 
     in
-        greater A B
+        greater nda1 nda2
         -- [ [0, 0, 1]
         -- , [0, 0, 0]
         -- ]
@@ -2125,23 +2120,23 @@ gt nda1 nda2 =
     map (\val _ _ -> val > num) nda
 
 
-{-| Returns `A <= B`, element-wise, with 1's (`True`) and 0's (`False`).
+{-| Returns `nda1 <= nda2`, element-wise, with 1's (`True`) and 0's (`False`).
 
     let
-        A =
+        nda1 =
             matrix Int16
                    [ [1, 2, 3]
                    , [3, 4, 5]
                    ]
 
-        B =
+        nda2 =
             matrix Int16
                    [ [2, 2, 2]
                    , [5, 4, 5]
                    ]
 
     in
-        lessEqual A B
+        lessEqual nda1 nda2
         -- [ [1, 1, 0]
         -- , [1, 1, 0]
         -- ]
@@ -2183,23 +2178,23 @@ lte nda1 nda2 =
     map (\val _ _ -> val <= num) nda
 
 
-{-| Returns `A >= B`, element-wise, with 1's (`True`) and 0's (`False`).
+{-| Returns `nda1 >= nda2`, element-wise, with 1's (`True`) and 0's (`False`).
 
     let
-        A =
+        nda1 =
             matrix Int16
                    [ [1, 2, 3]
                    , [3, 4, 5]
                    ]
 
-        B =
+        nda2 =
             matrix Int16
                    [ [2, 2, 2]
                    , [5, 4, 5]
                    ]
 
     in
-        greaterEqual A B
+        greaterEqual nda1 nda2
         -- [ [0, 1, 1]
         -- , [0, 1, 1]
         -- ]
@@ -2241,23 +2236,23 @@ gte nda1 nda2 =
     map (\val _ _ -> val >= num) nda
 
 
-{-| Returns `A /= B`, element-wise, with 1's (`True`) and 0's (`False`).
+{-| Returns `nda1 /= nda2`, element-wise, with 1's (`True`) and 0's (`False`).
 
     let
-        A =
+        nda1 =
             matrix Int16
                    [ [1, 2, 3]
                    , [3, 4, 5]
                    ]
 
-        B =
+        nda2 =
             matrix Int16
                    [ [2, 2, 2]
                    , [5, 4, 5]
                    ]
 
     in
-        notEqual A B
+        notEqual nda1 nda2
         -- [ [1, 0, 1]
         -- , [1, 0, 0]
         -- ]
@@ -2301,31 +2296,341 @@ neq nda1 nda2 =
 
 
 -- Trigonometry functions --
-{-
-   sin: NdArray -> NdArray
-   arcsin: NdArray -> NdArray
-   asin: NdArray -> NdArray
-   cos: NdArray -> NdArray
-   arccos: NdArray -> NdArray
-   acos: NdArray -> NdArray
-   tan: NdArray -> NdArray
-   arctan: NdArray -> NdArray
-   atan: NdArray -> NdArray
-   arctan2
-   atan2
+
+
+{-| Trigonometric sine, element-wise.
+
+    let
+        nda =
+            matrix Float32
+                   [ [1, 2]
+                   , [3, 4]
+                   ]
+
+    in
+        sin nda
+        -- [ [0.84,  0.91]
+        -- , [0.14, -0.75]
+        -- ]
+
 -}
+sin : NdArray -> NdArray
+sin nda =
+    map (\val _ _ -> Basics.sin val) nda
+
+
+{-| Inverse sine, element-wise.
+
+    let
+        nda =
+            matrix Float32
+                   [ [0.1, 0.5]
+                   , [0.8,   1]
+                   ]
+
+    in
+        arcsin nda
+        -- [ [ 0.1, 0.52]
+        -- , [0.92, 1.57]
+        -- ]
+
+-}
+arcsin : NdArray -> NdArray
+arcsin nda =
+    map (\val _ _ -> Basics.asin val) nda
+
+
+{-| Alias for [arcsin](#arcsin).
+-}
+asin : NdArray -> NdArray
+asin nda =
+    arcsin nda
+
+
+{-| Cosine element-wise.
+
+    let
+        nda =
+            matrix Float32
+                   [ [1, 2]
+                   , [3, 4]
+                   ]
+
+    in
+        cos nda
+        -- [ [ 0.54,   0.41]
+        -- , [-0.98, -0.65]
+        -- ]
+
+-}
+cos : NdArray -> NdArray
+cos nda =
+    map (\val _ _ -> Basics.cos val) nda
+
+
+{-| Inverse Cosine, element-wise.
+
+    let
+        nda =
+            matrix Float32
+                   [ [0.1, 0.5]
+                   , [0.8,   1]
+                   ]
+
+    in
+        arccos nda
+        -- [ [1.47, 1.04]
+        -- , [0.64,    0]
+        -- ]
+
+-}
+arccos : NdArray -> NdArray
+arccos nda =
+    map (\val _ _ -> Basics.acos val) nda
+
+
+{-| Alias for [arccos](#arccos).
+-}
+acos : NdArray -> NdArray
+acos nda =
+    arccos nda
+
+
+{-| Compute tangent element-wise.
+
+    let
+        nda =
+            matrix Float32
+                   [ [1, 2]
+                   , [3, 4]
+                   ]
+
+    in
+        tan nda
+        -- [ [ 1.55, -2.18]
+        -- , [-0.14,  1.15]
+        -- ]
+
+-}
+tan : NdArray -> NdArray
+tan nda =
+    map (\val _ _ -> Basics.tan val) nda
+
+
+{-| Trigonometric inverse tangent, element-wise.
+
+    let
+        nda =
+            matrix Float32
+                   [ [0.1, 0.5]
+                   , [0.8,   1]
+                   ]
+
+    in
+        arccos nda
+        -- [ [ 0.1, 0.46]
+        -- , [0.67, 0.78]
+        -- ]
+
+-}
+arctan : NdArray -> NdArray
+arctan nda =
+    map (\val _ _ -> Basics.atan val) nda
+
+
+{-| Alias for [arctan](#arctan).
+-}
+atan : NdArray -> NdArray
+atan nda =
+    arctan nda
+
+
+{-| Element-wise arc tangent of x1/x2 choosing the quadrant correctly.
+
+    let
+        nda1 =
+            matrix Float32
+                   [ [ 9, 2 ]
+                   , [ 7, 4 ]
+                   ]
+
+        nda2 =
+            matrix Float32
+                   [ [ 3, 8 ]
+                   , [ 4, 6 ]
+                   ]
+
+    in
+        arctan2 nda1 nda2
+        -- [ [ 1.3, 0.24]
+        -- , [1.05, 0.58]
+        -- ]
+
+-}
+arctan2 : NdArray -> NdArray -> Result String NdArray
+arctan2 nda1 nda2 =
+    Native.NumElm.elementWise Basics.atan2 nda1 nda2
+
+
+{-| Alias for [arctan2](#arctan2).
+-}
+atan2 : NdArray -> NdArray -> Result String NdArray
+atan2 nda1 nda2 =
+    arctan2 nda1 nda2
+
+
+
 -- Hyperbolic functions --
-{-
-   sinh
-   arcsinh
-   asinh
-   cosh
-   arccosh
-   acosh
-   tanh
-   arctan
-   atanh
+
+
+{-| Hyperbolic sine, element-wise.
+
+    let
+        nda =
+            matrix Float32
+                   [ [1, 2]
+                   , [3, 4]
+                   ]
+
+    in
+        sinh nda
+        -- [ [ 1.17,  3.62]
+        -- , [10.01, 27.28]
+        -- ]
+
 -}
+sinh : NdArray -> NdArray
+sinh nda =
+    map (\val _ _ -> Native.NumElm.sinh val) nda
+
+
+{-| Inverse hyperbolic sine element-wise.
+
+    let
+        nda =
+            matrix Float32
+                   [ [1, 2]
+                   , [3, 4]
+                   ]
+
+    in
+        arcsinh nda
+        -- [ [0.88, 1.44]
+        -- , [1.81, 2.09]
+        -- ]
+
+-}
+arcsinh : NdArray -> NdArray
+arcsinh nda =
+    map (\val _ _ -> Native.NumElm.asinh val) nda
+
+
+{-| Alias for [arcsinh](#arcsinh).
+-}
+asinh : NdArray -> NdArray
+asinh nda =
+    arcsinh nda
+
+
+{-| Hyperbolic cosine, element-wise.
+
+    let
+        nda =
+            matrix Float32
+                   [ [1, 2]
+                   , [3, 4]
+                   ]
+
+    in
+        cosh nda
+        -- [ [1.54, 10.06]
+        -- , [3.76,  27.3]
+        -- ]
+
+-}
+cosh : NdArray -> NdArray
+cosh nda =
+    map (\val _ _ -> Native.NumElm.cosh val) nda
+
+
+{-| Inverse hyperbolic cosine, element-wise.
+
+    let
+        nda =
+            matrix Float32
+                   [ [1, 2]
+                   , [3, 4]
+                   ]
+
+    in
+        arccosh nda
+        -- [ [   0, 1.31]
+        -- , [1.76, 2.06]
+        -- ]
+
+-}
+arccosh : NdArray -> NdArray
+arccosh nda =
+    map (\val _ _ -> Native.NumElm.acosh val) nda
+
+
+{-| Alias for [arccosh](#arccosh).
+-}
+acosh : NdArray -> NdArray
+acosh nda =
+    arccosh nda
+
+
+{-| Compute hyperbolic tangent element-wise.
+
+    let
+        nda =
+            matrix Float32
+                   [ [1, 2]
+                   , [3, 4]
+                   ]
+
+    in
+        tanh nda
+        -- [ [0.76,  0.96]
+        -- , [   1,     1]
+        -- ]
+
+-}
+tanh : NdArray -> NdArray
+tanh nda =
+    map (\val _ _ -> Native.NumElm.tanh val) nda
+
+
+{-| Inverse hyperbolic tangent element-wise.
+
+    let
+        nda =
+            matrix Float32
+                   [ [0.1, 0.2]
+                   , [0.3, 0.4]
+                   ]
+
+    in
+        arctanh nda
+        -- [ [ 0.1,  0.2]
+        -- , [0.31, 0.42]
+        -- ]
+
+-}
+arctanh : NdArray -> NdArray
+arctanh nda =
+    map (\val _ _ -> Native.NumElm.atanh val) nda
+
+
+{-| Alias for [arctanh](#arctanh).
+-}
+atanh : NdArray -> NdArray
+atanh nda =
+    arctanh nda
+
+
+
 -- Helper functions --
 
 

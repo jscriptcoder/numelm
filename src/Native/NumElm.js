@@ -428,7 +428,7 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
   };
 
   /**
-   * Maps the NdArray in a fixed axis
+   * Maps the NdArray along an axis
    * therefore reducing the dimentions by one
    * @param {(number[], number, number[], number[], NdArray) => number} fn
    * @returns {NdArray}
@@ -1215,7 +1215,7 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
 
   /**
    * Transforms the values of the NdArray with mapping
-   * over a fixed axis
+   * along an axis
    * @param {(number -> NdArray -> number)} fCallback
    * @param {number} axis
    * @param {NdArray} nda
@@ -1310,7 +1310,15 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
     transpose   : F2(transpose),
     inverse     : inverse,
     elementWise : F3(elementWise),
-    dot         : F2(dot)
+    dot         : F2(dot),
+
+    // We lack of the hyperbolic functions in Basics module
+    sinh        : Math.sinh,
+    asinh       : Math.asinh,
+    cosh        : Math.cosh,
+    acosh       : Math.acosh,
+    tanh        : Math.tanh,
+    atanh       : Math.atanh
   };
 
 }();
