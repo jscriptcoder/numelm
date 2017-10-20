@@ -253,6 +253,23 @@ scientific computing with Elm.
     * [any](#any)
     * [all](#all)
 
+   14. [Trigonometry functions](#trigonometry-functions)
+    * [sin](#sin)
+    * [arcsin](#arcsin), [asin](#asin)
+    * [cos](#cos)
+    * [arccos](#arccos), [acos](#acos)
+    * [tan](#tan)
+    * [arctan](#arctan), [atan](#atan)
+    * [arctan2](#arctan2), [atan2](#atan2)
+
+   15. [Hyperbolic functions](#hyperbolic-functions)
+    * [sinh](#sinh)
+    * [arcsinh](#arcsinh), [asinh](#asinh)
+    * [cosh](#cosh)
+    * [arccosh](#arccosh), [acosh](#acosh)
+    * [tanh](#tanh)
+    * [arctanh](#arctanh), [atanh](#atanh)
+
 # Types
 @docs NdArray, Shape, Location, Dtype
 
@@ -289,10 +306,16 @@ scientific computing with Elm.
 
 # Relational operators
 @docs equal, eq, (.==), less, lt, (.<), greater, gt, (.>), lessEqual
-@docs lte, (.<=), greaterEqual, gte, (.>=), notEqual, neq, (./=)
+@docs lte, (.<=), greaterEqual, gte, (.>=), notEqual, neq, (./=), (.!=), (.~=)
 
 # Logical operators
 @docs and, or, not, xor, any, all
+
+# Trigonometry functions
+@docs sin, arcsin, asin, cos, arccos, acos, tan, arctan, atan, arctan2, atan2
+
+# Hyperbolic functions
+@docs sinh, arcsinh, asinh, cosh, arccosh, acosh, tanh, arctanh, atanh
 
 -}
 
