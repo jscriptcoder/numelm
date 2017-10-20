@@ -86,30 +86,12 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
      */
     this.dtype = dtype;
 
-    // Calculates the stride for each dimension
-    // Example: 
-    //    shape = [3, 2, 5]
-    //    length = 3*2*5 = 30
-    //    stride[0] = 30/3        = 10
-    //    stride[1] = 30/(3*2)    = 5
-    //    stride[2] = 30/(3*2*5)  = 1
-    //    get([2, 0, 3], ndarray) == data[10*2 + 5*0 + 1*3] == data[23]
-    var res = shape.reduce(function (acc, dim) {
-      acc.dims *= dim;
-      acc.stride.push(acc.length / acc.dims);
-      return acc;
-    }, {
-      dims: 1,
-      stride: [],
-      length: length
-    });
-
     /**
      * Contains the strides per dimensions
      * @type number[]
      * @private
      */
-    this.stride = res.stride;
+    this.strides = NdArray.calculateStrides(shape);
 
     /**
      * Caches the origin for this NdArray
@@ -201,11 +183,13 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
   NdArray.prototype.clone = function () {
     var clone = Object.create(NdArray.prototype);
 
+    // return new NdArray(this.data, this.shape, this.dtype)
+
     return Object.assign(clone, {
       data        : NdArray.copy(this.data),
       shape       : NdArray.copy(this.shape),
       dtype       : this.dtype,
-      stride      : NdArray.copy(this.stride),
+      strides     : NdArray.copy(this.strides),
       start       : NdArray.copy(this.start),
       loc2idxCache: NdArray.copy(this.loc2idxCache)
     });
@@ -307,15 +291,7 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
         var nda1Idx = 0;
 
         // We need to calculate the strides for the new NdArray
-        var res = shape.reduce(function (acc, dim) {
-          acc.dims *= dim;
-          acc.stride.push(acc.length / acc.dims);
-          return acc;
-        }, {
-          dims: 1,
-          stride: [],
-          length: NdArray.toLength(shape)
-        });
+        var strides = NdArray.calculateStrides(shape);
 
         // There is a little bit of magic going on here
         nda2.forEach(function (value, location) {
@@ -323,7 +299,7 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
           loc[axis] += nda1.shape[axis];
 
           var idx = loc.reduce(function (acc, val, i) {
-            return acc + (res.stride[i] * val);
+            return acc + (strides[i] * val);
           }, 0);
 
           data.splice(idx, 0, value);
@@ -357,7 +333,7 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
   };
 
   /**
-   * Swaps values of specific locations (does not mutate)
+   * Swaps values of specific locations (mutates NdArray)
    * @param {number[]} location1
    * @param {number[]} location2
    * @returns {NdArray}
@@ -497,19 +473,60 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
         ) {
           // Permutates dimensions
           var tmp1 = clonedNda.shape[newIdx];
-          var tmp2 = clonedNda.stride[newIdx];
+          var tmp2 = clonedNda.strides[newIdx];
           clonedNda.shape[newIdx] = clonedNda.shape[oldIdx];
-          clonedNda.stride[newIdx] = clonedNda.stride[oldIdx];
+          clonedNda.strides[newIdx] = clonedNda.strides[oldIdx];
           clonedNda.shape[oldIdx] = tmp1;
-          clonedNda.stride[oldIdx] = tmp2;
+          clonedNda.strides[oldIdx] = tmp2;
         }
       });
 
-      this.loc2idxCache = {};
+      clonedNda.loc2idxCache = {};
     }
 
     return clonedNda;
   };
+
+  /**
+   * Gives a new shape and recalculates strides
+   * @param {number[]} shape
+   * @returns {NdArray}
+   * @throws {Error} Wrong shape or length
+   * @public
+   */
+  NdArray.prototype.reshape = function (shape) {
+    var clonedNda = this.clone();
+
+    // TODO: There is repeated code in here we can move somewhere and
+    // make it reusable. 
+    // Why not, "new NdArray(this.data, this.shape, this.dtype)" ?
+
+    if (shape.length == 1 && shape[0] > 0) {
+      shape[1] = 1; // Column vector n×1
+    } else if (shape.length == 0 || shape[0] === 0) {
+      throw 'NdArray#reshape - Wrong shape: NdArray has no shape: [' + shape + ']';
+    }
+
+    var length = NdArray.toLength(shape);
+
+    if (this.data.length !== length) {
+      throw [
+        'NdArray#reshape - Wrong data length: The length of the storage data is ',
+        data.length,
+        ', but the shape says ',
+        shape.join('×'), 
+        '=',
+        length
+      ].join('');
+    }
+
+    clonedNda.shape = shape;
+    clonedNda.strides = NdArray.calculateStrides(shape);
+    clonedNda.start = NdArray.prefill(shape.length, 0);
+    clonedNda.loc2idxCache = {};
+
+    return clonedNda;
+  }
 
   /**
    * Compute the (multiplicative) inverse of a matrix
@@ -701,14 +718,14 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
 
     var idx = -1;
     var length = location ? location.length : 0;
-    var stride = this.stride;
+    var strides = this.strides;
 
     if (
-      location.length === stride.length && 
+      location.length === strides.length && 
       this.isLocationWithinLimit(location)
     ) {
       idx = location.reduce(function (acc, val, i) {
-        return acc + (stride[i] * val);
+        return acc + (strides[i] * val);
       }, 0);
     }
 
@@ -723,10 +740,10 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
    */
   NdArray.prototype.toLocation = function (index) {
     var location = [];
-    var stride = this.stride;
+    var strides = this.strides;
 
     if (this.isIndexWithinLimit(index)) {
-      var res = this.stride.reduce(function (acc, stride) {
+      var res = this.strides.reduce(function (acc, stride) {
         acc.location.push(Math.floor(acc.position / stride));
         acc.position = acc.position % stride;
         return acc;
@@ -900,6 +917,36 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
   };
 
   /**
+   * Does what it says, calculates strides given a shape
+   * Example: 
+   *    shape = [3, 2, 5]
+   *    length = 3*2*5 = 30
+   *    strides[0] = 30/3        = 10
+   *    strides[1] = 30/(3*2)    = 5
+   *    strides[2] = 30/(3*2*5)  = 1
+   *    get([2, 0, 3], ndarray) == data[10*2 + 5*0 + 1*3] == data[23]
+   * @memberOf NdArray
+   * @param {number[]} shape
+   * @returns {number[]}
+   * @static
+   */
+  NdArray.calculateStrides = function (shape) {
+    shape = shape  || [];
+    var length = NdArray.toLength(shape);
+    var res = shape.reduce(function (acc, dim) {
+      acc.dims *= dim;
+      acc.strides.push(acc.length / acc.dims);
+      return acc;
+    }, {
+      dims: 1,
+      strides: [],
+      length: length
+    });
+
+    return res.strides;
+  };
+
+  /**
    * Converts an array-like into a real array
    * @memberOf NdArray
    * @param {Object} args
@@ -1019,15 +1066,15 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
   /**
    * Instantiates a NdArray
    * @param {Dtype} tDtype
-   * @param {List number} lShape   
+   * @param {Shape} tShape   
    * @param {List number} lData
    * @returns {Result String NdArray}
    * @memberof Native.NumElm
    */
-  function ndarray(tDtype, lShape, lData) {
+  function ndarray(tDtype, tShape, lData) {
     // Let's do some conversion, Elm to Js types
     var dtype = DTYPE_CONSTRUCTOR[tDtype.ctor] ? tDtype.ctor : 'Array';
-    var shape = toArray(lShape);
+    var shape = toArray(tShape);
     var data = toArray(lData);
 
     try {
@@ -1061,7 +1108,7 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
   /**
    * Gets the shape of the ndarray
    * @param {NdArray} nda
-   * @returns {List number} shape of the ndarray
+   * @returns {Shape} shape of the ndarray
    * @memberof Native.NumElm
    */
   function shape(nda) {
@@ -1247,6 +1294,23 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
   }
 
   /**
+   * Gives a new shape to the NdArray
+   * @param {Shape} tShape
+   * @param {NdArray} nda
+   * @returns {NdArray} reshaped NdArray
+   * @memberof Native.NumElm
+   */
+  function reshape(tShape, nda) {
+    var shape = toArray(tShape);
+
+    try {
+      return resultOk(nda.reshape(shape));
+    } catch (e) {
+      return resultErr(e + '');
+    }
+  }
+
+  /**
    * Inverses the NdArray (Only two dimensions)
    * @param {NdArray} nda
    * @returns {Result String NdArray} inversed NdArray
@@ -1308,6 +1372,7 @@ var _jscriptcoder$numelm$Native_NumElm = function() {
     reduce      : F3(reduce),
     mapAxis     : F3(mapAxis),
     transpose   : F2(transpose),
+    reshape     : F2(reshape),
     inverse     : inverse,
     elementWise : F3(elementWise),
     dot         : F2(dot),

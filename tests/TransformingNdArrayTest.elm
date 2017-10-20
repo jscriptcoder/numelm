@@ -106,6 +106,110 @@ suit =
                         Err msg ->
                             Expect.fail msg
             )
+        , test "Reshaping"
+            (\_ ->
+                let
+                    ndaResult =
+                        NumElm.matrix3d
+                            Int8
+                            [ [ [ 1, 2 ]
+                              , [ 3, 4 ]
+                              ]
+                            , [ [ 5, 6 ]
+                              , [ 7, 8 ]
+                              ]
+                            , [ [ 9, 10 ]
+                              , [ 11, 12 ]
+                              ]
+                            ]
+                            |> Result.andThen
+                                (\nda -> NumElm.reshape [ 2, 6 ] nda)
+                in
+                    case ndaResult of
+                        Ok nda ->
+                            nda
+                                |> NumElm.shape
+                                |> Expect.equal [ 2, 6 ]
+
+                        Err msg ->
+                            Expect.fail msg
+            )
+        , test "More reshaping"
+            (\_ ->
+                let
+                    ndaResult =
+                        NumElm.matrix3d
+                            Int8
+                            [ [ [ 1, 2 ]
+                              , [ 3, 4 ]
+                              ]
+                            , [ [ 5, 6 ]
+                              , [ 7, 8 ]
+                              ]
+                            , [ [ 9, 10 ]
+                              , [ 11, 12 ]
+                              ]
+                            ]
+                            |> Result.andThen
+                                (\nda -> NumElm.reshape [ 3, 4 ] nda)
+                in
+                    case ndaResult of
+                        Ok nda ->
+                            nda
+                                |> NumElm.shape
+                                |> Expect.equal [ 3, 4 ]
+
+                        Err msg ->
+                            Expect.fail msg
+            )
+        , test "Reshaping and dot product"
+            (\_ ->
+                let
+                    ndaResult =
+                        NumElm.matrix3d
+                            Int8
+                            [ [ [ 1, 2 ]
+                              , [ 3, 4 ]
+                              ]
+                            , [ [ 5, 6 ]
+                              , [ 7, 8 ]
+                              ]
+                            , [ [ 9, 10 ]
+                              , [ 11, 12 ]
+                              ]
+                            ]
+
+                    nda2x6Result =
+                        Result.map
+                            (\nda -> NumElm.reshape [ 2, 6 ] nda)
+                            ndaResult
+                            |> Result.andThen
+                                (\resResult -> Result.map Basics.identity resResult)
+
+                    nda6x2Result =
+                        Result.map
+                            (\nda -> NumElm.reshape [ 6, 2 ] nda)
+                            ndaResult
+                            |> Result.andThen
+                                (\resResult -> Result.map Basics.identity resResult)
+
+                    ndaDotResult =
+                        Result.map2
+                            (\nda2x6 nda6x2 -> NumElm.dot nda2x6 nda6x2)
+                            nda2x6Result
+                            nda6x2Result
+                            |> Result.andThen
+                                (\opDotResult -> Result.map Basics.identity opDotResult)
+                in
+                    case ndaDotResult of
+                        Ok ndaDot ->
+                            ndaDot
+                                |> NumElm.shape
+                                |> Expect.equal [ 2, 2 ]
+
+                        Err msg ->
+                            Expect.fail msg
+            )
         , test "Calculate inverse"
             (\_ ->
                 let

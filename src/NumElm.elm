@@ -41,6 +41,7 @@ module NumElm
         , transposeAxes
         , transpose
         , trans
+        , reshape
         , inverse
         , inv
         , pinv
@@ -184,6 +185,7 @@ scientific computing with Elm.
     * [map](#map)
     * [transposeAxes](#transposeAxes)
     * [transpose](#transpose), [trans](#trans)
+    * [reshape](#reshape)
     * [inverse](#inverse), [inv](#inv)
     * [pinv](#pinv) - TODO
     * [svd](#svd) - TODO
@@ -286,7 +288,7 @@ scientific computing with Elm.
 @docs get, slice, getn, set, concatenateAxis, concatenate, concat
 
 # Transforming NdArray
-@docs map, transposeAxes, transpose, trans, inverse, inv, pinv, svd, eig
+@docs map, transposeAxes, transpose, trans, reshape, inverse, inv, pinv, svd, eig
 
 # Arithmetic operations
 @docs add, (.+), subtract, sub, (.-), multiply, mul, (.*)
@@ -1011,6 +1013,47 @@ transpose nda =
 trans : NdArray -> NdArray
 trans nda =
     transpose nda
+
+
+{-| Gives a new shape to a NdArray without changing its data.
+
+    let
+        -- 3×2×2
+        nda = matrix3d
+                Int8
+                [ [ [ 1, 2 ]
+                  , [ 3, 4 ]
+                  ]
+                , [ [ 5, 6 ]
+                  , [ 7, 8 ]
+                  ]
+                , [ [ 9, 10 ]
+                  , [ 11, 12 ]
+                  ]
+                ]
+
+        -- 2×6
+        nda2x6 =
+            reshape nda [2, 6]
+
+        -- 3×4
+        nda3x4 =
+            reshape nda [3, 4]
+
+        -- 2×2×3
+        nda3x4 =
+            reshape nda [2, 2, 3]
+
+        nda6x2 =
+            reshape nda [6, 2]
+
+    in
+        dot nda2x6 nda6x2
+
+-}
+reshape : Shape -> NdArray -> Result String NdArray
+reshape shape nda =
+    Native.NumElm.reshape shape nda
 
 
 {-| Computes the (multiplicative) inverse of a matrix, using
