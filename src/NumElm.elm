@@ -1048,6 +1048,7 @@ trans nda =
             reshape nda [6, 2]
 
     in
+        -- 2×2
         dot nda2x6 nda6x2
 
 -}
