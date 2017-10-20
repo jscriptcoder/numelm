@@ -243,7 +243,7 @@ scientific computing with Elm.
     * [greaterEqual](#greaterEqual), [gte](#gte)
     * [(.>=)](#.>=)
     * [notEqual](#notEqual), [neq](#neq)
-    * [(./=)](#./=)
+    * [(./=)](#./=), [(.!=)](#.!=), [(.~=)](#.~=)
 
    13. [Logical operators](#logical-operators)
     * [and](#and)
@@ -2332,6 +2332,28 @@ neq nda1 nda2 =
 -- Logical operators --
 
 
+{-| Compute the truth value of nda1 `AND` nda2, element-wise.
+
+    let
+        nda1 =
+            matrix Int16
+                   [ [ 1, 2, 3 ]
+                   , [ 3, 0, 5 ]
+                   ]
+
+        nda2 =
+            matrix Int16
+                   [ [ 0, 2, 2 ]
+                   , [ 5, 4, 0 ]
+                   ]
+
+    in
+        and nda1 nda2
+        -- [ [0, 1, 1]
+        -- , [1, 0, 0]
+        -- ]
+
+-}
 and : NdArray -> NdArray -> Result String NdArray
 and nda1 nda2 =
     Native.NumElm.elementWise
@@ -2349,6 +2371,28 @@ and nda1 nda2 =
         nda2
 
 
+{-| Compute the truth value of nda1 `OR` nda2, element-wise.
+
+    let
+        nda1 =
+            matrix Int16
+                   [ [ 1, 2, 3 ]
+                   , [ 3, 0, 5 ]
+                   ]
+
+        nda2 =
+            matrix Int16
+                   [ [ 0, 2, 2 ]
+                   , [ 5, 0, 0 ]
+                   ]
+
+    in
+        or nda1 nda2
+        -- [ [1, 1, 1]
+        -- , [1, 0, 1]
+        -- ]
+
+-}
 or : NdArray -> NdArray -> Result String NdArray
 or nda1 nda2 =
     Native.NumElm.elementWise
@@ -2366,6 +2410,22 @@ or nda1 nda2 =
         nda2
 
 
+{-| Compute the truth value of `NOT` nda, element-wise.
+
+    let
+        nda =
+            matrix Int16
+                   [ [ 1, 2, 0 ]
+                   , [ 3, 0, 5 ]
+                   ]
+
+    in
+        not nda
+        -- [ [0, 0, 1]
+        -- , [0, 1, 0]
+        -- ]
+
+-}
 not : NdArray -> NdArray
 not nda =
     map
@@ -2379,6 +2439,28 @@ not nda =
         nda
 
 
+{-| Compute the truth value of nda1 `XOR` nda2, element-wise.
+
+    let
+        nda1 =
+            matrix Int16
+                   [ [ 1, 2, 3 ]
+                   , [ 3, 0, 5 ]
+                   ]
+
+        nda2 =
+            matrix Int16
+                   [ [ 0, 2, 2 ]
+                   , [ 5, 0, 0 ]
+                   ]
+
+    in
+        xor nda1 nda2
+        -- [ [1, 0, 0]
+        -- , [0, 0, 1]
+        -- ]
+
+-}
 xor : NdArray -> NdArray -> Result String NdArray
 xor nda1 nda2 =
     Native.NumElm.elementWise
@@ -2396,6 +2478,19 @@ xor nda1 nda2 =
         nda2
 
 
+{-| Test whether any NdArray element evaluates to `True`.
+
+    let
+        nda =
+            matrix Int16
+                   [ [ 1, 2, 0 ]
+                   , [ 3, 0, 5 ]
+                   ]
+
+    in
+        any nda == True
+
+-}
 any : NdArray -> Bool
 any nda =
     Native.NumElm.reduce
@@ -2410,6 +2505,19 @@ any nda =
         nda
 
 
+{-| Test whether all NdArray elements evaluate to `True`.
+
+    let
+        nda =
+            matrix Int16
+                   [ [ 1, 2, 0 ]
+                   , [ 3, 0, 5 ]
+                   ]
+
+    in
+        all nda == False
+
+-}
 all : NdArray -> Bool
 all nda =
     Native.NumElm.reduce
@@ -2575,7 +2683,7 @@ atan nda =
     arctan nda
 
 
-{-| Element-wise arc tangent of x1/x2 choosing the quadrant correctly.
+{-| Element-wise arc tangent of nda1/nda2 choosing the quadrant correctly.
 
     let
         nda1 =
@@ -2592,7 +2700,7 @@ atan nda =
 
     in
         arctan2 nda1 nda2
-        -- [ [ 1.3, 0.24]
+        -- [ [ 1.25, 0.24]
         -- , [1.05, 0.58]
         -- ]
 
