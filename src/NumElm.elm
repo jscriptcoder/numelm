@@ -43,6 +43,8 @@ module NumElm
         , transpose
         , trans
         , reshape
+        , absolute
+        , abs
         , inverse
         , inv
         , pinv
@@ -65,7 +67,6 @@ module NumElm
         , (.^)
         , mod
         , (.%)
-        , abs
           -- Root and Logarithm --
         , sqrt
         , logBase
@@ -92,6 +93,8 @@ module NumElm
         , sumAxis
         , prod
         , prodAxis
+        , norm
+        , normAxis
           -- Relational operators --
         , equal
         , eq
@@ -188,6 +191,7 @@ scientific computing with Elm.
     * [transposeAxes](#transposeAxes)
     * [transpose](#transpose), [trans](#trans)
     * [reshape](#reshape)
+    * [absolute](#absolute), [abs](#abs)
     * [inverse](#inverse), [inv](#inv)
     * [pinv](#pinv) - TODO
     * [svd](#svd) - TODO
@@ -206,7 +210,6 @@ scientific computing with Elm.
     * [(.^)](#.^)
     * [mod](#mod)
     * [(.%)](#.%)
-    * [abs][#abs]
 
    8. [Root and Logarithm](#root-and-logarithm)
     * [sqrt](#sqrt)
@@ -235,6 +238,8 @@ scientific computing with Elm.
     * [sumAxis](#sumAxis)
     * [prod](#prod)
     * [prodAxis](#prodAxis)
+    * [norm](#norm) - TODO
+    * [normAxis](#normAxis) - TODO
 
    12. [Relational operators](#relational-operators)
     * [equal](#equal), [eq](#eq)
@@ -291,11 +296,12 @@ scientific computing with Elm.
 @docs get, slice, getn, set, concatenateAxis, concatAxis, concatenate, concat
 
 # Transforming NdArray
-@docs map, transposeAxes, transpose, trans, reshape, inverse, inv, pinv, svd, eig
+@docs map, transposeAxes, transpose, trans, reshape
+@docs absolute, abs, inverse, inv, pinv, svd, eig
 
 # Arithmetic operations
 @docs add, (.+), subtract, sub, (.-), multiply, mul, (.*)
-@docs divide, div, (./), power, pow, (.^), mod, (.%), abs
+@docs divide, div, (./), power, pow, (.^), mod, (.%)
 
 # Root and Logarithm
 @docs sqrt, logBase, log, log2, log10, exp
@@ -307,7 +313,7 @@ scientific computing with Elm.
 @docs around, round, ceil, floor, truncate, trunc, fix
 
 # Aggregate functions
-@docs max, maxAxis, min, minAxis, sum, sumAxis, prod, prodAxis
+@docs max, maxAxis, min, minAxis, sum, sumAxis, prod, prodAxis, norm, normAxis
 
 # Relational operators
 @docs equal, eq, (.==), less, lt, (.<), greater, gt, (.>), lessEqual
@@ -1067,6 +1073,36 @@ reshape shape nda =
     Native.NumElm.reshape shape nda
 
 
+{-| Calculate the absolute value, element-wise.
+
+    let
+        nda =
+            matrix Float32
+                   [ [-1.4,  2]
+                   , [   3, -4]
+                   , [ 5.1, -6]
+                   ]
+
+    in
+        absolute nda
+        -- [ [1.4, 2]
+        -- , [  3, 4]
+        -- , [5.1, 6]
+        -- ]
+
+-}
+absolute : NdArray -> NdArray
+absolute nda =
+    map (\val _ _ -> Basics.abs val) nda
+
+
+{-| Alias for [absolute](#absolute).
+-}
+abs : NdArray -> NdArray
+abs nda =
+    absolute nda
+
+
 {-| Computes the (multiplicative) inverse of a matrix, using
 [Guassian Elimination](hhttps://en.wikipedia.org/wiki/Gaussian_elimination).
 Only supports square matrixes.
@@ -1447,36 +1483,6 @@ mod nda1 nda2 =
 (.%) : NdArray -> Int -> NdArray
 (.%) nda num =
     map (\val _ _ -> val % num) nda
-
-
-{-| Calculate the absolute value, element-wise.
-
-    let
-        nda =
-            matrix Float32
-                   [ [-1.4,  2]
-                   , [   3, -4]
-                   , [ 5.1, -6]
-                   ]
-
-    in
-        absolute nda
-        -- [ [1.4, 2]
-        -- , [  3, 4]
-        -- , [5.1, 6]
-        -- ]
-
--}
-absolute : NdArray -> NdArray
-absolute nda =
-    map (\val _ _ -> Basics.abs val) nda
-
-
-{-| Alias for [absolute](#absolute).
--}
-abs : NdArray -> NdArray
-abs nda =
-    absolute nda
 
 
 
@@ -2067,6 +2073,20 @@ prodAxis axis nda =
         (\values _ -> List.foldr (*) 1 values)
         axis
         nda
+
+
+{-| TODO
+-}
+norm : NdArray -> NdArray
+norm nda =
+    NdArray
+
+
+{-| TODO
+-}
+normAxis : Int -> NdArray -> NdArray
+normAxis axis nda =
+    NdArray
 
 
 

@@ -280,26 +280,4 @@ suit =
                 in
                     Expect.equal strdata "[1,0,1,0,1,0]"
             )
-        , test "Absolute"
-            (\_ ->
-                let
-                    ndaResult =
-                        NumElm.matrix
-                            Float64
-                            [ [ -1.4, 2 ]
-                            , [ 3, -4 ]
-                            , [ 5.1, -6 ]
-                            ]
-
-                    strdata =
-                        case ndaResult of
-                            Ok nda ->
-                                NumElm.abs nda
-                                    |> NumElm.dataToString
-
-                            Err msg ->
-                                msg
-                in
-                    Expect.equal strdata "[1.4,2,3,4,5.1,6]"
-            )
         ]
