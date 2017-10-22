@@ -12,7 +12,7 @@ suit =
             (\_ ->
                 let
                     matrixResult =
-                        matrix Float32
+                        matrix Float64
                             [ [ 1.4564, -2.1271 ]
                             , [ -3.6544, 4.3221 ]
                             ]
@@ -21,7 +21,7 @@ suit =
                     case matrixResult of
                         Ok matrix ->
                             NumElm.dataToString matrix
-                                |> Expect.equal "[1.4600000381469727,-2.130000114440918,-3.6500000953674316,4.320000171661377]"
+                                |> Expect.equal "[1.46,-2.13,-3.65,4.32]"
 
                         Err msg ->
                             Expect.fail msg

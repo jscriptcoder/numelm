@@ -6,28 +6,21 @@ import NumElm exposing (..)
 
 main =
     let
-        nda1Result =
-            matrix Int16
-                [ [ 1, 2, 3 ]
-                , [ 3, 10, 5 ]
+        ndaResult =
+            NumElm.matrix
+                Float64
+                [ [ -1.4, 2 ]
+                , [ 3, -4 ]
+                , [ 5.1, -6 ]
                 ]
 
-        nda2Result =
-            matrix Int16
-                [ [ 0, 2, 2 ]
-                , [ 5, 4, 0 ]
-                ]
+        strdata =
+            case ndaResult of
+                Ok nda ->
+                    NumElm.abs nda
+                        |> NumElm.dataToString
 
-        valResult =
-            Result.map2
-                (\nd1 nd2 -> NumElm.all nd1)
-                nda1Result
-                nda2Result
+                Err msg ->
+                    msg
     in
-        case valResult of
-            Ok val ->
-                Basics.toString val
-                    |> text
-
-            Err msg ->
-                text msg
+        text strdata

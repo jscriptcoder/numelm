@@ -34,6 +34,7 @@ module NumElm
         , getn
         , set
         , concatenateAxis
+        , concatAxis
         , concatenate
         , concat
           -- Transforming NdArray --
@@ -64,6 +65,7 @@ module NumElm
         , (.^)
         , mod
         , (.%)
+        , abs
           -- Root and Logarithm --
         , sqrt
         , logBase
@@ -178,7 +180,7 @@ scientific computing with Elm.
     * [get](#get)
     * [slice](#slice), [getn](#getn)
     * [set](#set)
-    * [concatenateAxis](#concatenateAxis)
+    * [concatenateAxis](#concatenateAxis), [concatAxis](#concatAxis)
     * [concatenate](#concatenate), [concat](#concat)
 
    6. [Transforming NdArray](#transforming-ndarray)
@@ -204,6 +206,7 @@ scientific computing with Elm.
     * [(.^)](#.^)
     * [mod](#mod)
     * [(.%)](#.%)
+    * [abs][#abs]
 
    8. [Root and Logarithm](#root-and-logarithm)
     * [sqrt](#sqrt)
@@ -285,14 +288,14 @@ scientific computing with Elm.
 @docs zeros, ones, diagonal, diag, identity, eye, rand, randn
 
 # Getting and Setting
-@docs get, slice, getn, set, concatenateAxis, concatenate, concat
+@docs get, slice, getn, set, concatenateAxis, concatAxis, concatenate, concat
 
 # Transforming NdArray
 @docs map, transposeAxes, transpose, trans, reshape, inverse, inv, pinv, svd, eig
 
 # Arithmetic operations
 @docs add, (.+), subtract, sub, (.-), multiply, mul, (.*)
-@docs divide, div, (./), power, pow, (.^), mod, (.%)
+@docs divide, div, (./), power, pow, (.^), mod, (.%), abs
 
 # Root and Logarithm
 @docs sqrt, logBase, log, log2, log10, exp
@@ -917,6 +920,13 @@ concatenateAxis axis nda1 nda2 =
     Native.NumElm.concatenate axis nda1 nda2
 
 
+{-| Alias for [concatenateAxis](#concatenateAxis).
+-}
+concatAxis : Int -> NdArray -> NdArray -> Result String NdArray
+concatAxis axis nda1 nda2 =
+    concatenateAxis axis nda1 nda2
+
+
 {-| Alias for [concatenateAxis](#concatenateAxis) with `axis` set to 0.
 -}
 concatenate : NdArray -> NdArray -> Result String NdArray
@@ -1437,6 +1447,36 @@ mod nda1 nda2 =
 (.%) : NdArray -> Int -> NdArray
 (.%) nda num =
     map (\val _ _ -> val % num) nda
+
+
+{-| Calculate the absolute value, element-wise.
+
+    let
+        nda =
+            matrix Float32
+                   [ [-1.4,  2]
+                   , [   3, -4]
+                   , [ 5.1, -6]
+                   ]
+
+    in
+        absolute nda
+        -- [ [1.4, 2]
+        -- , [  3, 4]
+        -- , [5.1, 6]
+        -- ]
+
+-}
+absolute : NdArray -> NdArray
+absolute nda =
+    map (\val _ _ -> Basics.abs val) nda
+
+
+{-| Alias for [absolute](#absolute).
+-}
+abs : NdArray -> NdArray
+abs nda =
+    absolute nda
 
 
 
