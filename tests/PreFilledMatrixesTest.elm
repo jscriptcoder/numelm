@@ -50,6 +50,22 @@ suit =
                         Err msg ->
                             Expect.fail msg
             )
+        , test "Arange"
+            (\_ ->
+                let
+                    ndaResult =
+                        NumElm.arangeStep Float64 1 10.5 2.2
+                in
+                    case ndaResult of
+                        Ok nda ->
+                            nda
+                                |> NumElm.around 1
+                                |> NumElm.dataToString
+                                |> Expect.equal "[1,3.2,5.4,7.6,9.8]"
+
+                        Err msg ->
+                            Expect.fail msg
+            )
         , test "Identity"
             (\_ ->
                 let

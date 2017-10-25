@@ -24,6 +24,9 @@ module NumElm
         , ones
         , diagonal
         , diag
+        , arangeStep
+        , arange
+        , range
         , identity
         , eye
         , rand
@@ -175,6 +178,8 @@ scientific computing with Elm.
     * [zeros](#zeros)
     * [ones](#ones)
     * [diagonal](#diagonal), [diag](#diag)
+    * [arangeStep](#arangeStep),
+    * [arange](#arange), [range](#range)
     * [identity](#identity), [eye](#eye)
     * [rand](#rand)
     * [randn](#randn)
@@ -290,7 +295,7 @@ scientific computing with Elm.
 @docs toString, dataToString, shape, size, ndim, length, numel, dtype
 
 # Pre-filled NdArray
-@docs zeros, ones, diagonal, diag, identity, eye, rand, randn
+@docs zeros, ones, diagonal, diag, arangeStep, arange, range, identity, eye, rand, randn
 
 # Getting and Setting
 @docs get, slice, getn, set, concatenateAxis, concatAxis, concatenate, concat
@@ -696,6 +701,7 @@ ones dtype shape =
         -- , [0, 2, 0]
         -- , [0, 0, 3]
         -- ]
+
 -}
 diagonal : Dtype -> List number -> Result String NdArray
 diagonal dtype list =
@@ -707,6 +713,49 @@ diagonal dtype list =
 diag : Dtype -> List number -> Result String NdArray
 diag dtype list =
     diagonal dtype list
+
+
+{-| Return evenly spaced (`steps`) values within a given interval `[start, stop)`.
+
+    let
+        dtype =
+            Float64
+
+        start =
+            1
+
+        stop =
+            10.5
+
+        step =
+            2.2
+
+    in
+        arangeStep dtype start stop step
+        -- [ 1, 3.2, 5.4, 7.6, 9.8 ]
+
+-}
+arangeStep : Dtype -> comparable -> comparable -> comparable -> Result String NdArray
+arangeStep dtype start stop step =
+    let
+        list =
+            makeRange start stop step
+    in
+        vector dtype list
+
+
+{-| Alias for [arangeStep](#arangeStep) with step = 1.
+-}
+arange : Dtype -> comparable -> comparable -> Result String NdArray
+arange dtype start stop =
+    arangeStep dtype start stop 1
+
+
+{-| Alias for [arange](#arange).
+-}
+range : Dtype -> comparable -> comparable -> Result String NdArray
+range dtype start stop =
+    arange dtype start stop
 
 
 {-| Creates an identity square matrix, given a size.
@@ -933,7 +982,7 @@ concatAxis axis nda1 nda2 =
     concatenateAxis axis nda1 nda2
 
 
-{-| Alias for [concatenateAxis](#concatenateAxis) with `axis` set to 0.
+{-| Alias for [concatenateAxis](#concatenateAxis) with `axis` = 0.
 -}
 concatenate : NdArray -> NdArray -> Result String NdArray
 concatenate nda1 nda2 =
@@ -1104,7 +1153,7 @@ abs nda =
 
 
 {-| Computes the (multiplicative) inverse of a matrix, using
-[Guassian Elimination](hhttps://en.wikipedia.org/wiki/Gaussian_elimination).
+[Guassian Elimination](http://mathworld.wolfram.com/GaussianElimination.html).
 Only supports square matrixes.
 
     let
@@ -1133,7 +1182,7 @@ inv nda =
     inverse nda
 
 
-{-| Computes the [Moore-Penrose](https://en.wikipedia.org/wiki/Moore–Penrose_inverse) pseudo-inverse of a matrix.
+{-| Computes the [Moore-Penrose](http://mathworld.wolfram.com/Moore-PenroseMatrixInverse.html) pseudo-inverse of a matrix.
 
     -- TODO
 
@@ -1143,7 +1192,7 @@ pinv nda =
     NdArray
 
 
-{-| Computes [Singular Value Decomposition](https://en.wikipedia.org/wiki/Singular-value_decomposition).
+{-| Computes [Singular Value Decomposition](http://mathworld.wolfram.com/SingularValueDecomposition.html).
 
     -- TODO
 
@@ -1685,7 +1734,7 @@ around decimals nda =
     map (\val _ _ -> roundTo decimals val) nda
 
 
-{-| Alias for [around](#around) decimals set to 0.
+{-| Alias for [around](#around) decimals = 0.
 -}
 round : NdArray -> NdArray
 round nda =
@@ -2075,18 +2124,38 @@ prodAxis axis nda =
         nda
 
 
-{-| TODO
+{-| Matrix ([Frobenius Norm](http://mathworld.wolfram.com/FrobeniusNorm.html)) or vector ([L2-Norm](http://mathworld.wolfram.com/L2-Norm.html)) norm
+(also called Euclidean norm).
 -}
-norm : NdArray -> NdArray
+norm : NdArray -> Float
 norm nda =
-    NdArray
+    let
+        sumPow2 =
+            Native.NumElm.reduce
+                (\acc val _ -> acc + (val ^ 2))
+                0
+                nda
+    in
+        Basics.sqrt sumPow2
 
 
-{-| TODO
+{-| Returns the norm along a given `axis`
 -}
-normAxis : Int -> NdArray -> NdArray
+normAxis : Int -> NdArray -> Result String NdArray
 normAxis axis nda =
-    NdArray
+    Native.NumElm.mapAxis
+        (\values _ ->
+            let
+                sumPow2 =
+                    List.foldr
+                        (\val acc -> (val ^ 2) + acc)
+                        0
+                        values
+            in
+                Basics.sqrt sumPow2
+        )
+        axis
+        nda
 
 
 
@@ -3002,6 +3071,22 @@ atanh nda =
 toLength : Shape -> Int
 toLength shape =
     List.foldr (*) 1 shape
+
+
+makeRange : comparable -> comparable -> comparable -> List comparable
+makeRange start stop step =
+    if start <= stop then
+        makeRangeHelper start stop step []
+    else
+        makeRangeHelper stop start step []
+
+
+makeRangeHelper : comparable -> comparable -> comparable -> List comparable -> List comparable
+makeRangeHelper start stop step list =
+    if start < stop then
+        makeRangeHelper (start + step) stop step (List.append list [ start ])
+    else
+        list
 
 
 randomUniformList : Int -> Int -> List Float
