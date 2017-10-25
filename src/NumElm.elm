@@ -243,8 +243,8 @@ scientific computing with Elm.
     * [sumAxis](#sumAxis)
     * [prod](#prod)
     * [prodAxis](#prodAxis)
-    * [norm](#norm) - TODO
-    * [normAxis](#normAxis) - TODO
+    * [norm](#norm)
+    * [normAxis](#normAxis)
 
    12. [Relational operators](#relational-operators)
     * [equal](#equal), [eq](#eq)
