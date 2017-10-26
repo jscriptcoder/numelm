@@ -744,7 +744,7 @@ arangeStep dtype start stop step =
         vector dtype list
 
 
-{-| Alias for [arangeStep](#arangeStep) with step = 1.
+{-| Alias for [arangeStep](#arangeStep) with `step = 1`.
 -}
 arange : Dtype -> comparable -> comparable -> Result String NdArray
 arange dtype start stop =
@@ -982,7 +982,7 @@ concatAxis axis nda1 nda2 =
     concatenateAxis axis nda1 nda2
 
 
-{-| Alias for [concatenateAxis](#concatenateAxis) with `axis` = 0.
+{-| Alias for [concatenateAxis](#concatenateAxis) with `axis = 0`.
 -}
 concatenate : NdArray -> NdArray -> Result String NdArray
 concatenate nda1 nda2 =
@@ -1734,7 +1734,7 @@ around decimals nda =
     map (\val _ _ -> roundTo decimals val) nda
 
 
-{-| Alias for [around](#around) decimals = 0.
+{-| Alias for [around](#around) `decimals = 0`.
 -}
 round : NdArray -> NdArray
 round nda =
@@ -2126,6 +2126,18 @@ prodAxis axis nda =
 
 {-| Matrix ([Frobenius Norm](http://mathworld.wolfram.com/FrobeniusNorm.html)) or vector ([L2-Norm](http://mathworld.wolfram.com/L2-Norm.html)) norm
 (also called Euclidean norm).
+
+    let
+        nda =
+            matrix Float32
+                   [ [ 10, -6 ]
+                   , [ -3, 12 ]
+                   , [ -8,  7 ]
+                   ]
+
+    in
+        norm nda == 20.049937656
+
 -}
 norm : NdArray -> Float
 norm nda =

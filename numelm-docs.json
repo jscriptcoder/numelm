@@ -180,7 +180,7 @@
       },
       {
         "name": "arange",
-        "comment": " Alias for [arangeStep](#arangeStep) with step = 1.\n",
+        "comment": " Alias for [arangeStep](#arangeStep) with `step = 1`.\n",
         "type": "NumElm.Dtype -> comparable -> comparable -> Result.Result String NumElm.NdArray"
       },
       {
@@ -270,7 +270,7 @@
       },
       {
         "name": "concatenate",
-        "comment": " Alias for [concatenateAxis](#concatenateAxis) with `axis` = 0.\n",
+        "comment": " Alias for [concatenateAxis](#concatenateAxis) with `axis = 0`.\n",
         "type": "NumElm.NdArray -> NumElm.NdArray -> Result.Result String NumElm.NdArray"
       },
       {
@@ -515,7 +515,7 @@
       },
       {
         "name": "norm",
-        "comment": " Matrix ([Frobenius Norm](http://mathworld.wolfram.com/FrobeniusNorm.html)) or vector ([L2-Norm](http://mathworld.wolfram.com/L2-Norm.html)) norm\n(also called Euclidean norm).\n",
+        "comment": " Matrix ([Frobenius Norm](http://mathworld.wolfram.com/FrobeniusNorm.html)) or vector ([L2-Norm](http://mathworld.wolfram.com/L2-Norm.html)) norm\n(also called Euclidean norm).\n\n    let\n        nda =\n            matrix Float32\n                   [ [ 10, -6 ]\n                   , [ -3, 12 ]\n                   , [ -8,  7 ]\n                   ]\n\n    in\n        norm nda == 20.049937656\n\n",
         "type": "NumElm.NdArray -> Float"
       },
       {
@@ -595,7 +595,7 @@
       },
       {
         "name": "round",
-        "comment": " Alias for [around](#around) decimals = 0.\n",
+        "comment": " Alias for [around](#around) `decimals = 0`.\n",
         "type": "NumElm.NdArray -> NumElm.NdArray"
       },
       {

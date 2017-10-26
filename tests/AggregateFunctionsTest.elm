@@ -265,4 +265,76 @@ suit =
                         Err msg ->
                             Expect.fail msg
             )
+        , test "Norm matrix"
+            (\_ ->
+                let
+                    ndaResult =
+                        NumElm.matrix Int16
+                            [ [ 10, -6 ]
+                            , [ -3, 12 ]
+                            , [ -8, 7 ]
+                            ]
+
+                    normResult =
+                        Result.map
+                            (\nda -> NumElm.norm nda)
+                            ndaResult
+
+                    norm =
+                        Result.withDefault 0 normResult
+                in
+                    Expect.equal norm 20.049937655763422
+            )
+        , test "Norm vector"
+            (\_ ->
+                let
+                    ndaResult =
+                        NumElm.arange Int16 -4 5
+
+                    normResult =
+                        Result.map
+                            (\nda -> NumElm.norm nda)
+                            ndaResult
+
+                    norm =
+                        Result.withDefault 0 normResult
+                in
+                    Expect.equal norm 7.745966692414834
+            )
+        , test "Norm along an axis"
+            (\_ ->
+                let
+                    ndaNormDataResult =
+                        NumElm.matrix3d Float64
+                            [ [ [ 1, -2 ]
+                              , [ -6, 3 ]
+                              , [ 3, -7 ]
+                              ]
+                            , [ [ 10, -6 ]
+                              , [ -3, 12 ]
+                              , [ -8, 7 ]
+                              ]
+                            , [ [ 1, 3 ]
+                              , [ 1, 15 ]
+                              , [ 5, 7 ]
+                              ]
+                            ]
+                            |> Result.andThen
+                                (\nda -> NumElm.normAxis 2 nda)
+                            |> Result.andThen
+                                (\ndaNorm ->
+                                    let
+                                        ndaNormAround =
+                                            NumElm.around 2 ndaNorm
+                                    in
+                                        Ok (NumElm.dataToString ndaNormAround)
+                                )
+                in
+                    case ndaNormDataResult of
+                        Ok ndaNormData ->
+                            Expect.equal ndaNormData "[2.24,6.71,7.62,11.66,12.37,10.63,3.16,15.03,8.6]"
+
+                        Err msg ->
+                            Expect.fail msg
+            )
         ]
