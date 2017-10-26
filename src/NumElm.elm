@@ -153,7 +153,7 @@ module NumElm
 {-| Based on NumPy, [Python package](http://www.numpy.org/), NumElm is the fundamental package for
 scientific computing with Elm.
 
-**API**
+## API
    1. [Types](#types)
     * [NdArray](#NdArray)
     * [Shape](#Shape)
