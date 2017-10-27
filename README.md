@@ -11,16 +11,16 @@ I wouldn't say this package is fully ready to be use in _production_ (not yet). 
 1. I'm still deciding whether to use [scijs/ndarray](https://github.com/scijs/ndarray) and extend it, or use [deeplearn.js](https://github.com/PAIR-code/deeplearnjs) which is a highly optimized hardware-accelerated JavaScript library, in order to speed up performance.
 
 2. Implement:
-  ```elm
-  {-| Computes the Moore-Penrose pseudo-inverse of a matrix.
-  -}
-  pinv : NdArray -> NdArray
+```elm
+{-| Computes the Moore-Penrose pseudo-inverse of a matrix.
+-}
+pinv : NdArray -> NdArray
 
-  {-| Computes Singular Value Decomposition.
-  -}
-  svd : NdArray -> NdArray
-  
-  {-| Computes the eigenvalues and right eigenvectors of a square NdArray.
-  -}
-  eig : NdArray -> NdArray
-  ```
+{-| Computes Singular Value Decomposition.
+-}
+svd : NdArray -> NdArray
+
+{-| Computes the eigenvalues and right eigenvectors of a square NdArray.
+-}
+eig : NdArray -> NdArray
+```
