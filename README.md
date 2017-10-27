@@ -8,7 +8,7 @@ As a huge fan of Functional Programming, I'm extremely interested in Elm languag
 I wouldn't say this package is fully ready to be use in production (not yet). Even though there are some performance optimizations, I didn't put too much effort on it. The ```NdArray``` implementation is my own one. I'm aware of the project [scijs/ndarray](https://github.com/scijs/ndarray), which is better optmized, but it lacks of certain funcionality I needed in order to cover most of the _NumPy API_.
 
 ## TO-DO
-1. Split up NumElm API into modules.
+1. Break NumElm API down into modules. Too many functions in just one module.
 
 2. I'm still deciding whether to use [scijs/ndarray](https://github.com/scijs/ndarray) and extend it, or use [deeplearn.js](https://github.com/PAIR-code/deeplearnjs) which is a highly optimized hardware-accelerated JavaScript library, in order to speed up performance.
 
