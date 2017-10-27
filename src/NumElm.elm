@@ -150,7 +150,7 @@ module NumElm
         , atanh
         )
 
-{-| Based on NumPy, [Python package](http://www.numpy.org/), NumElm is the fundamental package for
+{-| Inspired by NumPy, a Python [package](http://www.numpy.org/), NumElm is the fundamental package for
 scientific computing with Elm.
 
 ## API
