@@ -1,6 +1,6 @@
 {
     "version": "1.0.0",
-    "summary": "The NumPy for Elm",
+    "summary": "NumElm is the fundamental package for scientific computing with Elm",
     "repository": "https://github.com/jscriptcoder/numelm.git",
     "license": "BSD3",
     "source-directories": [
