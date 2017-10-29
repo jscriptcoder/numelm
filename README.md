@@ -12,7 +12,7 @@ Unfortunately, and because I'm [using](https://github.com/eeue56/take-home/wiki/
 
 First of all, you need to install [elm-install](https://github.com/gdotdesign/elm-github-install) in order to be able to install elm packages from git repos:
 ```bash
-npm install elm-github-install -g
+$ npm install elm-github-install -g
 ```
 Once installed ```elm-install``` can be used instead of ```elm-package``` as a replacement. The process is well explained [here](https://github.com/gdotdesign/elm-github-install#basic-usage).
 
@@ -28,12 +28,19 @@ Creates `elm-package.json` with basic modules and add `jscriptcoder/numelm` as f
   }
   "dependency-sources": {
       "jscriptcoder/numelm": {
-          "url": "https://github.com/jscriptcoder/numelm"
+          "url": "https://github.com/jscriptcoder/numelm",
+          "ref": "master"
       }
   },
   ...
 }
 ```
+Then run
+```bash
+$ elm-install
+```
+
+## How to use
 
 ## TO-DO
 1. Break NumElm API down into modules. Too many functions in just one module.
