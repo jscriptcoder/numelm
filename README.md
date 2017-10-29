@@ -54,16 +54,16 @@ eig : NdArray -> NdArray
 
 {-| Multidimensional container of items of the same type and size.
 The number of dimensions and items in an NdArray is defined by its
-[Shape](#Shape), which is a list of N positive integers that specify
+Shape, which is a list of N positive integers that specify
 the sizes of each dimension. The type of items in the array is
-specified by a separate data-type object, [Dtype](#Dtype), one of which is
+specified by a separate data-type object, Dtype, one of which is
 associated with each NdArray.
 
 -}
 type NdArray
     = NdArray
 
-{-| List of a [NdArray](#NdArray) dimensions.
+{-| List of a NdArray dimensions.
 
     [3, 4]        -- 3×4 matrix
     [2] == [2, 1] -- 2×1 column vector
@@ -74,7 +74,7 @@ type NdArray
 type alias Shape =
     List Int
 
-{-| Location within the [NdArray](#NdArray).
+{-| Location within the NdArray.
 
     let
         nda =
@@ -112,7 +112,7 @@ type Dtype
 
 -- Creating NdArray --
 
-{-| Generic way to create an [NdArray](#NdArray) with type [Dtype](#Dtype)
+{-| Generic way to create an NdArray with type Dtype
 from a `List` of numbers
 
     -- 3×2 matrix of 8-bit signed integers
@@ -124,7 +124,7 @@ from a `List` of numbers
 -}
 ndarray : Dtype -> Shape -> List number -> Result String NdArray
 
-{-| Creates an [NdArray](#NdArray) with type [Dtype](#Dtype)
+{-| Creates an NdArray with type Dtype
 from a 1D `List`.
 
     -- 6×1 column vector of 16-bit signed integers.
@@ -133,7 +133,7 @@ from a 1D `List`.
 -}
 vector : Dtype -> List number -> Result String NdArray
 
-{-| Creates an [NdArray](#NdArray) with type [Dtype](#Dtype)
+{-| Creates an NdArray with type Dtype
 from a 2D `List`.
 
     -- 2×3 matrix of 32-bit floating point numbers.
@@ -145,7 +145,7 @@ from a 2D `List`.
 -}
 matrix : Dtype -> List (List number) -> Result String NdArray
 
-{-| Creates an [NdArray](#NdArray) with type [Dtype](#Dtype)
+{-| Creates an NdArray with type Dtype
 from a 3D `List`.
 
     -- 3×2×2 3D matrix of 64-bit floating point numbers.
@@ -167,7 +167,7 @@ matrix3d : Dtype -> List (List (List number)) -> Result String NdArray
 
 -- Getting info from NdArray --
 
-{-| Returns the `String` representation of the ndarray.
+{-| Returns the String representation of the ndarray.
 
     let
         nda = ndarray
@@ -193,7 +193,7 @@ toString : NdArray -> String
 -}
 dataToString : NdArray -> String
 
-{-| Returns the [Shape](#Shape) of the [NdArray](#NdArray).
+{-| Returns the [Shape](#Shape) of the NdArray.
 
      -- 2×4 matrix
     shape nda1 == [2, 4]
@@ -207,10 +207,8 @@ shape : NdArray -> Shape
 {-| Alias for [shape](#shape).
 -}
 size : NdArray -> Shape
-size nda =
-    shape nda
 
-{-| Returns the number of dimensions of the [NdArray](#NdArray).
+{-| Returns the number of dimensions of the NdArray.
 
     -- 2×4×1 matrix
     ndim nda == 3
@@ -218,7 +216,7 @@ size nda =
 -}
 ndim : NdArray -> Int
 
-{-| Returns the number of elements in the [NdArray](#NdArray).
+{-| Returns the number of elements in the NdArray.
 
     -- 2×4×1 matrix
     length nda == 8
@@ -226,11 +224,11 @@ ndim : NdArray -> Int
 -}
 length : NdArray -> Int
 
-{-| Alias for [length](#length).
+{-| Alias for length.
 -}
 numel : NdArray -> Int
 
-{-| Returns the [Dtype](#Dtype) of the [NdArray](#NdArray).
+{-| Returns the [Dtype](#Dtype) of the NdArray.
 
     -- Int32 NdArray
     dtype nda1 == Int32
@@ -243,7 +241,7 @@ dtype : NdArray -> Dtype
 
 -- Pre-filled NgArray --
 
-{-| Returns a new [NdArray](#NdArray) of given [Shape](#Shape) and [Dtype](#Dtype),
+{-| Returns a new NdArray of given Shape and Dtype,
 filled with zeros.
 
     let
@@ -263,7 +261,7 @@ filled with zeros.
 -}
 zeros : Dtype -> Shape -> Result String NdArray
 
-{-| Returns a new [NdArray](#NdArray) of given [Shape](#Shape) and [Dtype](#Dtype),
+{-| Returns a new NdArray of given Shape and Dtype,
 filled with ones.
 
     let
@@ -527,7 +525,6 @@ concat : NdArray -> NdArray -> Result String NdArray
 
 -- Transforming NdArray --
 
-
 {-| Transforms the values of the [NdArray](#NdArray) with mapping.
 
     let
@@ -684,29 +681,19 @@ inverse : NdArray -> Result String NdArray
 inv : NdArray -> Result String NdArray
 
 {-| Computes the [Moore-Penrose](http://mathworld.wolfram.com/Moore-PenroseMatrixInverse.html) pseudo-inverse of a matrix.
-
-    -- TODO
-
 -}
 pinv : NdArray -> NdArray
 
 {-| Computes [Singular Value Decomposition](http://mathworld.wolfram.com/SingularValueDecomposition.html).
-
-    -- TODO
-
 -}
 svd : NdArray -> NdArray
 
 {-| Computes the eigenvalues and right eigenvectors of a square [NdArray](#NdArray).
-
-    -- TODO
-
 -}
 eig : NdArray -> NdArray
 
 
 -- Arithmetic operations --
-
 
 {-| Adds arguments, element-wise.
 
@@ -981,7 +968,6 @@ mod : NdArray -> NdArray -> Result String NdArray
 
 -- Root and Logarithm --
 
-
 {-| Returns the positive square-root of a [NdArray](#NdArray), element-wise.
 
     let
@@ -1096,7 +1082,6 @@ exp : NdArray -> NdArray
 
 -- Matrix mutiplication --
 
-
 {-| Dot product of two [NdArray](#NdArray). Only supports square matrixes
 
     let
@@ -1131,7 +1116,6 @@ dot : NdArray -> NdArray -> Result String NdArray
 
 
 -- Round off --
-
 
 {-| Evenly rounds to the given number of decimals.
 
@@ -1222,7 +1206,6 @@ fix : NdArray -> NdArray
 
 
 -- Aggregate functions --
-
 
 {-| Element-wise maximum of a [NdArray](#NdArray).
 
@@ -1475,7 +1458,6 @@ normAxis : Int -> NdArray -> Result String NdArray
 
 
 -- Relational operators --
-
 
 {-| Returns `nda1 == nda2`, element-wise, with 1's (`True`) and 0's (`False`).
 
