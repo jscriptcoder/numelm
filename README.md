@@ -52,6 +52,32 @@ Solving dependencies...
 ```
 
 ## How to use
+Easy, just import ```NumElm``` and use it :smirk:
+```elm
+module Main exposing (..)
+
+import Html exposing (text)
+import NumElm exposing (..)
+
+
+main =
+    let
+        matrixResult =
+            NumElm.matrix
+                Float32
+                [ [ 1, 2, 3 ]
+                , [ 4, 5, 6 ]
+                ]
+    in
+        case matrixResult of
+            Ok matrix ->
+                matrix
+                    |> NumElm.toString
+                    |> text
+
+            Err msg ->
+                text msg
+```
 
 ## TO-DO
 1. Break NumElm API down into modules. Too many functions in just one module.
