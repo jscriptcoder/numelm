@@ -16,6 +16,12 @@ npm install elm-github-install -g
 ```
 Once installed ```elm-install``` can be used instead of ```elm-package``` as a replacement. The process is well explained [here](https://github.com/gdotdesign/elm-github-install#basic-usage).
 
+Creates elm-package.json with basic modules
+```bash
+elm-install install
+```
+
+
 ## TO-DO
 1. Break NumElm API down into modules. Too many functions in just one module.
 
