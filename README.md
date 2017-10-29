@@ -8,7 +8,7 @@ As a huge fan of Functional Programming, I'm extremely interested in Elm languag
 I wouldn't say this package is fully ready to be use in production (not yet). Even though there are some performance optimizations, I didn't put too much effort on it this initial version. The ```NdArray``` implementation is my [own one](src/Native/NumElm.js). I'm aware of the project [scijs/ndarray](https://github.com/scijs/ndarray), which is better optmized, but it lacks of certain funcionality I needed in order to cover most of the _NumPy API_.
 
 ## How to install
-Unfortunately, and because I'm [using](https://github.com/eeue56/take-home/wiki/Writing-Native) [Native](https://github.com/gabrielperales/elm-native-module) [modules](https://newfivefour.com/elm-lang-basic-native-module.html), this package couldn't make to the official Elm [repository](http://package.elm-lang.org/). Even though I totally agree with the [policy](https://www.reddit.com/r/elm/comments/73ubxo/an_explanation_of_elms_policy_on_native_code/) about Native code, I believe such package in Elm, at least at its current version 0.18, could not achieve top performance, as good as the browser would allow. Only low level code, in this case JavaScript, can do so.
+Unfortunately, and because I'm [using](https://github.com/eeue56/take-home/wiki/Writing-Native) [Native](https://github.com/gabrielperales/elm-native-module) [modules](https://newfivefour.com/elm-lang-basic-native-module.html), this package couldn't make it to the official Elm [repository](http://package.elm-lang.org/). Even though I totally agree with the [policy](https://www.reddit.com/r/elm/comments/73ubxo/an_explanation_of_elms_policy_on_native_code/) about Native code, I believe such package in Elm, at least at its current version 0.18, could not achieve top performance, as good as the browser would allow. Only low level code, in this case JavaScript, can do so.
 
 First of all, you need to install [elm-install](https://github.com/gdotdesign/elm-github-install) in order to be able to install elm packages from git repos:
 ```bash
@@ -86,7 +86,7 @@ main =
 
 3. Write performance tests.
 
-4. Show better API docs. Investigate how to generate the markdown as [docs-preview](http://package.elm-lang.org/help/docs-preview) does.
+4. Show better API docs. Investigate how to generate the markdown like [docs-preview](http://package.elm-lang.org/help/docs-preview) does.
 
 5. Implement:
 ```elm
@@ -109,7 +109,7 @@ eig : NdArray -> NdArray
 8. Don't know yet. Any suggestion is always welcomed :wink:
 
 ## Notes
-1. There are around 122 tests that covers the whole API. You can have a look in [tests](tests) folder.
+1. There are around 122 tests that covers the whole API. You can have a look in [tests](tests) folder to see how to use the API. Each test could be considered as an example.
 
 2. I use [debug](debug) folder to debug functionality in the browser with breakpoints. You need to run ```elm-reactor``` in this folder, open the browser in http://localhost:8000, and then click on _Main.elm_. Open devtool, sources, and in _Main.elm_ you have your compiled Javascript.
 
