@@ -10,6 +10,12 @@ I wouldn't say this package is fully ready to be use in production (not yet). Ev
 ## How to install
 Unfortunately, and because I'm [using](https://github.com/eeue56/take-home/wiki/Writing-Native) [Native](https://github.com/gabrielperales/elm-native-module) [modules](https://newfivefour.com/elm-lang-basic-native-module.html), this package couldn't make to the official Elm [repository](http://package.elm-lang.org/). Even though I totally agree with the [policy](https://www.reddit.com/r/elm/comments/73ubxo/an_explanation_of_elms_policy_on_native_code/) about Native code, I believe such package in Elm, at least at its current version 0.18, could not achieve top performance, as good as the browser would allow. Only low level code, in this case JavaScript, can do so.
 
+First of all, you need to install [elm-install](https://github.com/gdotdesign/elm-github-install) in order to be able to install elm packages from git repos:
+```bash
+npm install elm-github-install -g
+```
+Once installed ```elm-install``` can be used instead of ```elm-package``` as a replacement. The process is well explained [here](https://github.com/gdotdesign/elm-github-install#basic-usage).
+
 ## TO-DO
 1. Break NumElm API down into modules. Too many functions in just one module.
 
