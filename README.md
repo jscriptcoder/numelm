@@ -80,7 +80,7 @@ main =
 ```
 
 ## TO-DO
-1. Break NumElm API down into modules. Too many functions in just one module.
+1. Break _NumElm API_ down into modules. Too many functions in just one module.
 
 2. I'm still deciding whether to use [scijs/ndarray](https://github.com/scijs/ndarray) and extend it, or use [deeplearn.js](https://github.com/PAIR-code/deeplearnjs) which is a highly optimized hardware-accelerated JavaScript library, in order to speed up performance.
 
