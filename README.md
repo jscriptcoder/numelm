@@ -86,7 +86,9 @@ main =
 
 3. Write performance tests.
 
-4. Implement:
+4. Show better API docs. Investigate how to generate the markdown as [docs-preview](http://package.elm-lang.org/help/docs-preview) does.
+
+5. Implement:
 ```elm
 {-| Computes the Moore-Penrose pseudo-inverse of a matrix.
 -}
@@ -100,11 +102,11 @@ svd : NdArray -> NdArray
 -}
 eig : NdArray -> NdArray
 ```
-5. Write a few examples!!
+6. Write a few examples!!
 
-6. Consider using [ports](https://guide.elm-lang.org/interop/javascript.html) instead of Native modules.
+7. Consider using [ports](https://guide.elm-lang.org/interop/javascript.html) instead of Native modules.
 
-7. Don't know yet. Any suggestion is always welcomed :wink:
+8. Don't know yet. Any suggestion is always welcomed :wink:
 
 ## Notes
 1. There are around 122 tests that covers the whole API. You can have a look in [tests](tests) folder.
