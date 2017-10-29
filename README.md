@@ -14,7 +14,7 @@ First of all, you need to install [elm-install](https://github.com/gdotdesign/el
 ```bash
 $ npm install elm-github-install -g
 ```
-Once installed ```elm-install``` can be used instead of ```elm-package``` as a replacement. The process is well explained [here](https://github.com/gdotdesign/elm-github-install#basic-usage).
+Once installed, ```elm-install``` can be used instead of ```elm-package``` as a replacement. The process is well explained [here](https://github.com/gdotdesign/elm-github-install#basic-usage).
 
 Creates `elm-package.json` with basic modules and add `jscriptcoder/numelm` as follow:
 ```
@@ -38,6 +38,17 @@ Creates `elm-package.json` with basic modules and add `jscriptcoder/numelm` as f
 Then run
 ```bash
 $ elm-install
+
+Resolving packages...
+  ▶ Getting updates for: elm-lang/core
+  ▶ Getting updates for: elm-lang/html
+  ▶ Getting updates for: elm-lang/virtual-dom
+  ▶ Getting updates for: jscriptcoder/numelm
+Solving dependencies...
+  ● elm-lang/core - https://github.com/elm-lang/core (5.1.1)
+  ● elm-lang/html - https://github.com/elm-lang/html (2.0.0)
+  ● jscriptcoder/numelm - https://github.com/jscriptcoder/numelm at master (1.0.0)
+  ● elm-lang/virtual-dom - https://github.com/elm-lang/virtual-dom (2.0.4)
 ```
 
 ## How to use
