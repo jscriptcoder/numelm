@@ -5,7 +5,7 @@ Inspired by Python package [NumPy](http://www.numpy.org/), NumElm is the fundame
 As a huge fan of Functional Programming, I'm extremely interested in Elm language. I'm also passionate about Machine Learning and Deep Learning. Ever since I started studying these subjects I've been trying to figure out how to mix these worlds, Frontend/Functional Programming/Elm and Machine/Deep Learning, together. **NumElm** is the first step in these quest of mine. My goal is to build a fast (as fast as the browser allows me) Machine Learning package for the Elm community.
 
 ## Something to keep in mind
-I wouldn't say this package is fully ready to be use in production (not yet). Even though there are some performance optimizations, I didn't put too much effort on it this initial version. The ```NdArray``` implementation is my [own one](src/Native/NumElm.js). I'm aware of the project [scijs/ndarray](https://github.com/scijs/ndarray), which is better optmized, but it lacks of certain funcionality I needed in order to cover most of the _NumPy API_.
+I wouldn't say this package is fully ready to be use in production (not yet). Even though there are some performance optimizations, I didn't put too much effort on this initial version. The ```NdArray``` implementation is my [own one](src/Native/NumElm.js). I'm aware of the project [scijs/ndarray](https://github.com/scijs/ndarray), which is better optmized, but it lacks of certain funcionality I needed in order to cover most of the _NumPy API_.
 
 ## How to install
 Unfortunately, and because I'm [using](https://github.com/eeue56/take-home/wiki/Writing-Native) [Native](https://github.com/gabrielperales/elm-native-module) [modules](https://newfivefour.com/elm-lang-basic-native-module.html), this package couldn't make it to the official Elm [repository](http://package.elm-lang.org/). Even though I totally agree with the [policy](https://www.reddit.com/r/elm/comments/73ubxo/an_explanation_of_elms_policy_on_native_code/) about Native code, I believe such package in Elm, at least at its current version 0.18, could not achieve top performance, as good as the browser would allow. Only low level code, in this case JavaScript, can do so.
@@ -50,6 +50,25 @@ Solving dependencies...
   ● jscriptcoder/numelm - https://github.com/jscriptcoder/numelm at master (1.0.0)
   ● elm-lang/virtual-dom - https://github.com/elm-lang/virtual-dom (2.0.4)
 ```
+## Run tests
+You need to first install ```elm-test``` and then run it. It'll automatically pick up all the tests in [tests](tests) folder 
+```bash
+$ npm install elm-test -g
+```
+```bash
+$ elm-test
+
+elm-test 0.18.9
+---------------
+
+Running 122 tests. To reproduce these results, run: elm-test --fuzz 100 --seed 2042360958
+
+TEST RUN PASSED
+
+Duration: 498 ms
+Passed:   122
+Failed:   0
+```
 
 ## How to use
 Easy, just import ```NumElm``` and use it :smirk:
@@ -63,11 +82,10 @@ import NumElm exposing (..)
 main =
     let
         matrixResult =
-            NumElm.matrix
-                Float32
-                [ [ 1, 2, 3 ]
-                , [ 4, 5, 6 ]
-                ]
+            NumElm.ndarray
+                Float64
+                [ 2, 2 ]
+                [ 1, 2, 3, 4, 5, 6 ]
     in
         case matrixResult of
             Ok matrix ->
