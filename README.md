@@ -131,4 +131,4 @@ eig : NdArray -> NdArray
 
 2. I use [debug](debug) folder to debug functionality in the browser with breakpoints. You need to run ```elm-reactor``` in this folder, open the browser in http://localhost:8000, and then click on _Main.elm_. Open devtool, sources, and in _Main.elm_ you have your compiled Javascript.
 
-### See NumElm API [here](API.md)
+### See NumElm API [here](http://elm-directory.herokuapp.com/package/jscriptcoder/numelm/1.0.0/NumElm)
